@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CareLink - Family Dashboard{% endblock %}</title>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ========= SIDEBAR ========= */
+        .sidebar {
+            width: 280px;
+            background: #0f3460;
+            color: #e0edf5;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 32px 24px 20px;
+            border-bottom: 1px solid #1e4a7a;
+        }
+
+        .sidebar-header h2 {
+            font-weight: 600;
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+            color: white;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h2 i {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .sidebar-header .user-greeting {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e4a7a;
+            padding: 10px 14px;
+            border-radius: 40px;
+            width: fit-content;
+        }
+
+        .sidebar-header .user-greeting i {
+            font-size: 1rem;
+            color: white;
+        }
+
+        /* navigation menu */
+        .nav-menu {
+            flex: 1;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+        }
+
+        .nav-item i {
+            width: 24px;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            transition: color 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #1e4a7a;
+            color: white;
+        }
+
+        .nav-item:hover i {
+            color: white;
+        }
+
+        .nav-item.active {
+            background: #1e4a7a;
+            color: white;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item.active i {
+            color: white;
+        }
+
+        /* logout item */
+        .logout-item {
+            margin-top: 30px;
+            border-top: 1px solid #1e4a7a;
+            padding-top: 20px;
+        }
+
+        .logout-item .nav-item {
+            color: #fbc1c1;
+        }
+
+        .logout-item .nav-item i {
+            color: #f7a6a6;
+        }
+
+        .logout-item .nav-item:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .logout-item .nav-item:hover i {
+            color: white;
+        }
+
+        /* ========= MAIN CONTENT ========= */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px 40px;
+            overflow-y: auto;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* top bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e2e8f0;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #0f3460;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-title i {
+            color: #0f3460;
+        }
+
+        /* Notification Bell Styles */
+        .notifications-wrapper {
+            position: relative;
+        }
+
+        .notification-bell {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .notification-bell:hover {
+            background: #e2e8f0;
+            transform: scale(1.05);
+        }
+
+        .notification-bell i {
+            font-size: 1.2rem;
+            color: #0f3460;
+        }
+
+        .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .notifications-panel {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            width: 380px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e2e8f0;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            padding: 40px;
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .date-badge {
+            background: #f8fafc;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 500;
+            color: #0f3460;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .date-badge i {
+            color: #0f3460;
+        }
+
+        /* alerts */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        /* container for page content */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* loading spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0f3460;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .notifications-panel {
+                width: 300px;
+                right: -100px;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>
+                <i class="fas fa-hand-holding-heart"></i> CareLink
+            </h2>
+            <div class="user-greeting">
+                <i class="fas fa-user-circle"></i> {{ user.get_full_name|default:user.username }} · family
+            </div>
+        </div>
+
+        <div class="nav-menu">
+            {% block sidebar_links %}
+            <a href="{% url 'family_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'family_dashboard' %}active{% endif %}">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'post_request' %}" class="nav-item {% if request.resolver_match.url_name == 'post_request' %}active{% endif %}">
+                <i class="fas fa-plus-circle"></i>
+                <span>Post Care Request</span>
+            </a>
+            <a href="{% url 'my_requests' %}" class="nav-item {% if request.resolver_match.url_name == 'my_requests' %}active{% endif %}">
+                <i class="fas fa-clipboard-list"></i>
+                <span>My Requests</span>
+            </a>
+            <a href="{% url 'search_caretakers' %}" class="nav-item {% if request.resolver_match.url_name == 'search_caretakers' %}active{% endif %}">
+                <i class="fas fa-search"></i>
+                <span>Find Caretakers</span>
+            </a>
+            <a href="{% url 'family_profile' %}" class="nav-item {% if request.resolver_match.url_name == 'family_profile' %}active{% endif %}">
+                <i class="fas fa-id-badge"></i>
+                <span>My Profile</span>
+            </a>
+            {% endblock %}
+
+            <div class="logout-item">
+                <a href="{% url 'logout' %}" class="nav-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar with Notification Bell -->
+        <div class="top-bar">
+            <div class="page-title">
+                {% block page_icon %}<i class="fas fa-home"></i>{% endblock %}
+                {% block page_title %}Family Dashboard{% endblock %}
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <!-- Notification Bell -->
+                <div class="notifications-wrapper">
+                    <button class="notification-bell" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-count" id="notification-count">0</span>
+                    </button>
+                    <div class="notifications-panel" id="notifications-panel" style="display: none;">
+                        <div class="loading-spinner">Loading notifications...</div>
+                    </div>
+                </div>
+                
+                <div class="date-badge">
+                    <i class="far fa-calendar-alt"></i> {% now "l, d M Y" %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Page Content -->
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            let alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.style.display = 'none';
+                }, 300);
+            });
+        }, 5000);
+
+        // Highlight active sidebar link based on URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                if (item.getAttribute('href') === currentPath) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Update notification count on page load
+            updateNotificationCount();
+        });
+
+        // Toggle notifications panel
+        function toggleNotifications() {
+            const panel = document.getElementById('notifications-panel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                loadNotifications();
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        // Load notifications via AJAX
+        function loadNotifications() {
+            fetch('/notifications/get/')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('notifications-panel').innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('notifications-panel').innerHTML = 
+                        '<div class="notification-empty">Error loading notifications</div>';
+                });
+        }
+
+        // Close notifications when clicking outside
+        document.addEventListener('click', function(event) {
+            const panel = document.getElementById('notifications-panel');
+            const bell = document.querySelector('.notification-bell');
+            
+            if (panel && bell && !bell.contains(event.target) && !panel.contains(event.target)) {
+                panel.style.display = 'none';
+            }
+        });
+
+        // Update notification count
+        function updateNotificationCount() {
+            fetch('/notifications/count/')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('notification-count');
+                    if (badge) {
+                        badge.textContent = data.count;
+                        badge.style.display = data.count > 0 ? 'flex' : 'none';
+                    }
+                })
+                .catch(error => console.error('Error updating count:', error));
+        }
+
+        // Auto-refresh notifications every 60 seconds
+        setInterval(updateNotificationCount, 60000);
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

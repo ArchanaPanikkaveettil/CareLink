@@ -1,0 +1,471 @@
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
+from django.utils import timezone
+import uuid
+
+# Create your models here.
+
+# ---------------------------
+# Custom User Model
+# ---------------------------
+
+class User(AbstractUser):
+
+    ROLE_CHOICES = (
+        ('admin', 'Admin'),
+        ('family', 'Family'),
+        ('caretaker', 'Caretaker'),
+    )
+
+    VERIFICATION_STATUS = (
+        ('pending', 'Pending Verification'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+        ('suspended', 'Suspended'),
+    )
+
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    is_verified = models.BooleanField(default=False)
+    verification_status = models.CharField(max_length=20, choices=VERIFICATION_STATUS, default='pending')
+    verification_documents = models.FileField(upload_to='verification_docs/', null=True, blank=True)
+    
+    # Contact Information
+    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in format: '+999999999'. Up to 15 digits allowed.")
+    phone = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    
+    # Profile Picture
+    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+    
+    # Email verification
+    email_verified = models.BooleanField(default=False)
+    email_verification_token = models.UUIDField(default=uuid.uuid4, editable=False)
+    
+    # Two-factor authentication
+    two_factor_enabled = models.BooleanField(default=False)
+    two_factor_secret = models.CharField(max_length=32, blank=True)
+    
+    # Account status
+    is_active = models.BooleanField(default=True)
+    date_joined = models.DateTimeField(default=timezone.now)
+    last_login_ip = models.GenericIPAddressField(null=True, blank=True)
+    
+    # Privacy settings
+    show_phone = models.BooleanField(default=False)
+    show_email = models.BooleanField(default=False)
+    
+    # Terms acceptance
+    accepted_terms = models.BooleanField(default=False)
+    accepted_terms_date = models.DateTimeField(null=True, blank=True)
+    
+    # Notification preferences
+    email_notifications = models.BooleanField(default=True)
+    sms_notifications = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.get_full_name() or self.username} - {self.role}"
+
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}".strip() or self.username
+
+
+# ---------------------------
+# Caretaker Profile
+# ---------------------------
+
+class CaretakerProfile(models.Model):
+
+    AVAILABILITY_CHOICES = [
+        ("available", "Available"),
+        ("busy", "Busy"),
+        ("fully_booked", "Fully Booked"),
+        ("offline", "Offline"),
+        ("on_leave", "On Leave"),
+    ]
+
+    EMPLOYMENT_TYPE = [
+        ('full_time', 'Full Time'),
+        ('part_time', 'Part Time'),
+        ('freelance', 'Freelance'),
+        ('contract', 'Contract'),
+    ]
+
+    EXPERIENCE_LEVEL = [
+        ('entry', 'Entry Level (0-2 years)'),
+        ('mid', 'Mid Level (3-5 years)'),
+        ('senior', 'Senior Level (6-10 years)'),
+        ('expert', 'Expert (10+ years)'),
+    ]
+
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+        ('prefer_not_to_say', 'Prefer Not to Say'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='caretaker_profile')
+
+    # Personal Information
+    date_of_birth = models.DateField(null=True, blank=True)
+    gender = models.CharField(
+        max_length=20, 
+        choices=GENDER_CHOICES, 
+        default='prefer_not_to_say',
+        null=True,
+        blank=True
+    )
+    
+    # Contact Information
+    emergency_contact_name = models.CharField(max_length=100, blank=True, default='')
+    emergency_contact_phone = models.CharField(max_length=15, blank=True, default='')
+    emergency_contact_relation = models.CharField(max_length=50, blank=True, default='')
+
+    # Professional Information
+    experience_years = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(50)],
+        default=0
+    )
+    experience_level = models.CharField(
+        max_length=20, 
+        choices=EXPERIENCE_LEVEL, 
+        default='entry'
+    )
+    qualification = models.CharField(max_length=200, blank=True, default='')
+    specialized_training = models.TextField(
+        blank=True, 
+        default='',
+        help_text="List any specialized training or certifications"
+    )
+    
+    # Documents - Make these optional with defaults
+    certificate = models.FileField(
+        upload_to="certificates/",
+        null=True,
+        blank=True
+    )
+    identity_proof = models.FileField(
+        upload_to="identity_docs/",
+        null=True,
+        blank=True,
+        help_text="Upload government ID"
+    )
+    background_check = models.FileField(
+        upload_to="background_checks/",
+        null=True,
+        blank=True
+    )
+    resume = models.FileField(
+        upload_to="resumes/",
+        null=True,
+        blank=True
+    )
+    
+    # Professional Details
+    skills = models.TextField(
+        help_text="Comma-separated list of skills",
+        blank=True,
+        default=''
+    )
+    languages = models.CharField(
+        max_length=200,
+        blank=True,
+        default='',
+        help_text="Languages spoken (comma-separated)"
+    )
+    employment_type = models.CharField(
+        max_length=20,
+        choices=EMPLOYMENT_TYPE,
+        default='full_time'
+    )
+    
+    # Availability
+    availability_status = models.CharField(
+        max_length=20,
+        choices=AVAILABILITY_CHOICES,
+        default="available"
+    )
+    available_from = models.DateField(null=True, blank=True)
+    available_until = models.DateField(null=True, blank=True)
+    preferred_shift = models.CharField(
+        max_length=50,
+        choices=[
+            ('day', 'Day Shift'),
+            ('night', 'Night Shift'),
+            ('flexible', 'Flexible'),
+        ],
+        default='flexible'
+    )
+    
+    # Location
+    address = models.TextField(blank=True, default='')
+    city = models.CharField(max_length=100, blank=True, default='')
+    state = models.CharField(max_length=100, blank=True, default='')
+    country = models.CharField(max_length=100, default='India')
+    pincode = models.CharField(max_length=10, blank=True, default='')
+    willing_to_relocate = models.BooleanField(default=False)
+    max_travel_distance = models.IntegerField(
+        help_text="Maximum travel distance in kilometers",
+        null=True,
+        blank=True
+    )
+    
+    # Professional Summary
+    bio = models.TextField(max_length=500, blank=True, default='')
+    achievements = models.TextField(blank=True, default='')
+    
+    # Ratings & Reviews - These will be updated via signals from the applications app
+    average_rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=0.0
+    )
+    total_reviews = models.IntegerField(default=0)
+    completed_jobs = models.IntegerField(default=0)
+    
+    # Verification
+    verified_by_admin = models.BooleanField(default=False)
+    verification_date = models.DateTimeField(null=True, blank=True)
+    verification_notes = models.TextField(blank=True, default='')
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.experience_level}"
+
+    def update_rating(self):
+        """Update average rating based on reviews"""
+        # This will be called via signal when reviews are added
+        try:
+            from django.db.models import Avg
+            from apps.applications.models import CaretakerReview
+            
+            avg = CaretakerReview.objects.filter(caretaker=self).aggregate(Avg('rating'))['rating__avg']
+            self.average_rating = avg or 0
+            self.total_reviews = CaretakerReview.objects.filter(caretaker=self).count()
+            self.save()
+        except:
+            # Handle case when apps.applications is not yet installed/migrated
+            pass
+
+
+# ---------------------------
+# Family Profile
+# ---------------------------
+
+class FamilyProfile(models.Model):
+    FAMILY_TYPE = [
+        ('nuclear', 'Nuclear Family'),
+        ('joint', 'Joint Family'),
+        ('single', 'Single Parent'),
+        ('elderly', 'Elderly Couple'),
+    ]
+
+    RESIDENCE_TYPE = [
+        ('apartment', 'Apartment'),
+        ('independent', 'Independent House'),
+        ('villa', 'Villa'),
+        ('others', 'Others'),
+    ]
+
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='family_profile')
+
+    # Family Information
+    family_type = models.CharField(
+        max_length=20,
+        choices=FAMILY_TYPE,
+        default='nuclear'
+    )
+    family_size = models.IntegerField(
+        validators=[MinValueValidator(1)],
+        default=1
+    )
+    
+    # Contact Information
+    phone = models.CharField(max_length=15, blank=True, default='')
+    alternate_phone = models.CharField(max_length=15, blank=True, default='')
+    emergency_contact = models.CharField(max_length=15, blank=True, default='')
+    
+    # Address Details
+    address = models.TextField(blank=True, default='')
+    city = models.CharField(max_length=100, blank=True, default='')
+    state = models.CharField(max_length=100, blank=True, default='')
+    country = models.CharField(max_length=100, default='India')
+    pincode = models.CharField(max_length=10, blank=True, default='')
+    landmark = models.CharField(max_length=200, blank=True, default='')
+    residence_type = models.CharField(
+        max_length=20,
+        choices=RESIDENCE_TYPE,
+        default='apartment'
+    )
+    
+    # Patient Information
+    patient_name = models.CharField(max_length=100, blank=True, default='')
+    patient_age = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(120)],
+        null=True,
+        blank=True
+    )
+    patient_gender = models.CharField(
+        max_length=10,
+        choices=GENDER_CHOICES,
+        blank=True,
+        default=''
+    )
+    patient_blood_group = models.CharField(
+        max_length=20,  # Increased to 20 to safely accommodate all display values
+        blank=True,
+        default='',
+        choices=[
+            ('A+', 'A+'), 
+            ('A-', 'A-'), 
+            ('B+', 'B+'), 
+            ('B-', 'B-'),
+            ('O+', 'O+'), 
+            ('O-', 'O-'), 
+            ('AB+', 'AB+'), 
+            ('AB-', 'AB-'),
+            ('unknown', 'Unknown'),
+            ('not_specified', 'Not Specified'),
+        ]
+    )
+    
+    # Medical Information
+    primary_medical_condition = models.CharField(
+        max_length=200,
+        blank=True,
+        default=''
+    )
+    secondary_conditions = models.TextField(blank=True, default='')
+    allergies = models.TextField(blank=True, default='')
+    medications = models.TextField(
+        blank=True,
+        default='',
+        help_text="Current medications"
+    )
+    dietary_restrictions = models.TextField(blank=True, default='')
+    
+    # Care Requirements
+    care_required = models.TextField(
+        blank=True,
+        default='',
+        help_text="Detailed description of care needed"
+    )
+    care_frequency = models.CharField(
+        max_length=50,
+        choices=[
+            ('24x7', '24/7 Care'),
+            ('daily', 'Daily'),
+            ('weekly', 'Weekly'),
+            ('occasional', 'Occasional'),
+            ('not_specified', 'Not Specified'),
+        ],
+        default='not_specified'
+    )
+    
+    # Home Environment
+    pets_at_home = models.BooleanField(default=False)
+    pet_details = models.TextField(
+        blank=True,
+        default='',
+        help_text="If yes, please specify"
+    )
+    smokers_in_home = models.BooleanField(default=False)
+    accessibility_requirements = models.TextField(
+        blank=True,
+        default='',
+        help_text="Any accessibility needs?"
+    )
+    
+    # Previous Caretaker Experience
+    previous_caretaker = models.BooleanField(default=False)
+    previous_caretaker_feedback = models.TextField(blank=True, default='')
+    
+    # Documents
+    identity_proof = models.FileField(
+        upload_to='family_docs/',
+        null=True,
+        blank=True,
+        help_text="Upload ID proof"
+    )
+    address_proof = models.FileField(
+        upload_to='family_docs/',
+        null=True,
+        blank=True
+    )
+    medical_reports = models.FileField(
+        upload_to='family_docs/',
+        null=True,
+        blank=True,
+        help_text="Patient's medical reports"
+    )
+    
+    # Verification
+    verified_by_admin = models.BooleanField(default=False)
+    verification_date = models.DateTimeField(null=True, blank=True)
+    
+    # Preferences
+    preferred_caretaker_gender = models.CharField(
+        max_length=10,
+        choices=[
+            ('any', 'Any'),
+            ('male', 'Male'),
+            ('female', 'Female'),
+        ],
+        default='any'
+    )
+    
+    preferred_language = models.CharField(max_length=100, blank=True, default='')
+    
+    # Budget
+    monthly_budget = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.patient_name or 'No patient specified'}"
+
+
+# ---------------------------
+# Additional Models for Enhanced Functionality
+# ---------------------------
+
+class CaretakerAvailability(models.Model):
+    """Detailed availability schedule for caretakers"""
+    DAYS_OF_WEEK = [
+        (0, 'Monday'), (1, 'Tuesday'), (2, 'Wednesday'),
+        (3, 'Thursday'), (4, 'Friday'), (5, 'Saturday'), (6, 'Sunday')
+    ]
+    
+    caretaker = models.ForeignKey(
+        CaretakerProfile,
+        on_delete=models.CASCADE,
+        related_name='availability_schedule'
+    )
+    day_of_week = models.IntegerField(choices=DAYS_OF_WEEK)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    is_available = models.BooleanField(default=True)
+    
+    class Meta:
+        unique_together = ['caretaker', 'day_of_week']
+        ordering = ['day_of_week', 'start_time']
+    
+    def __str__(self):
+        days = dict(self.DAYS_OF_WEEK)
+        return f"{self.caretaker} - {days[self.day_of_week]}: {self.start_time} to {self.end_time}"

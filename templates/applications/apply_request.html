@@ -1,0 +1,259 @@
+<!-- Apply for Care Request -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Apply for Care Request</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+        }
+
+        .navbar {
+            background: #28a745;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #28a745;
+        }
+
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .detail-row {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #28a745;
+        }
+
+        input.error-field,
+        textarea.error-field {
+            border-color: #dc3545;
+            background-color: #fff8f8;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #28a745;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .submit-btn:hover {
+            background: #218838;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .back-link a {
+            text-decoration: none;
+            color: #28a745;
+        }
+
+        .error-hint {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        CareLink - Apply for Request
+    </div>
+
+    <div class="container">
+        <div class="card">
+
+            <h2>Apply for Care Request</h2>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% else %}warning{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- 🔹 PATIENT & CONDITION DETAILS -->
+            <div class="section">
+                <h3>Patient Details</h3>
+
+                <div class="detail-row">
+                    <strong>Patient Name:</strong> {{ care_request.patient_name }}
+                </div>
+
+                <div class="detail-row">
+                    <strong>Age:</strong> {{ care_request.patient_age }} years
+                </div>
+
+                <div class="detail-row">
+                    <strong>Gender:</strong> {{ care_request.get_patient_gender_display }}
+                </div>
+
+                <div class="detail-row">
+                    <strong>Medical Condition:</strong> {{ care_request.medical_condition }}
+                </div>
+
+                <div class="detail-row">
+                    <strong>Care Type:</strong> {{ care_request.get_care_type_display }}
+                </div>
+
+                <div class="detail-row">
+                    <strong>Start Date:</strong> {{ care_request.start_date|date:"M d, Y" }}
+                </div>
+
+                <div class="detail-row">
+                    <strong>Duration:</strong> {{ care_request.duration_days }} days
+                </div>
+
+                <div class="detail-row">
+                    <strong>Location:</strong> {{ care_request.address }}
+                </div>
+
+                {% if care_request.special_requirements %}
+                <div class="detail-row">
+                    <strong>Special Requirements:</strong> {{ care_request.special_requirements }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 🔹 APPLICATION FORM -->
+            <form method="POST">
+                {% csrf_token %}
+
+                <label class="required-field">Proposed Rate (₹ per day)</label>
+                <input type="number" name="proposed_rate" step="0.01" min="0" required 
+                       value="{{ request.POST.proposed_rate }}"
+                       class="{% if messages and 'rate' in messages.0.message|lower %}error-field{% endif %}">
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if 'rate' in message.message|lower %}
+                            <span class="error-hint">{{ message }}</span>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                <label class="required-field">Why are you suitable?</label>
+                <textarea name="message" required 
+                          class="{% if messages and 'message' in messages.0.message|lower %}error-field{% endif %}">{{ request.POST.message }}</textarea>
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if 'message' in message.message|lower or 'suitable' in message.message|lower %}
+                            <span class="error-hint">{{ message }}</span>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                <button type="submit" class="submit-btn">Submit Application</button>
+            </form>
+
+            <div class="back-link">
+                <a href="{% url 'browse_requests' %}">← Back to Requests</a>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

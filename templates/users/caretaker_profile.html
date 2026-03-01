@@ -1,0 +1,554 @@
+<!-- templates/users/caretaker_profile.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Care Connect</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-avatar i {
+            font-size: 60px;
+            color: #28a745;
+        }
+
+        .profile-name {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .profile-email {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .card-title {
+            color: #495057;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .info-label {
+            color: #6c757d;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #212529;
+            font-size: 16px;
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+
+        .badge-status {
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .badge-pending {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .badge-availability {
+            background: #17a2b8;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+
+        .btn-back {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-back:hover {
+            background: #5a6268;
+            color: white;
+        }
+
+        .empty-field {
+            color: #999;
+            font-style: italic;
+        }
+
+        .document-link {
+            color: #28a745;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .document-link:hover {
+            text-decoration: underline;
+        }
+
+        .skill-tag {
+            background: #e9ecef;
+            color: #495057;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-block;
+            margin: 0 5px 5px 0;
+        }
+
+        .rating-stars {
+            color: #ffc107;
+        }
+
+        .availability-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="container text-center">
+            <div class="profile-avatar">
+                {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" alt="{{ user.get_full_name }}">
+                {% else %}
+                <i class="fas fa-user-nurse"></i>
+                {% endif %}
+            </div>
+            <div class="profile-name">{{ user.get_full_name }}</div>
+            <div class="profile-email">{{ user.email }}</div>
+            <div class="mt-3">
+                {% if user.is_verified and user.verification_status == 'verified' %}
+                <span class="badge-status">
+                    <i class="fas fa-check-circle me-1"></i>Verified
+                </span>
+                {% else %}
+                <span class="badge-status badge-pending">
+                    <i class="fas fa-clock me-1"></i>Verification Pending
+                </span>
+                {% endif %}
+
+                {% if profile.availability_status %}
+                <span class="badge-availability ms-2">
+                    <i class="fas fa-circle me-1"></i>{{ profile.get_availability_status_display }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <!-- Messages -->
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="text-end mb-4">
+            <a href="{% url 'caretaker_dashboard' %}" class="btn-back me-2">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+            <a href="{% url 'update_caretaker_profile' %}" class="btn-edit">
+                <i class="fas fa-edit me-2"></i>Edit Profile
+            </a>
+        </div>
+
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-md-6">
+                <!-- Personal Information -->
+                <div class="profile-card">
+                    <h5 class="card-title">
+                        <i class="fas fa-user me-2 text-success"></i>Personal Information
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-label">Date of Birth</div>
+                            <div class="info-value">
+                                {% if profile.date_of_birth %}
+                                {{ profile.date_of_birth|date:"d M Y" }}
+                                {% else %}
+                                <span class="empty-field">Not provided</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-label">Gender</div>
+                            <div class="info-value">
+                                {% if profile.gender %}
+                                {{ profile.get_gender_display }}
+                                {% else %}
+                                <span class="empty-field">Not provided</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-label">Phone Number</div>
+                    <div class="info-value">
+                        {% if user.phone %}
+                        <i class="fas fa-phone me-2 text-muted"></i>{{ user.phone }}
+                        {% elif profile.phone %}
+                        <i class="fas fa-phone me-2 text-muted"></i>{{ profile.phone }}
+                        {% else %}
+                        <span class="empty-field">Not provided</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Emergency Contact -->
+                    <div class="profile-card">
+                        <h5 class="card-title">
+                            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Emergency Contact
+                        </h5>
+                        {% if profile.emergency_contact_name %}
+                        <div class="info-label">Name</div>
+                        <div class="info-value">{{ profile.emergency_contact_name }}</div>
+
+                        <div class="info-label">Phone</div>
+                        <div class="info-value">{{ profile.emergency_contact_phone }}</div>
+
+                        <div class="info-label">Relationship</div>
+                        <div class="info-value">{{ profile.emergency_contact_relation }}</div>
+                        {% else %}
+                        <div class="empty-field">No emergency contact provided</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Location -->
+                    <div class="profile-card">
+                        <h5 class="card-title">
+                            <i class="fas fa-map-marker-alt me-2 text-success"></i>Location
+                        </h5>
+                        {% if profile.address %}
+                        <div class="info-value">{{ profile.address }}</div>
+                        <div class="info-value">
+                            {{ profile.city }}{% if profile.city and profile.state %}, {% endif %}
+                            {{ profile.state }} - {{ profile.pincode }}
+                        </div>
+                        <div class="info-value">{{ profile.country }}</div>
+
+                        {% if profile.willing_to_relocate %}
+                        <div class="mt-2">
+                            <span class="badge-status" style="background: #17a2b8;">
+                                <i class="fas fa-truck me-1"></i>Willing to Relocate
+                            </span>
+                        </div>
+                        {% endif %}
+
+                        {% if profile.max_travel_distance %}
+                        <div class="info-label mt-2">Max Travel Distance</div>
+                        <div class="info-value">{{ profile.max_travel_distance }} km</div>
+                        {% endif %}
+                        {% else %}
+                        <div class="empty-field">No address provided</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-6">
+                    <!-- Professional Information -->
+                    <div class="profile-card">
+                        <h5 class="card-title">
+                            <i class="fas fa-briefcase me-2 text-success"></i>Professional Information
+                        </h5>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-label">Experience</div>
+                                <div class="info-value">
+                                    {% if profile.experience_years %}
+                                    {{ profile.experience_years }} years
+                                    <small class="text-muted">({{ profile.get_experience_level_display }})</small>
+                                    {% else %}
+                                    <span class="empty-field">Not provided</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-label">Employment Type</div>
+                                <div class="info-value">
+                                    {% if profile.employment_type %}
+                                    {{ profile.get_employment_type_display }}
+                                    {% else %}
+                                    <span class="empty-field">Not specified</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-label">Qualification</div>
+                        <div class="info-value">
+                            {% if profile.qualification %}
+                            {{ profile.qualification }}
+                            {% else %}
+                            <span class="empty-field">Not provided</span>
+                            {% endif %}
+                        </div>
+
+                        {% if profile.specialized_training %}
+                        <div class="info-label">Specialized Training</div>
+                        <div class="info-value">{{ profile.specialized_training }}</div>
+                        {% endif %}
+
+                        <div class="info-label">Skills</div>
+                        <div class="info-value">
+                            {% if skills_list %}
+                            {% for skill in skills_list %}
+                            <span class="skill-tag">{{ skill }}</span>
+                            {% endfor %}
+                            {% else %}
+                            <span class="empty-field">No skills listed</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="info-label">Languages</div>
+                        <div class="info-value">
+                            {% if languages_list %}
+                            {% for language in languages_list %}
+                            <span class="skill-tag">{{ language }}</span>
+                            {% endfor %}
+                            {% else %}
+                            <span class="empty-field">No languages listed</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Professional Summary -->
+                    <div class="profile-card">
+                        <h5 class="card-title">
+                            <i class="fas fa-align-left me-2 text-success"></i>Professional Summary
+                        </h5>
+
+                        {% if profile.bio %}
+                        <div class="info-label">Bio</div>
+                        <div class="info-value">{{ profile.bio }}</div>
+                        {% endif %}
+
+                        {% if profile.achievements %}
+                        <div class="info-label mt-2">Achievements</div>
+                        <div class="info-value">{{ profile.achievements }}</div>
+                        {% endif %}
+
+                        {% if not profile.bio and not profile.achievements %}
+                        <div class="empty-field">No professional summary provided</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Availability Schedule -->
+                    <div class="profile-card">
+                        <h5 class="card-title">
+                            <i class="fas fa-calendar-alt me-2 text-success"></i>Availability Schedule
+                        </h5>
+
+                        <div class="info-label">Preferred Shift</div>
+                        <div class="info-value mb-3">
+                            {% if profile.preferred_shift %}
+                            {{ profile.get_preferred_shift_display }}
+                            {% else %}
+                            <span class="empty-field">Not specified</span>
+                            {% endif %}
+                        </div>
+
+                        {% if availability %}
+                        {% for avail in availability %}
+                        <div class="availability-item">
+                            <strong>{{ avail.get_day_of_week_display }}</strong>
+                            <span class="float-end">
+                                {{ avail.start_time|time:"g:i A" }} - {{ avail.end_time|time:"g:i A" }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="empty-field">No availability schedule set</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="profile-card">
+                        <h5 class="card-title">
+                            <i class="fas fa-file-alt me-2 text-success"></i>Documents
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="info-label">Certificate</div>
+                                <div class="info-value">
+                                    {% if profile.certificate %}
+                                    <a href="{{ profile.certificate.url }}" class="document-link" target="_blank">
+                                        <i class="fas fa-eye me-1"></i>View Certificate
+                                    </a>
+                                    {% else %}
+                                    <span class="empty-field">Not uploaded</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-label">Identity Proof</div>
+                                <div class="info-value">
+                                    {% if profile.identity_proof %}
+                                    <a href="{{ profile.identity_proof.url }}" class="document-link" target="_blank">
+                                        <i class="fas fa-eye me-1"></i>View ID
+                                    </a>
+                                    {% else %}
+                                    <span class="empty-field">Not uploaded</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-label">Resume</div>
+                                <div class="info-value">
+                                    {% if profile.resume %}
+                                    <a href="{{ profile.resume.url }}" class="document-link" target="_blank">
+                                        <i class="fas fa-eye me-1"></i>View Resume
+                                    </a>
+                                    {% else %}
+                                    <span class="empty-field">Not uploaded</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-label">Background Check</div>
+                                <div class="info-value">
+                                    {% if profile.background_check %}
+                                    <a href="{{ profile.background_check.url }}" class="document-link" target="_blank">
+                                        <i class="fas fa-eye me-1"></i>View Document
+                                    </a>
+                                    {% else %}
+                                    <span class="empty-field">Not uploaded</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="row mt-4">
+                            <div class="col-md-4 text-center">
+                                <h3 class="text-success mb-0">{{ profile.completed_jobs|default:"0" }}</h3>
+                                <small class="text-muted">Completed Jobs</small>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h3 class="text-success mb-0">
+                                    {% if profile.average_rating %}
+                                    {{ profile.average_rating }} <small class="rating-stars">★</small>
+                                    {% else %}
+                                    0.0
+                                    {% endif %}
+                                </h3>
+                                <small class="text-muted">Average Rating</small>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h3 class="text-success mb-0">{{ profile.total_reviews|default:"0" }}</h3>
+                                <small class="text-muted">Total Reviews</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script>
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function () {
+                let alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function (alert) {
+                    let bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        </script>
+</body>
+
+</html>

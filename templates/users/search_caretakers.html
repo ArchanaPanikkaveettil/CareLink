@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Search Caretakers - CareLink</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f8;
+            margin: 0;
+        }
+
+        .navbar {
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 {
+            margin: 0;
+        }
+
+        .back-btn {
+            background: white;
+            color: #28a745;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: #e6e6e6;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        .filter-box {
+            background: white;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+        }
+
+        input {
+            padding: 8px;
+            margin-right: 10px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .search-btn {
+            background: #28a745;
+            border: none;
+            cursor: pointer;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="navbar">
+
+    <h2>Search & Filter Caretakers</h2>
+
+    <!-- FIXED DASHBOARD LINK -->
+    <a href="/dashboard/family/dashboard/" class="back-btn">
+        ← Dashboard
+    </a>
+
+</div>
+
+<div class="container">
+
+<div class="filter-box">
+
+<form method="GET">
+
+<input type="text"
+name="q"
+placeholder="Search by name or qualification"
+value="{{ request.GET.q|default:'' }}">
+
+<input type="number"
+name="experience"
+placeholder="Minimum Experience"
+value="{{ request.GET.experience|default:'' }}">
+
+<button type="submit" class="search-btn">
+Search
+</button>
+
+</form>
+
+</div>
+
+{% for caretaker in caretakers %}
+
+<div class="card">
+
+<h3>{{ caretaker.user.username }}</h3>
+
+<p>
+<strong>Qualification:</strong>
+{{ caretaker.qualification }}
+</p>
+
+<p>
+<strong>Experience:</strong>
+{{ caretaker.experience_years }} years
+</p>
+
+<p>
+<strong>Availability:</strong>
+{{ caretaker.get_availability_status_display }}
+</p>
+
+<a href="{% url 'caretaker_detail' caretaker.id %}" class="btn">
+View Details
+</a>
+
+</div>
+
+{% empty %}
+
+<p>No caretakers found.</p>
+
+{% endfor %}
+
+</div>
+
+</body>
+
+</html>

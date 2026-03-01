@@ -1,0 +1,157 @@
+{% extends 'users/family_base.html' %}
+
+{% block title %}Edit Notes - CareLink{% endblock %}
+
+{% block content %}
+<style>
+    .notes-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .notes-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .candidate-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .candidate-avatar {
+        width: 50px;
+        height: 50px;
+        background: #0f3460;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+    
+    .candidate-details h3 {
+        color: #0f3460;
+        margin-bottom: 5px;
+    }
+    
+    .candidate-details p {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    label {
+        display: block;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+    }
+    
+    label i {
+        color: #0f3460;
+        margin-right: 5px;
+    }
+    
+    textarea {
+        width: 100%;
+        padding: 15px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.95rem;
+        resize: vertical;
+        min-height: 150px;
+    }
+    
+    textarea:focus {
+        outline: none;
+        border-color: #0f3460;
+        box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+        flex: 1;
+    }
+    
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #475569;
+    }
+</style>
+
+<div class="notes-container">
+    <div class="notes-card">
+        <div class="candidate-info">
+            <div class="candidate-avatar">
+                <i class="fas fa-user-nurse"></i>
+            </div>
+            <div class="candidate-details">
+                <h3>{{ application.caretaker.get_full_name|default:application.caretaker.username }}</h3>
+                <p>Shortlisted #{{ application.shortlist_rank }} • {{ application.caretaker.email }}</p>
+            </div>
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label><i class="fas fa-sticky-note"></i> Private Notes</label>
+                <textarea name="notes" placeholder="Add your private notes about this candidate...">{{ application.shortlist_notes }}</textarea>
+                <small style="color: #64748b;">These notes are only visible to you.</small>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{% url 'shortlisted_candidates' application.request.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Notes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

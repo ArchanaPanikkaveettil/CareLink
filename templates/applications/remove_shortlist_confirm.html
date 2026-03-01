@@ -1,0 +1,137 @@
+{% extends 'users/family_base.html' %}
+
+{% block title %}Remove from Shortlist - CareLink{% endblock %}
+
+{% block content %}
+<style>
+    .confirm-container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .confirm-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+        text-align: center;
+    }
+    
+    .warning-icon {
+        width: 80px;
+        height: 80px;
+        background: #fee2e2;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+    
+    .warning-icon i {
+        font-size: 3rem;
+        color: #dc3545;
+    }
+    
+    h2 {
+        color: #0f3460;
+        margin-bottom: 15px;
+    }
+    
+    .candidate-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #0f3460;
+        margin: 10px 0;
+    }
+    
+    .warning-text {
+        color: #dc3545;
+        background: #fee2e2;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+        flex: 1;
+    }
+    
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: #b91c1c;
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #475569;
+    }
+    
+    .info-text {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin-top: 20px;
+    }
+</style>
+
+<div class="confirm-container">
+    <div class="confirm-card">
+        <div class="warning-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <h2>Remove from Shortlist?</h2>
+        
+        <p>You are about to remove <span class="candidate-name">{{ application.caretaker.get_full_name|default:application.caretaker.username }}</span> from your shortlist.</p>
+        
+        <div class="warning-text">
+            <i class="fas fa-info-circle"></i> This candidate will be moved back to "Pending" applications.
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="action-buttons">
+                <a href="{% url 'shortlisted_candidates' application.request.id %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            </div>
+        </form>
+        
+        <div class="info-text">
+            <i class="fas fa-clock"></i> You can always shortlist them again later if needed.
+        </div>
+    </div>
+</div>
+{% endblock %}

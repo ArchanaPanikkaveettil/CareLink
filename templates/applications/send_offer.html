@@ -1,0 +1,359 @@
+{% extends 'users/family_base.html' %}
+
+{% block title %}Send Offer - CareLink{% endblock %}
+
+{% block content %}
+<style>
+    .offer-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .offer-header {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .candidate-summary {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .candidate-avatar {
+        width: 70px;
+        height: 70px;
+        background: #0f3460;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+    }
+    
+    .candidate-info h2 {
+        color: #0f3460;
+        margin-bottom: 5px;
+    }
+    
+    .candidate-info p {
+        color: #64748b;
+    }
+    
+    .info-badge {
+        background: #e2e8f0;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        color: #0f3460;
+    }
+    
+    .offer-form {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .form-section {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .form-section h3 {
+        color: #0f3460;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .form-section h3 i {
+        color: #0f3460;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    label {
+        display: block;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+    
+    label i {
+        margin-right: 5px;
+        color: #0f3460;
+    }
+    
+    input, select, textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #0f3460;
+        box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 15px 0;
+    }
+    
+    .checkbox-group input {
+        width: auto;
+    }
+    
+    .checkbox-group label {
+        margin-bottom: 0;
+        font-weight: normal;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+    }
+    
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+        flex: 2;
+    }
+    
+    .btn-primary:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(15, 52, 96, 0.2);
+    }
+    
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+        flex: 1;
+    }
+    
+    .btn-secondary:hover {
+        background: #475569;
+    }
+    
+    .rate-info {
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .proposed-rate {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #0f3460;
+    }
+    
+    .proposed-rate span {
+        color: #64748b;
+        font-weight: normal;
+        font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="offer-container">
+    <!-- Header -->
+    <div class="offer-header">
+        <div class="candidate-summary">
+            <div class="candidate-avatar">
+                <i class="fas fa-user-nurse"></i>
+            </div>
+            <div class="candidate-info">
+                <h2>Send Offer to {{ application.caretaker.get_full_name|default:application.caretaker.username }}</h2>
+                <p>
+                    <i class="fas fa-envelope"></i> {{ application.caretaker.email }} |
+                    <i class="fas fa-phone"></i> {{ application.caretaker.phone|default:"Phone not available" }}
+                </p>
+                <div>
+                    <span class="info-badge"><i class="fas fa-star"></i> Shortlisted #{{ application.shortlist_rank }}</span>
+                    <span class="info-badge"><i class="fas fa-tag"></i> Proposed: ₹{{ application.proposed_rate }}/day</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Offer Form -->
+    <form method="POST" class="offer-form">
+        {% csrf_token %}
+        
+        <!-- Rate Information -->
+        <div class="rate-info">
+            <span>Candidate's Proposed Rate:</span>
+            <span class="proposed-rate">₹{{ application.proposed_rate }}/day <span>(you can modify below)</span></span>
+        </div>
+        
+        <!-- Section 1: Start Details -->
+        <div class="form-section">
+            <h3><i class="fas fa-calendar-check"></i> Start Details</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-alt"></i> Start Date *</label>
+                    <input type="date" name="start_date" required value="{{ application.request.start_date|date:'Y-m-d' }}">
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-clock"></i> Start Time *</label>
+                    <input type="time" name="start_time" required value="09:00">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-map-marker-alt"></i> Reporting Address *</label>
+                <textarea name="reporting_address" required>{{ application.request.address }}</textarea>
+            </div>
+        </div>
+        
+        <!-- Section 2: Compensation -->
+        <div class="form-section">
+            <h3><i class="fas fa-rupee-sign"></i> Compensation</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Final Rate (₹) *</label>
+                    <input type="number" name="final_rate" step="0.01" min="0" required value="{{ application.proposed_rate }}">
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-clock"></i> Payment Frequency</label>
+                    <select name="payment_frequency">
+                        <option value="hourly">Per Hour</option>
+                        <option value="daily" selected>Per Day</option>
+                        <option value="weekly">Per Week</option>
+                        <option value="monthly">Per Month</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-hourglass-half"></i> Offer Expiry (hours)</label>
+                    <input type="number" name="offer_expiry_hours" min="1" max="168" value="48">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 3: Duties & Instructions -->
+        <div class="form-section">
+            <h3><i class="fas fa-clipboard-list"></i> Duties & Instructions</h3>
+            
+            <div class="form-group">
+                <label><i class="fas fa-tasks"></i> Daily Duties *</label>
+                <textarea name="daily_duties" required placeholder="List the daily tasks and responsibilities...">{{ application.request.special_requirements }}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-exclamation-circle"></i> Special Instructions</label>
+                <textarea name="special_instructions" placeholder="Any special instructions for the caretaker...">{{ application.request.special_requirements }}</textarea>
+            </div>
+        </div>
+        
+        <!-- Section 4: Emergency Contact -->
+        <div class="form-section">
+            <h3><i class="fas fa-phone-alt"></i> Emergency Contact</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Contact Name *</label>
+                    <input type="text" name="emergency_contact" required value="{{ user.get_full_name|default:user.username }}">
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> Phone Number *</label>
+                    <input type="tel" name="emergency_phone" required value="{{ user.phone }}">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 5: Accommodation (if applicable) -->
+        <div class="form-section">
+            <h3><i class="fas fa-bed"></i> Accommodation</h3>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" name="meals_provided" id="meals_provided" {% if application.request.accommodation_provided %}checked{% endif %}>
+                <label for="meals_provided">Meals will be provided</label>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-home"></i> Accommodation Details</label>
+                <textarea name="accommodation_details" placeholder="Describe accommodation if provided...">{{ application.request.accommodation_details }}</textarea>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{% url 'shortlisted_candidates' application.request.id %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Send Offer to {{ application.caretaker.first_name|default:"Candidate" }}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

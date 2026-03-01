@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My Care Requests - CareLink</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            background: #f4f6f8;
+        }
+
+        .navbar {
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .open {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .assigned {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .closed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #1e7e34;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        <h2>My Care Requests</h2>
+        <a href="{% url 'family_dashboard' %}" style="color:white;text-decoration:none;">
+            Back to Dashboard
+        </a>
+    </div>
+
+    <div class="container">
+
+        {% for request in requests %}
+
+        <div class="card">
+
+            <h3>{{ request.patient_name }} ({{ request.patient_age }} yrs)</h3>
+
+            <p><strong>Medical Condition:</strong> {{ request.medical_condition }}</p>
+            <p><strong>Care Type:</strong> {{ request.care_type }}</p>
+            <p><strong>Start Date:</strong> {{ request.start_date }}</p>
+            <p><strong>Duration:</strong> {{ request.duration_days }} days</p>
+
+            {% if request.status == "open" %}
+            <span class="status open">Open</span>
+            {% elif request.status == "assigned" %}
+            <span class="status assigned">Assigned</span>
+            {% else %}
+            <span class="status closed">Closed</span>
+            {% endif %}
+
+            {% if request.assigned_caretaker %}
+            <p>
+                <strong>Assigned Caretaker:</strong>
+                {{ request.assigned_caretaker.username }}
+            </p>
+            {% endif %}
+
+            <br>
+
+            {% if request.status == "open" %}
+            <a href="{% url 'request_applications' request.id %}" class="btn">
+                View Applications
+            </a>
+            {% endif %}
+
+        </div>
+
+        {% empty %}
+
+        <p>You have not posted any care requests yet.</p>
+
+        {% endfor %}
+
+    </div>
+
+</body>
+
+</html>

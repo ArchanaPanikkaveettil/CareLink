@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Request Details - CareLink</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f5f1;
+            color: #2c3e50;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ========= SIDEBAR ========= */
+        .sidebar {
+            width: 280px;
+            background: #0f3460;
+            color: #e0edf5;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 32px 24px 20px;
+            border-bottom: 1px solid #1e4a7a;
+        }
+
+        .sidebar-header h2 {
+            font-weight: 600;
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+            color: white;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h2 i {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .sidebar-header .user-greeting {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e4a7a;
+            padding: 10px 14px;
+            border-radius: 40px;
+            width: fit-content;
+        }
+
+        .sidebar-header .user-greeting i {
+            font-size: 1rem;
+            color: white;
+        }
+
+        /* navigation menu */
+        .nav-menu {
+            flex: 1;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+        }
+
+        .nav-item i {
+            width: 24px;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            transition: color 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #1e4a7a;
+            color: white;
+        }
+
+        .nav-item:hover i {
+            color: white;
+        }
+
+        .nav-item.active {
+            background: #1e4a7a;
+            color: white;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item.active i {
+            color: white;
+        }
+
+        /* logout item */
+        .logout-item {
+            margin-top: 30px;
+            border-top: 1px solid #1e4a7a;
+            padding-top: 20px;
+        }
+
+        .logout-item .nav-item {
+            color: #fbc1c1;
+        }
+
+        .logout-item .nav-item i {
+            color: #f7a6a6;
+        }
+
+        .logout-item .nav-item:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .logout-item .nav-item:hover i {
+            color: white;
+        }
+
+        /* ========= MAIN CONTENT ========= */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px 40px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        /* top bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #0f3460;
+            letter-spacing: -0.3px;
+        }
+
+        .date-badge {
+            background: white;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 500;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            color: #0f3460;
+            border: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .date-badge i {
+            color: #0f3460;
+        }
+
+        /* cards */
+        .card {
+            background: white;
+            border-radius: 26px;
+            padding: 35px;
+            margin-bottom: 28px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 20px;
+        }
+
+        .patient-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .patient-title h2 {
+            margin: 0;
+            color: #0f3460;
+            font-size: 1.8rem;
+        }
+
+        .request-id {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-family: monospace;
+            background: #f1f5f9;
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+
+        .status-badge {
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-draft {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-open {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-under_review {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-interviewing {
+            background: #cffafe;
+            color: #0891b2;
+        }
+
+        .status-assigned {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-in_progress {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-completed {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .status-cancelled,
+        .status-closed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .section-title {
+            color: #0f3460;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .info-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+
+        .info-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-item .label {
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item .value {
+            color: #0f3460;
+            font-size: 1.1rem;
+        }
+
+        .info-item i {
+            color: #0f3460;
+            width: 25px;
+            margin-right: 8px;
+        }
+
+        .medical-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .medical-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .medical-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .medical-item i {
+            font-size: 1.2rem;
+            color: #0f3460;
+        }
+
+        .compensation-box {
+            background: #f8fafc;
+            border-left: 4px solid #0f3460;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .compensation-amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f3460;
+        }
+
+        .compensation-details {
+            color: #64748b;
+        }
+
+        .skills-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .skill-tag {
+            background: #e2e8f0;
+            color: #0f3460;
+            padding: 5px 15px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .location-details {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .location-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            color: #475569;
+        }
+
+        .location-row i {
+            width: 25px;
+            color: #0f3460;
+        }
+
+        .assigned-caretaker-card {
+            background: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .caretaker-avatar {
+            width: 60px;
+            height: 60px;
+            background: #0f3460;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+        }
+
+        .caretaker-info h3 {
+            margin: 0 0 5px 0;
+            color: #0f3460;
+        }
+
+        .caretaker-info p {
+            margin: 5px 0;
+            color: #475569;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            border-top: 2px solid #e2e8f0;
+            padding-top: 30px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 25px;
+            background: #0f3460;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn i {
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background: #1e4a7a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(15, 52, 96, 0.2);
+        }
+
+        .btn-edit {
+            background: #f59e0b;
+        }
+
+        .btn-edit:hover {
+            background: #d97706;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-success {
+            background: #0f3460;
+        }
+
+        .btn-success:hover {
+            background: #1e4a7a;
+        }
+
+        .btn-large {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .statistics-row {
+            display: flex;
+            gap: 30px;
+            margin: 20px 0;
+            color: #64748b;
+            flex-wrap: wrap;
+        }
+
+        .statistic {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .statistic i {
+            color: #0f3460;
+        }
+
+        .apply-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .apply-section i {
+            font-size: 3rem;
+            color: #0f3460;
+            margin-bottom: 15px;
+        }
+
+        .apply-section h3 {
+            color: #0f3460;
+            margin-bottom: 10px;
+        }
+
+        .apply-section p {
+            color: #475569;
+            margin-bottom: 20px;
+        }
+
+        .already-applied {
+            background: #fef3c7;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .already-applied i {
+            font-size: 3rem;
+            color: #f59e0b;
+            margin-bottom: 15px;
+        }
+
+        .already-applied h3 {
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+
+        .already-applied p {
+            color: #78350f;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .request-header {
+                flex-direction: column;
+                align-items: start;
+                gap: 15px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>
+                <i class="fas fa-hand-holding-heart"></i> CareLink
+            </h2>
+            <div class="user-greeting">
+                <i class="fas fa-user-circle"></i> {{ user.get_full_name|default:user.username }} ·
+                {% if user.role == 'caretaker' %}nurse{% else %}family{% endif %}
+            </div>
+        </div>
+
+        <div class="nav-menu">
+            {% if user.role == 'family' %}
+            <a href="{% url 'family_dashboard' %}" class="nav-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'post_request' %}" class="nav-item">
+                <i class="fas fa-plus-circle"></i>
+                <span>Post Care Request</span>
+            </a>
+            <a href="{% url 'my_requests' %}" class="nav-item active">
+                <i class="fas fa-clipboard-list"></i>
+                <span>My Requests</span>
+            </a>
+            <a href="{% url 'search_caretakers' %}" class="nav-item">
+                <i class="fas fa-search"></i>
+                <span>Find Caretakers</span>
+            </a>
+            <a href="{% url 'family_profile' %}" class="nav-item">
+                <i class="fas fa-id-badge"></i>
+                <span>My Profile</span>
+            </a>
+            {% else %}
+            <a href="{% url 'caretaker_dashboard' %}" class="nav-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'browse_requests' %}" class="nav-item">
+                <i class="fas fa-search"></i>
+                <span>Browse Requests</span>
+            </a>
+            <a href="{% url 'my_applications' %}" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>My Applications</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-tasks"></i>
+                <span>My Assignments</span>
+            </a>
+            <a href="{% url 'caretaker_profile' %}" class="nav-item">
+                <i class="fas fa-id-badge"></i>
+                <span>My Profile</span>
+            </a>
+            {% endif %}
+
+            <div class="logout-item">
+                <a href="{% url 'index' %}" class="nav-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="page-title">
+                <i class="fas fa-file-medical" style="margin-right: 10px;"></i>
+                Care Request Details
+            </div>
+            <div class="date-badge">
+                <i class="far fa-calendar-alt"></i>
+                {% now "l, d M Y" %}
+            </div>
+        </div>
+
+        <!-- Request Details Card -->
+        <div class="card">
+            <!-- Header with Request ID and Status -->
+            <div class="request-header">
+                <div class="patient-title">
+                    <h2>
+                        <i class="fas fa-user-circle"></i> {{ request.patient_name }}
+                        <span style="font-size: 1rem; color: #64748b; font-weight: normal;">
+                            ({{ request.patient_age }} years, {{ request.get_patient_gender_display }})
+                        </span>
+                    </h2>
+                    <span class="request-id"><i class="fas fa-hashtag"></i> {{ request.request_id }}</span>
+                </div>
+
+                <div>
+                    {% if request.status == "draft" %}
+                    <span class="status-badge status-draft"><i class="fas fa-pen"></i> Draft</span>
+                    {% elif request.status == "open" %}
+                    <span class="status-badge status-open"><i class="fas fa-lock-open"></i> Open</span>
+                    {% elif request.status == "under_review" %}
+                    <span class="status-badge status-under_review"><i class="fas fa-search"></i> Under Review</span>
+                    {% elif request.status == "interviewing" %}
+                    <span class="status-badge status-interviewing"><i class="fas fa-handshake"></i> Interviewing</span>
+                    {% elif request.status == "assigned" %}
+                    <span class="status-badge status-assigned"><i class="fas fa-check-circle"></i> Assigned</span>
+                    {% elif request.status == "in_progress" %}
+                    <span class="status-badge status-in_progress"><i class="fas fa-spinner"></i> In Progress</span>
+                    {% elif request.status == "completed" %}
+                    <span class="status-badge status-completed"><i class="fas fa-check-double"></i> Completed</span>
+                    {% elif request.status == "cancelled" %}
+                    <span class="status-badge status-cancelled"><i class="fas fa-times"></i> Cancelled</span>
+                    {% else %}
+                    <span class="status-badge status-closed"><i class="fas fa-ban"></i> Closed</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Patient Information Section -->
+            <div class="section-title">
+                <i class="fas fa-user"></i> Patient Information
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label"><i class="fas fa-calendar-alt"></i> Age</div>
+                    <div class="value">{{ request.patient_age }} years</div>
+                </div>
+                <div class="info-item">
+                    <div class="label"><i class="fas fa-venus-mars"></i> Gender</div>
+                    <div class="value">{{ request.get_patient_gender_display }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label"><i class="fas fa-heartbeat"></i> Medical Condition</div>
+                    <div class="value">{{ request.medical_condition }}</div>
+                </div>
+            </div>
+
+            <!-- Medical Details Section -->
+            <div class="section-title">
+                <i class="fas fa-notes-medical"></i> Medical Details
+            </div>
+            <div class="medical-section">
+                <div class="medical-grid">
+                    <div class="medical-item">
+                        <i class="fas fa-wheelchair"></i>
+                        <div>
+                            <strong>Mobility Status:</strong><br>
+                            {{ request.get_mobility_status_display }}
+                        </div>
+                    </div>
+                    <div class="medical-item">
+                        <i class="fas fa-brain"></i>
+                        <div>
+                            <strong>Cognitive Status:</strong><br>
+                            {{ request.get_cognitive_status_display }}
+                        </div>
+                    </div>
+                    <div class="medical-item">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>
+                            <strong>Urgency Level:</strong><br>
+                            {{ request.get_urgency_level_display }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Care Requirements Section -->
+            <div class="section-title">
+                <i class="fas fa-clipboard-list"></i> Care Requirements
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label"><i class="fas fa-clock"></i> Care Type</div>
+                    <div class="value">{{ request.get_care_type_display }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label"><i class="fas fa-calendar-alt"></i> Start Date</div>
+                    <div class="value">{{ request.start_date|date:"l, d M Y" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label"><i class="fas fa-hourglass-half"></i> Duration</div>
+                    <div class="value">{{ request.duration_days }} days</div>
+                </div>
+                <div class="info-item">
+                    <div class="label"><i class="fas fa-clock"></i> End Date</div>
+                    <div class="value">{{ request.end_date|date:"l, d M Y"|default:"Not calculated" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label"><i class="fas fa-hourglass-start"></i> Hours per Day</div>
+                    <div class="value">{{ request.hours_per_day|default:"Not specified" }} hours</div>
+                </div>
+                <div class="info-item">
+                    <div class="label"><i class="fas fa-calendar-week"></i> Days per Week</div>
+                    <div class="value">{{ request.days_per_week }} days</div>
+                </div>
+            </div>
+
+            <!-- Shift Timing -->
+            <div class="info-item" style="margin-bottom: 20px;">
+                <div class="label"><i class="fas fa-clock"></i> Shift Timing</div>
+                <div class="value">{{ request.shift_timing|default:"Not specified" }}</div>
+            </div>
+
+            <!-- Required Skills -->
+            <div class="info-item">
+                <div class="label"><i class="fas fa-tools"></i> Required Skills</div>
+                <div class="skills-tags">
+                    {% for skill in request.required_skills.split %}
+                    {% if skill|length > 0 %}
+                    <span class="skill-tag">{{ skill|cut:"," }}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if request.preferred_qualifications %}
+            <div class="info-item" style="margin-top: 15px;">
+                <div class="label"><i class="fas fa-graduation-cap"></i> Preferred Qualifications</div>
+                <div class="value">{{ request.preferred_qualifications }}</div>
+            </div>
+            {% endif %}
+
+            <!-- Compensation Section -->
+            <div class="section-title">
+                <i class="fas fa-rupee-sign"></i> Compensation Details
+            </div>
+            <div class="compensation-box">
+                <div>
+                    <span class="compensation-amount">₹{{ request.salary_offered }}</span>
+                    <span class="compensation-details">/{{ request.get_payment_frequency_display }}</span>
+                    {% if request.negotiable %}
+                    <span style="margin-left: 15px; color: #0f3460;"><i class="fas fa-handshake"></i> Negotiable</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Preferences Section -->
+            <div class="section-title">
+                <i class="fas fa-user-tie"></i> Caretaker Preferences
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="label"><i class="fas fa-venus-mars"></i> Gender Preference</div>
+                    <div class="value">{{ request.get_gender_preference_display }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label"><i class="fas fa-language"></i> Language Preference</div>
+                    <div class="value">{{ request.language_preference|default:"Not specified" }}</div>
+                </div>
+                {% if request.age_preference_min or request.age_preference_max %}
+                <div class="info-item">
+                    <div class="label"><i class="fas fa-calendar"></i> Age Preference</div>
+                    <div class="value">{{ request.age_preference_min|default:"18" }} - {{
+                        request.age_preference_max|default:"100" }} years</div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Location Details -->
+            <div class="section-title">
+                <i class="fas fa-map-marker-alt"></i> Location Details
+            </div>
+            <div class="location-details">
+                <div class="location-row">
+                    <i class="fas fa-home"></i>
+                    <span>{{ request.address }}</span>
+                </div>
+                <div class="location-row">
+                    <i class="fas fa-city"></i>
+                    <span>{{ request.city }}, {{ request.state }} - {{ request.pincode }}</span>
+                </div>
+                {% if request.landmark %}
+                <div class="location-row">
+                    <i class="fas fa-landmark"></i>
+                    <span>Landmark: {{ request.landmark }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Special Requirements -->
+            {% if request.special_requirements %}
+            <div class="section-title">
+                <i class="fas fa-exclamation-circle"></i> Special Requirements
+            </div>
+            <div class="info-item" style="background: #fef3c7; padding: 15px; border-radius: 8px;">
+                <div class="value">{{ request.special_requirements }}</div>
+            </div>
+            {% endif %}
+
+            <!-- Equipment Provided -->
+            {% if request.equipment_provided %}
+            <div class="section-title">
+                <i class="fas fa-tools"></i> Equipment Provided
+            </div>
+            <div class="info-item">
+                <div class="value">{{ request.equipment_provided }}</div>
+            </div>
+            {% endif %}
+
+            <!-- Accommodation -->
+            {% if request.accommodation_provided %}
+            <div class="section-title">
+                <i class="fas fa-bed"></i> Accommodation
+            </div>
+            <div class="info-item">
+                <div class="value">{{ request.accommodation_details|default:"Accommodation provided" }}</div>
+            </div>
+            {% endif %}
+
+            <!-- Interview Process -->
+            <div class="section-title">
+                <i class="fas fa-handshake"></i> Interview Process
+            </div>
+            <div class="info-item">
+                <div class="value">
+                    {% if request.interview_required %}
+                    <i class="fas fa-check-circle" style="color: #0f3460;"></i> Interview Required
+                    ({{ request.get_interview_type_display }})
+                    {% else %}
+                    <i class="fas fa-times-circle" style="color: #dc3545;"></i> No Interview Required
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Assigned Caretaker Section -->
+            {% if request.assigned_caretaker %}
+            <div class="section-title">
+                <i class="fas fa-user-md"></i> Assigned Caretaker
+            </div>
+            <div class="assigned-caretaker-card">
+                <div class="caretaker-avatar">
+                    <i class="fas fa-user-nurse"></i>
+                </div>
+                <div class="caretaker-info">
+                    <h3>{{ request.assigned_caretaker.get_full_name|default:request.assigned_caretaker.username }}</h3>
+                    <p><i class="fas fa-envelope"></i> {{ request.assigned_caretaker.email }}</p>
+                    <p><i class="fas fa-phone"></i> {{ request.assigned_caretaker.phone|default:"Phone not available" }}
+                    </p>
+                    {% if request.assigned_date %}
+                    <p><i class="fas fa-calendar-check"></i> Assigned on: {{ request.assigned_date|date:"d M Y, h:i A"
+                        }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Conditional Section: Statistics for Family, Apply Button for Caretakers -->
+            {% if user.role == 'family' %}
+            <!-- Statistics Section (Only for Family) -->
+            <div class="section-title">
+                <i class="fas fa-chart-bar"></i> Statistics
+            </div>
+            <div class="statistics-row">
+                <div class="statistic">
+                    <i class="fas fa-eye"></i> {{ request.views_count }} Views
+                </div>
+                <div class="statistic">
+                    <i class="fas fa-users"></i> {{ request.applications_count }} Applications
+                </div>
+                <div class="statistic">
+                    <i class="fas fa-clock"></i> Posted {{ request.created_at|timesince }} ago
+                </div>
+                {% if request.published_at %}
+                <div class="statistic">
+                    <i class="fas fa-globe"></i> Published {{ request.published_at|timesince }} ago
+                </div>
+                {% endif %}
+            </div>
+            {% elif user.role == 'caretaker' %}
+           
+           
+            <!-- Apply Section (Only for Caretakers) -->
+
+            {% if request.status != 'open' %}
+            <!-- Request is not open -->
+            <div class="already-applied">
+                <i class="fas fa-ban"></i>
+                <h3>Request Closed</h3>
+                <p>This care request is no longer accepting applications.</p>
+                <a href="{% url 'browse_requests' %}" class="btn btn-secondary">
+                    <i class="fas fa-search"></i> Browse Other Requests
+                </a>
+            </div>
+
+            {% elif has_applied %}
+            <!-- Already applied -->
+            <div class="already-applied">
+                <i class="fas fa-check-circle"></i>
+                <h3>Already Applied</h3>
+                <p>You have already submitted an application for this care request.</p>
+                <a href="{% url 'my_applications' %}" class="btn btn-success">
+                    <i class="fas fa-eye"></i> View My Applications
+                </a>
+            </div>
+            
+            {% else %}
+            <!-- Can apply -->
+            <div class="apply-section">
+                <i class="fas fa-hand-holding-heart"></i>
+                <h3>Interested in this position?</h3>
+                <p>Submit your application to let the family know you're interested in providing care.</p>
+                
+           
+                <a href="{% url 'apply_for_request' request.id %}" class="btn btn-success btn-large">
+                    <i class="fas fa-paper-plane"></i> Apply Now
+                </a>
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <!-- Action Buttons (Only for Family who owns the request) -->
+            {% if request.family == user %}
+            <div class="action-buttons">
+                <a href="{% url 'my_requests' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+
+                {% if request.status == "open" %}
+                <a href="{% url 'request_applications' request.id %}" class="btn">
+                    <i class="fas fa-users"></i> View Applications ({{ request.applications_count }})
+                </a>
+                {% endif %}
+
+                {% if request.status == "draft" %}
+                <a href="{% url 'publish_request' request.id %}" class="btn btn-success">
+                    <i class="fas fa-paper-plane"></i> Publish Request
+                </a>
+                {% endif %}
+
+                {% if request.status == "open" or request.status == "draft" %}
+                <a href="{% url 'edit_request' request.id %}" class="btn btn-edit">
+                    <i class="fas fa-edit"></i> Edit Request
+                </a>
+                {% endif %}
+
+                {% if request.status == "open" %}
+                <a href="{% url 'close_request' request.id %}" class="btn btn-warning"
+                    onclick="return confirm('Are you sure you want to close this request? It will no longer be visible to caretakers.')">
+                    <i class="fas fa-ban"></i> Close Request
+                </a>
+                {% endif %}
+
+                {% if request.status == "draft" or request.status == "open" %}
+                <a href="{% url 'delete_request' request.id %}" class="btn btn-danger"
+                    onclick="return confirm('Are you sure you want to delete this request? This action cannot be undone.')">
+                    <i class="fas fa-trash"></i> Delete Request
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>

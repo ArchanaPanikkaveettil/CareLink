@@ -1,0 +1,251 @@
+{% extends 'users/nurse_base.html' %}
+
+{% block title %}All Notifications - CareLink{% endblock %}
+
+{% block page_title %}All Notifications{% endblock %}
+
+{% block content %}
+<style>
+    .notifications-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .notifications-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .notifications-header h2 {
+        color: #0a2a38;
+        font-size: 1.8rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .notifications-header h2 i {
+        color: #0a2a38;
+    }
+
+    .btn-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: transparent;
+        border: 1.5px solid #0a2a38;
+        border-radius: 8px;
+        color: #0a2a38;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-outline:hover {
+        background: #0a2a38;
+        color: white;
+    }
+
+    .notifications-list {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .notification-item {
+        padding: 20px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        transition: background 0.2s;
+    }
+
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+
+    .notification-item:hover {
+        background: #f8fafc;
+    }
+
+    .notification-item.unread {
+        background: #f0f9ff;
+        border-left: 4px solid #0a2a38;
+    }
+
+    .notification-icon {
+        width: 45px;
+        height: 45px;
+        background: #e2e8f0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0a2a38;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .notification-content {
+        flex: 1;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+
+    .notification-message {
+        color: #475569;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+
+    .notification-time {
+        color: #64748b;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .notification-time i {
+        font-size: 0.7rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: #0a2a38;
+        margin-bottom: 10px;
+        font-size: 1.5rem;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        margin-bottom: 20px;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .pagination .btn {
+        padding: 8px 15px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        color: #0a2a38;
+        text-decoration: none;
+    }
+
+    .pagination .btn.active {
+        background: #0a2a38;
+        color: white;
+        border-color: #0a2a38;
+    }
+
+    .pagination .btn:hover {
+        background: #f1f5f9;
+    }
+
+    @media (max-width: 768px) {
+        .notification-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .notifications-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .btn-outline {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="notifications-container">
+    <div class="notifications-header">
+        <h2><i class="fas fa-bell"></i> All Notifications</h2>
+        <a href="{% url 'mark_all_notifications_read' %}" class="btn-outline">
+            <i class="fas fa-check-double"></i> Mark all as read
+        </a>
+    </div>
+
+    <div class="notifications-list">
+        {% for notification in notifications %}
+        <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+            <div class="notification-icon">
+                <i class="fas fa-{{ notification.icon }}"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">{{ notification.title }}</div>
+                <div class="notification-message">{{ notification.message }}</div>
+                <div class="notification-time">
+                    <i class="far fa-clock"></i> {{ notification.created_at|timesince }} ago
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="fas fa-bell-slash"></i>
+            <h3>No Notifications</h3>
+            <p>You don't have any notifications yet. When you receive notifications, they will appear here.</p>
+            <a href="{% if request.user.role == 'caretaker' %}{% url 'caretaker_dashboard' %}{% else %}{% url 'family_dashboard' %}{% endif %}" class="btn-outline">
+                <i class="fas fa-home"></i> Go to Dashboard
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if notifications.has_other_pages %}
+    <div class="pagination">
+        {% if notifications.has_previous %}
+        <a href="?page={{ notifications.previous_page_number }}" class="btn">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        {% endif %}
+
+        {% for i in notifications.paginator.page_range %}
+        {% if notifications.number == i %}
+        <span class="btn active">{{ i }}</span>
+        {% else %}
+        <a href="?page={{ i }}" class="btn">{{ i }}</a>
+        {% endif %}
+        {% endfor %}
+
+        {% if notifications.has_next %}
+        <a href="?page={{ notifications.next_page_number }}" class="btn">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

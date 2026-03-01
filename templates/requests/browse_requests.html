@@ -1,0 +1,691 @@
+{% extends 'users/nurse_base.html' %}
+
+{% block title %}Browse Care Requests - CareLink{% endblock %}
+
+{% block page_title %}<i class="fas fa-search" style="color: #4bc3a3; margin-right: 10px;"></i>Browse Care Requests{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        border: 1px solid #e9ecef;
+    }
+
+    .filter-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        color: #495057;
+    }
+
+    .filter-header i {
+        color: #4bc3a3;
+        font-size: 1.4rem;
+    }
+
+    .filter-header h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #0a2a38;
+    }
+
+    .search-box {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .search-box input {
+        flex: 1;
+        padding: 14px 18px;
+        border: 2px solid #e1e5e9;
+        border-radius: 50px;
+        font-size: 15px;
+        transition: all 0.3s;
+    }
+
+    .search-box input:focus {
+        border-color: #4bc3a3;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(75, 195, 163, 0.1);
+    }
+
+    .search-box button {
+        padding: 0 30px;
+        background: linear-gradient(135deg, #0a2a38, #0e3a4a);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .search-box button:hover {
+        background: #1f5e75;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(10, 42, 56, 0.3);
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .filter-select {
+        padding: 12px 20px;
+        border: 2px solid #e1e5e9;
+        border-radius: 40px;
+        font-size: 14px;
+        background: white;
+        cursor: pointer;
+        min-width: 160px;
+        flex: 1;
+        color: #0a2a38;
+    }
+
+    .filter-select:focus {
+        border-color: #4bc3a3;
+        outline: none;
+    }
+
+    .clear-filter {
+        padding: 12px 25px;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 40px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .clear-filter:hover {
+        background: #5a6268;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .result-count {
+        background: white;
+        padding: 10px 20px;
+        border-radius: 40px;
+        font-weight: 500;
+        color: #0a2a38;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .result-count i {
+        color: #4bc3a3;
+        margin-right: 8px;
+    }
+
+    .sort-options {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .sort-options label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .sort-select {
+        padding: 8px 15px;
+        border: 2px solid #e1e5e9;
+        border-radius: 30px;
+        background: white;
+        color: #0a2a38;
+    }
+
+    /* Requests Grid */
+    .requests-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 25px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(10, 42, 56, 0.15);
+        border-color: #4bc3a3;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        padding: 20px;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .patient-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .patient-avatar {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #0a2a38, #0e3a4a);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .patient-name h3 {
+        margin: 0;
+        color: #0a2a38;
+        font-size: 1.2rem;
+    }
+
+    .patient-name span {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    .urgency-badge {
+        padding: 6px 12px;
+        border-radius: 30px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .urgency-high {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .urgency-medium {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .urgency-low {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .card-body {
+        padding: 20px;
+        flex: 1;
+    }
+
+    .detail-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        color: #495057;
+        font-size: 0.95rem;
+    }
+
+    .detail-row i {
+        width: 20px;
+        color: #4bc3a3;
+        font-size: 1rem;
+    }
+
+    .detail-row .label {
+        font-weight: 600;
+        min-width: 80px;
+        color: #0a2a38;
+    }
+
+    .medical-condition {
+        background: #e3f2fd;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin: 15px 0;
+        font-size: 0.9rem;
+        border-left: 4px solid #4bc3a3;
+    }
+
+    .medical-condition i {
+        color: #0e3a4a;
+        margin-right: 8px;
+    }
+
+    .skills-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .skill-tag {
+        background: #e8f5e9;
+        color: #0e3a4a;
+        padding: 4px 12px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .salary-info {
+        background: #f1f8e9;
+        padding: 12px;
+        border-radius: 12px;
+        margin: 15px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .salary-amount {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #0a2a38;
+    }
+
+    .salary-period {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    .negotiable-badge {
+        background: #ffc107;
+        color: #212529;
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .card-footer {
+        padding: 20px;
+        border-top: 1px solid #e9ecef;
+        background: #f8f9fa;
+    }
+
+    .actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #0a2a38, #0e3a4a);
+        color: white;
+        box-shadow: 0 4px 12px rgba(10, 42, 56, 0.2);
+    }
+
+    .btn-primary:hover {
+        background: #1f5e75;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(10, 42, 56, 0.3);
+    }
+
+    .btn-outline {
+        background: white;
+        border: 2px solid #0a2a38;
+        color: #0a2a38;
+    }
+
+    .btn-outline:hover {
+        background: #0a2a38;
+        color: white;
+    }
+
+    .applied-badge {
+        flex: 1;
+        padding: 12px;
+        background: linear-gradient(135deg, #4bc3a3, #28a745);
+        color: white;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(75, 195, 163, 0.3);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 4px 12px rgba(75, 195, 163, 0.3); }
+        50% { box-shadow: 0 4px 20px rgba(75, 195, 163, 0.6); }
+        100% { box-shadow: 0 4px 12px rgba(75, 195, 163, 0.3); }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        grid-column: 1 / -1;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: #0a2a38;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        margin-bottom: 25px;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+        display: none;
+    }
+
+    .loading i {
+        font-size: 2rem;
+        color: #4bc3a3;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+        .search-box {
+            flex-direction: column;
+        }
+
+        .filter-row {
+            flex-direction: column;
+        }
+
+        .stats-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .requests-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Filter Section -->
+<div class="filter-section">
+    <div class="filter-header">
+        <i class="fas fa-sliders-h"></i>
+        <h3>Filter Requests</h3>
+    </div>
+
+    <form method="GET" action="{% url 'browse_requests' %}" id="filterForm">
+        <div class="search-box">
+            <input type="text" name="q" placeholder="Search by patient name, condition, or location..." 
+                   value="{{ request.GET.q }}">
+            <button type="submit">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+
+        <div class="filter-row">
+            <select name="care_type" class="filter-select" onchange="this.form.submit()">
+                <option value="">All Care Types</option>
+                <option value="full_time" {% if request.GET.care_type == 'full_time' %}selected{% endif %}>Full Time</option>
+                <option value="part_time" {% if request.GET.care_type == 'part_time' %}selected{% endif %}>Part Time</option>
+                <option value="night_care" {% if request.GET.care_type == 'night_care' %}selected{% endif %}>Night Care</option>
+                <option value="post_surgery" {% if request.GET.care_type == 'post_surgery' %}selected{% endif %}>Post-Surgery</option>
+                <option value="emergency" {% if request.GET.care_type == 'emergency' %}selected{% endif %}>Emergency</option>
+            </select>
+
+            <select name="urgency" class="filter-select" onchange="this.form.submit()">
+                <option value="">Any Urgency</option>
+                <option value="low" {% if request.GET.urgency == 'low' %}selected{% endif %}>Low</option>
+                <option value="medium" {% if request.GET.urgency == 'medium' %}selected{% endif %}>Medium</option>
+                <option value="high" {% if request.GET.urgency == 'high' %}selected{% endif %}>High</option>
+                <option value="urgent" {% if request.GET.urgency == 'urgent' %}selected{% endif %}>Urgent</option>
+            </select>
+
+            <select name="gender_pref" class="filter-select" onchange="this.form.submit()">
+                <option value="">Any Gender Preference</option>
+                <option value="any" {% if request.GET.gender_pref == 'any' %}selected{% endif %}>Any</option>
+                <option value="male" {% if request.GET.gender_pref == 'male' %}selected{% endif %}>Male</option>
+                <option value="female" {% if request.GET.gender_pref == 'female' %}selected{% endif %}>Female</option>
+            </select>
+
+            <select name="salary_range" class="filter-select" onchange="this.form.submit()">
+                <option value="">Any Salary</option>
+                <option value="0-10000" {% if request.GET.salary_range == '0-10000' %}selected{% endif %}>Up to ₹10,000</option>
+                <option value="10000-20000" {% if request.GET.salary_range == '10000-20000' %}selected{% endif %}>₹10,000 - ₹20,000</option>
+                <option value="20000-30000" {% if request.GET.salary_range == '20000-30000' %}selected{% endif %}>₹20,000 - ₹30,000</option>
+                <option value="30000+" {% if request.GET.salary_range == '30000+' %}selected{% endif %}>Above ₹30,000</option>
+            </select>
+
+            {% if request.GET.q or request.GET.care_type or request.GET.urgency or request.GET.gender_pref or request.GET.salary_range %}
+            <a href="{% url 'browse_requests' %}" class="clear-filter">
+                <i class="fas fa-times"></i> Clear Filters
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Stats Bar -->
+<div class="stats-bar">
+    <div class="result-count">
+        <i class="fas fa-clipboard-list"></i> {{ requests|length }} request{% if requests|length != 1 %}s{% endif %} available
+    </div>
+    
+    <div class="sort-options">
+        <label><i class="fas fa-sort"></i> Sort by:</label>
+        <select class="sort-select" onchange="window.location.href=this.value">
+            <option value="?sort=newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>Newest First</option>
+            <option value="?sort=oldest" {% if request.GET.sort == 'oldest' %}selected{% endif %}>Oldest First</option>
+            <option value="?sort=salary_high" {% if request.GET.sort == 'salary_high' %}selected{% endif %}>Salary: High to Low</option>
+            <option value="?sort=salary_low" {% if request.GET.sort == 'salary_low' %}selected{% endif %}>Salary: Low to High</option>
+        </select>
+    </div>
+</div>
+
+<!-- Loading Indicator -->
+<div class="loading" id="loading">
+    <i class="fas fa-spinner"></i> Loading...
+</div>
+
+<!-- Requests Grid -->
+<div class="requests-grid">
+    {% for request in requests %}
+    <div class="card">
+        <div class="card-header">
+            <div class="patient-info">
+                <div class="patient-avatar">
+                    {{ request.patient_name|slice:":1" }}
+                </div>
+                <div class="patient-name">
+                    <h3>{{ request.patient_name }}</h3>
+                    <span><i class="fas fa-calendar-alt"></i> Age: {{ request.patient_age }} yrs</span>
+                </div>
+            </div>
+            {% if request.urgency_level %}
+            <span class="urgency-badge urgency-{{ request.urgency_level }}">
+                {% if request.urgency_level == 'high' %}🚨{% endif %}
+                {{ request.get_urgency_level_display }}
+            </span>
+            {% endif %}
+        </div>
+
+        <div class="card-body">
+            <div class="detail-row">
+                <i class="fas fa-notes-medical"></i>
+                <span class="label">Condition:</span>
+                <span>{{ request.medical_condition|truncatechars:30 }}</span>
+            </div>
+
+            <div class="detail-row">
+                <i class="fas fa-clock"></i>
+                <span class="label">Care Type:</span>
+                <span>{{ request.get_care_type_display }}</span>
+            </div>
+
+            <div class="detail-row">
+                <i class="fas fa-map-marker-alt"></i>
+                <span class="label">Location:</span>
+                <span>{{ request.city }}{% if request.city and request.state %}, {% endif %}{{ request.state }}</span>
+            </div>
+
+            <div class="detail-row">
+                <i class="fas fa-calendar"></i>
+                <span class="label">Start Date:</span>
+                <span>{{ request.start_date|date:"M d, Y" }}</span>
+            </div>
+
+            <div class="detail-row">
+                <i class="fas fa-hourglass-half"></i>
+                <span class="label">Duration:</span>
+                <span>{{ request.duration_days }} days</span>
+            </div>
+
+            {% if request.required_skills %}
+            <div class="medical-condition">
+                <i class="fas fa-tools"></i> <strong>Required Skills:</strong>
+            </div>
+            <div class="skills-tags">
+                {% for skill in request.required_skills.split|slice:":3" %}
+                    {% if skill|length > 0 %}
+                        <span class="skill-tag">{{ skill|cut:"," }}</span>
+                    {% endif %}
+                {% endfor %}
+                {% if request.required_skills.split|length > 3 %}
+                    <span class="skill-tag">+{{ request.required_skills.split|length|add:"-3" }} more</span>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="salary-info">
+                <div>
+                    <span class="salary-amount">₹{{ request.salary_offered }}</span>
+                    <span class="salary-period">/{{ request.get_payment_frequency_display }}</span>
+                </div>
+                {% if request.negotiable %}
+                <span class="negotiable-badge"><i class="fas fa-handshake"></i> Negotiable</span>
+                {% endif %}
+            </div>
+
+            {% if request.special_requirements %}
+            <div class="detail-row">
+                <i class="fas fa-exclamation-circle" style="color: #ffc107;"></i>
+                <span class="label">Special:</span>
+                <span>{{ request.special_requirements|truncatechars:25 }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card-footer">
+            <div class="actions">
+                {% if request.id in applied_request_ids %}
+                <span class="applied-badge">
+                    <i class="fas fa-check-circle"></i> Already Applied
+                </span>
+                {% else %}
+                <a href="{% url 'request_detail' request.id %}" class="btn btn-outline">
+                    <i class="fas fa-info-circle"></i> Details
+                </a>
+                <a href="{% url 'apply_request' request.id %}" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Apply Now
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <h3>No Care Requests Available</h3>
+        <p>There are currently no open care requests matching your criteria.</p>
+        <a href="{% url 'browse_requests' %}" class="btn btn-primary">
+            <i class="fas fa-redo-alt"></i> Clear Filters
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show loading indicator on form submit
+    document.getElementById('filterForm')?.addEventListener('submit', function() {
+        document.getElementById('loading').style.display = 'block';
+    });
+
+    // Auto-hide loading after page load
+    window.addEventListener('load', function() {
+        document.getElementById('loading').style.display = 'none';
+    });
+
+    // Handle sort change
+    document.querySelector('.sort-select')?.addEventListener('change', function(e) {
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('sort', e.target.value);
+        window.location.href = currentUrl.toString();
+    });
+</script>
+{% endblock %}

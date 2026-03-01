@@ -1,0 +1,221 @@
+{% extends request.user.role|add:'_base.html' %}
+
+{% block title %}Application Details - CareLink{% endblock %}
+
+{% block content %}
+<style>
+    .detail-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .status-bar {
+        background: white;
+        border-radius: 20px;
+        padding: 20px 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .status-badge {
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-shortlisted {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .status-offer_sent {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-accepted {
+        background: #dcfce7;
+        color: #166534;
+    }
+    
+    .status-rejected {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .status-withdrawn {
+        background: #e2e8f0;
+        color: #475569;
+    }
+    
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+    }
+    
+    .detail-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .detail-card.full-width {
+        grid-column: span 2;
+    }
+    
+    .card-title {
+        color: #0f3460;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .info-row {
+        display: flex;
+        margin-bottom: 15px;
+        border-bottom: 1px dashed #e2e8f0;
+        padding-bottom: 10px;
+    }
+    
+    .info-label {
+        width: 40%;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .info-value {
+        width: 60%;
+        color: #0f3460;
+        font-weight: 500;
+    }
+    
+    .message-box {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 15px;
+        white-space: pre-line;
+        line-height: 1.6;
+    }
+    
+    .offer-section {
+        background: #f0f9ff;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        border-left: 4px solid #0f3460;
+    }
+    
+    .countdown {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #0f3460;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 25px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+    }
+    
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+    }
+    
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #059669;
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+    
+    .btn-warning {
+        background: #f59e0b;
+        color: white;
+    }
+    
+    .btn-warning:hover {
+        background: #d97706;
+    }
+    
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #475569;
+    }
+    
+    @media (max-width: 768px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .detail-card.full-width {
+            grid-column: span 1;
+        }
+    }
+</style>
+
+<div class="detail-container">
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div>
+            <h1 style="color: #0f3460;">Application Details</h1>
+            <p style="color: #64748b;">ID: #{{ application.id }}</p>
+        </div

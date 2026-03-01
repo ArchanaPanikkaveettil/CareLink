@@ -1,0 +1,348 @@
+{% extends 'users/nurse_base.html' %}
+
+{% block title %}Nurse Dashboard · CareLink{% endblock %}
+
+{% block page_title %}<i class="fas fa-chart-line" style="color: #4bc3a3; margin-right: 10px;"></i>Nurse Dashboard{% endblock %}
+
+{% block sidebar_links %}
+<!-- Override sidebar links to mark Dashboard as active -->
+<a href="{% url 'caretaker_dashboard' %}" class="nav-item active">
+    <i class="fas fa-chart-pie"></i>
+    <span>Dashboard</span>
+</a>
+
+<a href="{% url 'browse_requests' %}" class="nav-item">
+    <i class="fas fa-search"></i>
+    <span>Browse care requests</span>
+</a>
+
+<a href="{% url 'my_applications' %}" class="nav-item">
+    <i class="fas fa-file-lines"></i>
+    <span>My applications</span>
+</a>
+
+<a href="#" class="nav-item">
+    <i class="fas fa-briefcase"></i>
+    <span>My assignments</span>
+</a>
+
+<a href="#" class="nav-item">
+    <i class="fas fa-calendar-check"></i>
+    <span>Update availability</span>
+</a>
+
+<a href="{% url 'caretaker_profile' %}" class="nav-item">
+    <i class="fas fa-id-badge"></i>
+    <span>My Profile</span>
+</a>
+
+<div class="logout-item">
+    <a href="{% url 'logout' %}" class="nav-item">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* cards */
+    .card {
+        background: white;
+        border-radius: 26px;
+        padding: 26px 28px;
+        margin-bottom: 28px;
+        box-shadow: 0 12px 28px rgba(0, 30, 40, 0.06);
+        border: 1px solid #eaf0f6;
+        transition: transform 0.1s ease;
+    }
+
+    .card h3 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #153e4d;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .card h3 i {
+        color: #4bc3a3;
+        font-size: 1.6rem;
+    }
+
+    /* stat grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+
+    .stat-item {
+        background: #f2f9ff;
+        border-radius: 22px;
+        padding: 22px 18px;
+        border: 1px solid #dbeef9;
+        transition: all 0.2s;
+    }
+
+    .stat-item:hover {
+        background: #e5f2fb;
+        border-color: #9fcdff;
+    }
+
+    .stat-number {
+        font-size: 2.6rem;
+        font-weight: 700;
+        color: #0e4b62;
+        line-height: 1.2;
+        margin-bottom: 6px;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        color: #3d687b;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .stat-label i {
+        color: #4bc3a3;
+        font-size: 1.1rem;
+    }
+
+    /* info pills */
+    .info-row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .pill-info {
+        background: #e3f0f7;
+        padding: 8px 20px;
+        border-radius: 40px;
+        color: #1d627c;
+        font-weight: 500;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .pill-info i {
+        color: #4bc3a3;
+    }
+
+    .pill-info.success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .pill-info.success i {
+        color: #28a745;
+    }
+
+    /* assignment preview */
+    .assignment-preview {
+        background: #f9fdff;
+        border-radius: 22px;
+        padding: 16px 22px;
+        border: 1px solid #d4e8f2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .badge {
+        background: #0e3a4a;
+        color: white;
+        border-radius: 30px;
+        padding: 6px 15px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .badge i {
+        color: #4bc3a3;
+    }
+
+    /* muted text */
+    .muted {
+        color: #597f90;
+        font-size: 0.9rem;
+    }
+
+    hr {
+        border: none;
+        border-top: 2px solid #e5eef4;
+        margin: 18px 0;
+    }
+
+    /* profile section */
+    .profile-display {
+        display: flex;
+        gap: 30px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .profile-avatar {
+        background: #d1e7f5;
+        width: 60px;
+        height: 60px;
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0e3a4a;
+        font-size: 2rem;
+    }
+
+    .profile-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .profile-name {
+        font-weight: 600;
+        font-size: 1.2rem;
+        color: #0a2a38;
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .assignment-preview {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- OVERVIEW CARD -->
+<div class="card">
+    <h3>
+        <i class="fas fa-activity"></i> Overview
+    </h3>
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-number">{{ total_applications|default:"14" }}</div>
+            <div class="stat-label"><i class="fas fa-paper-plane"></i> Applications sent</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">{{ assigned_jobs|default:"3" }}</div>
+            <div class="stat-label"><i class="fas fa-user-check"></i> Active assignments</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">{{ pending_applications|default:"5" }}</div>
+            <div class="stat-label"><i class="fas fa-clock"></i> Pending applications</div>
+        </div>
+    </div>
+
+    <!-- subtle extra info -->
+    <div style="margin-top: 22px;">
+        <span class="pill-info"><i class="fas fa-bell"></i> 2 new care requests near you</span>
+        <span class="pill-info" style="margin-left: 12px;"><i class="fas fa-star"></i> 98% profile strength</span>
+    </div>
+</div>
+
+<!-- JOB & WORK MANAGEMENT SECTION -->
+<div class="card">
+    <h3>
+        <i class="fas fa-briefcase-clock"></i> Job & work
+    </h3>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- assignment preview -->
+        <div class="assignment-preview">
+            <div>
+                <span style="font-weight: 600; font-size: 1.1rem; color: #0a2a38;">Today's assignment</span>
+                <div style="display: flex; gap: 15px; margin-top: 8px; color: #2c6d88; flex-wrap: wrap;">
+                    <span><i class="far fa-clock"></i> 09:30 – 12:30</span>
+                    <span><i class="fas fa-location-dot"></i> 4 km · Maple Ave</span>
+                </div>
+            </div>
+            <span class="badge"><i class="fas fa-sun"></i> morning shift</span>
+        </div>
+
+        <div class="info-row">
+            <span class="pill-info"><i class="fas fa-hourglass-half"></i> next pending: interview</span>
+            <span class="pill-info success"><i class="fas fa-check-circle"></i> available today</span>
+        </div>
+
+        <!-- quick actions info -->
+        <hr>
+        <div class="muted" style="display: flex; gap: 24px; flex-wrap: wrap;">
+            <span><i class="fas fa-circle-check" style="color: #4bc3a3;"></i> Use sidebar to browse requests</span>
+            <span><i class="fas fa-bell" style="color: #4bc3a3;"></i> Quick actions in left menu</span>
+        </div>
+    </div>
+</div>
+
+<!-- ACCOUNT / PROFILE CARD -->
+<div class="card">
+    <h3>
+        <i class="fas fa-user-md"></i> Account & profile
+    </h3>
+    <div class="profile-display">
+        <div class="profile-info">
+            <div class="profile-avatar">
+                <i class="fas fa-user-nurse"></i>
+            </div>
+            <div>
+                <div class="profile-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+                <div class="muted"><i class="fas fa-envelope"></i> {{ request.user.email|default:"nurse@carelink.com" }} · <i class="fas fa-check-circle" style="color: #28a745;"></i> verified</div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span class="pill-info"><i class="fas fa-shield"></i> credentials updated</span>
+            <span class="pill-info"><i class="fas fa-phone"></i> contact</span>
+        </div>
+    </div>
+    <hr>
+    <div style="display: flex; justify-content: flex-end;">
+        <a href="{% url 'caretaker_profile' %}" class="muted" style="text-decoration: none; display: flex; align-items: center; gap: 5px;">
+            <i class="fas fa-arrow-right" style="color: #4bc3a3;"></i> profile & settings
+        </a>
+    </div>
+</div>
+
+<!-- footer note -->
+<div style="text-align: right; margin-top: 10px; color: #a6bfcc; font-size: 0.85rem;">
+    <i class="fas fa-circle" style="color: #4bc3a3; font-size: 0.5rem;"></i> CareLink v2 · nurse workflow
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update any stat numbers that might be using default values
+    document.addEventListener('DOMContentLoaded', function() {
+        // This ensures that if Django variables are empty, we still show numbers
+        const statNumbers = document.querySelectorAll('.stat-number');
+        statNumbers.forEach(el => {
+            if (el.innerText.trim() === '' || el.innerText.includes('{{')) {
+                // This is just a fallback for static viewing
+                if (el.closest('.stat-item')?.innerText.includes('Applications')) el.innerText = '14';
+                else if (el.closest('.stat-item')?.innerText.includes('Active')) el.innerText = '3';
+                else if (el.closest('.stat-item')?.innerText.includes('Pending')) el.innerText = '5';
+            }
+        });
+    });
+</script>
+{% endblock %}

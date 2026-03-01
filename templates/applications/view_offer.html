@@ -1,0 +1,349 @@
+{% extends 'users/nurse_base.html' %}
+
+{% block title %}Offer Details - CareLink{% endblock %}
+
+{% block page_title %}Offer Letter{% endblock %}
+
+{% block content %}
+<style>
+    .offer-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .offer-header {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .offer-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: linear-gradient(90deg, #0a2a38, #4bc3a3);
+    }
+    
+    .offer-badge {
+        background: #4bc3a3;
+        color: white;
+        padding: 5px 20px;
+        border-radius: 30px;
+        display: inline-block;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+    
+    .offer-title {
+        font-size: 2rem;
+        color: #0a2a38;
+        margin-bottom: 10px;
+    }
+    
+    .offer-meta {
+        color: #64748b;
+        margin-bottom: 20px;
+    }
+    
+    .family-info {
+        background: #f8fafc;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .family-avatar {
+        width: 60px;
+        height: 60px;
+        background: #0a2a38;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.8rem;
+    }
+    
+    .family-details h3 {
+        color: #0a2a38;
+        margin-bottom: 5px;
+    }
+    
+    .family-details p {
+        color: #64748b;
+    }
+    
+    .offer-section {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .section-title {
+        color: #0a2a38;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .offer-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .offer-item {
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 10px;
+    }
+    
+    .offer-item.full-width {
+        grid-column: span 2;
+    }
+    
+    .offer-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+    
+    .offer-value {
+        font-weight: 600;
+        color: #0a2a38;
+        font-size: 1.1rem;
+    }
+    
+    .duties-box {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 10px;
+        line-height: 1.6;
+    }
+    
+    .countdown-box {
+        background: #0a2a38;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin: 20px 0;
+    }
+    
+    .countdown {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 15px 30px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+        flex: 1;
+    }
+    
+    .btn-accept {
+        background: #4bc3a3;
+        color: white;
+    }
+    
+    .btn-accept:hover {
+        background: #3aa082;
+        transform: translateY(-2px);
+    }
+    
+    .btn-decline {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-decline:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #475569;
+    }
+    
+    @media (max-width: 768px) {
+        .offer-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .offer-item.full-width {
+            grid-column: span 1;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="offer-container">
+    <div class="offer-header">
+        <span class="offer-badge"><i class="fas fa-gift"></i> OFFER LETTER</span>
+        <h1 class="offer-title">Care Position Offer</h1>
+        <p class="offer-meta">Offer ID: #{{ application.id }} • Sent on {{ application.offer_sent_at|date:"F d, Y" }}</p>
+        
+        <div class="family-info">
+            <div class="family-avatar">
+                <i class="fas fa-user-friends"></i>
+            </div>
+            <div class="family-details">
+                <h3>{{ application.request.family.get_full_name|default:application.request.family.username }}</h3>
+                <p><i class="fas fa-envelope"></i> {{ application.request.family.email }} | <i class="fas fa-phone"></i> {{ application.request.family.phone|default:"Not provided" }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="offer-section">
+        <h2 class="section-title"><i class="fas fa-user"></i> Patient Details</h2>
+        <div class="offer-grid">
+            <div class="offer-item">
+                <div class="offer-label">Patient Name</div>
+                <div class="offer-value">{{ application.request.patient_name }}</div>
+            </div>
+            <div class="offer-item">
+                <div class="offer-label">Age / Gender</div>
+                <div class="offer-value">{{ application.request.patient_age }} years / {{ application.request.get_patient_gender_display }}</div>
+            </div>
+            <div class="offer-item">
+                <div class="offer-label">Medical Condition</div>
+                <div class="offer-value">{{ application.request.medical_condition }}</div>
+            </div>
+            <div class="offer-item">
+                <div class="offer-label">Care Type</div>
+                <div class="offer-value">{{ application.request.get_care_type_display }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="offer-section">
+        <h2 class="section-title"><i class="fas fa-calendar-check"></i> Schedule & Compensation</h2>
+        <div class="offer-grid">
+            <div class="offer-item">
+                <div class="offer-label">Start Date</div>
+                <div class="offer-value">{{ application.offer_details.start_date }}</div>
+            </div>
+            <div class="offer-item">
+                <div class="offer-label">Start Time</div>
+                <div class="offer-value">{{ application.offer_details.start_time }}</div>
+            </div>
+            <div class="offer-item">
+                <div class="offer-label">Duration</div>
+                <div class="offer-value">{{ application.request.duration_days }} days</div>
+            </div>
+            <div class="offer-item">
+                <div class="offer-label">Final Rate</div>
+                <div class="offer-value">₹{{ application.offer_details.final_rate }}/{{ application.offer_details.payment_frequency }}</div>
+            </div>
+            <div class="offer-item full-width">
+                <div class="offer-label">Reporting Address</div>
+                <div class="offer-value">{{ application.offer_details.reporting_address }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="offer-section">
+        <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Duties & Instructions</h2>
+        <div class="duties-box">
+            <strong>Daily Duties:</strong>
+            <p style="margin-top: 10px;">{{ application.offer_details.daily_duties }}</p>
+            
+            {% if application.offer_details.special_instructions %}
+            <hr style="margin: 20px 0;">
+            <strong>Special Instructions:</strong>
+            <p style="margin-top: 10px;">{{ application.offer_details.special_instructions }}</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="offer-section">
+        <h2 class="section-title"><i class="fas fa-phone-alt"></i> Emergency Contact</h2>
+        <div class="offer-grid">
+            <div class="offer-item">
+                <div class="offer-label">Contact Name</div>
+                <div class="offer-value">{{ application.offer_details.emergency_contact }}</div>
+            </div>
+            <div class="offer-item">
+                <div class="offer-label">Phone Number</div>
+                <div class="offer-value">{{ application.offer_details.emergency_phone }}</div>
+            </div>
+        </div>
+    </div>
+    
+    {% if application.offer_details.accommodation_details %}
+    <div class="offer-section">
+        <h2 class="section-title"><i class="fas fa-bed"></i> Accommodation</h2>
+        <p>{{ application.offer_details.accommodation_details }}</p>
+        {% if application.offer_details.meals_provided %}
+        <p><i class="fas fa-check-circle" style="color: #4bc3a3;"></i> Meals will be provided</p>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <div class="countdown-box">
+        <span><i class="fas fa-hourglass-half"></i> Offer expires in:</span>
+        <span class="countdown">{{ application.time_until_offer_expiry }}</span>
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{% url 'my_applications' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+        <a href="{% url 'respond_to_offer' application.id 'accept' %}" class="btn btn-accept" onclick="return confirm('Accept this offer? You will be committed to this position.')">
+            <i class="fas fa-check-circle"></i> Accept Offer
+        </a>
+        <a href="{% url 'respond_to_offer' application.id 'decline' %}" class="btn btn-decline" onclick="return confirm('Decline this offer? This action cannot be undone.')">
+            <i class="fas fa-times-circle"></i> Decline
+        </a>
+    </div>
+</div>
+{% endblock %}

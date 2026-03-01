@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Caretaker Profile</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #f4f6f8;
+            padding: 20px;
+        }
+
+        .profile-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            margin: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .info {
+            margin: 10px 0;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="profile-card">
+
+        <!-- caretaker is User object -->
+        <h2>{{ caretaker.username }}</h2>
+
+        <!-- profile contains caretaker profile -->
+        <div class="info">
+            <span class="label">Experience:</span>
+            {{ profile.experience }} years
+        </div>
+
+        <div class="info">
+            <span class="label">Location:</span>
+            {{ profile.location }}
+        </div>
+
+        <div class="info">
+            <span class="label">Expected Salary:</span>
+            ₹{{ profile.expected_salary }}
+        </div>
+
+        <div class="info">
+            <span class="label">Bio:</span>
+            {{ profile.bio }}
+        </div>
+
+    </div>
+
+</body>
+
+</html>
