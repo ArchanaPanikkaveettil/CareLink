@@ -1,1088 +1,631 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'base.html' %}
+{% load static %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CareLink - Elderly Care Management Platform</title>
-    
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- AOS Animation Library -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+{% block title %}CareLink - Elderly Care Management Platform{% endblock %}
+
+{% block brand_color %}#0f3460{% endblock %}
+{% block hover_color %}#0f3460{% endblock %}
+{% block button_gradient %}linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%){% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .hero {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 50px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-content {
+        flex: 1;
+        max-width: 600px;
+        z-index: 2;
+    }
+
+    .hero-badge {
+        background: rgba(15, 52, 96, 0.1);
+        color: #0f3460;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+
+    .hero h1 {
+        font-size: 3.2rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 20px;
+        color: #2c3e50;
+    }
+
+    .hero h1 span {
+        color: #0f3460;
+        background: none;
+        -webkit-text-fill-color: #0f3460;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        color: #6c757d;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 15px 35px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: white;
+        color: #0f3460;
+        border: 2px solid #0f3460;
+    }
+
+    .btn-primary:hover {
+        background: #0f3460;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(15, 52, 96, 0.3);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba(15, 52, 96, 0.3);
+    }
+
+    .btn-success:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(15, 52, 96, 0.4);
+    }
+
+    .hero-image {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2;
+    }
+
+    .hero-image img {
+        width: 100%;
+        max-width: 700px;
+        height: auto;
+        object-fit: contain;
+        animation: float 6s ease-in-out infinite;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(15, 52, 96, 0.15);
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0);
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #ffffff;
-            color: #333;
-            overflow-x: hidden;
+        50% {
+            transform: translateY(-20px);
         }
+    }
 
-        /* Navbar Styles */
-        .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
+    .hero-stats {
+        display: flex;
+        gap: 30px;
+        margin-top: 50px;
+    }
 
-        .navbar.scrolled {
-            padding: 10px 50px;
-            background: rgba(255, 255, 255, 0.98);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        }
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+    }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #0f3460;
+    }
 
-        .logo i {
-            font-size: 2rem;
-            color: #28a745;
-        }
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
 
-        .logo h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 0;
-        }
+    /* Features Section */
+    .section {
+        padding: 80px 50px;
+        text-align: center;
+    }
 
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-        }
+    .section-header {
+        max-width: 700px;
+        margin: 0 auto 60px;
+    }
 
-        .nav-links a {
-            color: #2c3e50;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-            font-size: 1rem;
-        }
+    .section-header h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
 
-        .nav-links a:hover {
-            color: #28a745;
-        }
+    .section-header p {
+        color: #6c757d;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
 
-        .nav-links .btn-nav {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            padding: 10px 25px;
-            border-radius: 50px;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
-        }
+    .section-header h2 span {
+        color: #0f3460;
+    }
 
-        .nav-links .btn-nav:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
-            color: white;
-        }
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
 
-        .mobile-menu-btn {
-            display: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #2c3e50;
-        }
+    .card {
+        background: white;
+        padding: 40px 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
+    }
 
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 50px;
-            margin-top: 80px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            position: relative;
-            overflow: hidden;
-        }
+    .card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(15, 52, 96, 0.1);
+        border-color: #0f3460;
+    }
 
-        .hero-content {
-            flex: 1;
-            max-width: 600px;
-            z-index: 2;
-        }
+    .card-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+    }
 
-        .hero-badge {
-            background: rgba(40, 167, 69, 0.1);
-            color: #28a745;
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
+    .card-icon i {
+        font-size: 2.5rem;
+        color: white;
+    }
 
+    .card h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #2c3e50;
+    }
+
+    .card p {
+        color: #6c757d;
+        line-height: 1.6;
+    }
+
+    /* How It Works Section - FIXED for one row */
+    .steps-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 80px 50px;
+    }
+
+    .steps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        /* Force 4 columns in one row */
+        gap: 25px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .step {
+        background: white;
+        padding: 30px 20px;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        text-align: left;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+
+    .step h4 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #2c3e50;
+    }
+
+    .step p {
+        color: #6c757d;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 10px;
+    }
+
+    .option-list {
+        margin-top: 5px;
+        padding-left: 0;
+        list-style: none;
+    }
+
+    .option-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
+        font-size: 0.95rem;
+        color: #4a5568;
+    }
+
+    .option-list li i {
+        color: #0f3460;
+        font-size: 1rem;
+        margin-top: 3px;
+        min-width: 18px;
+    }
+
+    .option-list li span {
+        flex: 1;
+    }
+
+    .badge-option {
+        background: #e9ecef;
+        color: #0f3460;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 12px;
+        margin-left: 5px;
+    }
+
+    /* CTA Section */
+    .cta-section {
+        background: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);
+        padding: 80px 50px;
+        text-align: center;
+        color: white;
+        border-radius: 0 100px 0 0;
+        margin-bottom: 70px;
+    }
+
+    .cta-section h2,
+    .cta-section p {
+        color: white;
+    }
+
+    .cta-section h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .cta-section p {
+        font-size: 1.2rem;
+        margin-bottom: 30px;
+        opacity: 0.95;
+    }
+
+    .cta-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-cta {
+        background: white;
+        color: #0f3460;
+        border: none;
+    }
+
+    .btn-cta:hover {
+        background: rgba(255, 255, 255, 0.9);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-outline-cta {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+    }
+
+    .btn-outline-cta:hover {
+        background: white;
+        color: #0f3460;
+        transform: translateY(-3px);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
         .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-
-        .hero h1 span {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            color: #6c757d;
-            margin-bottom: 30px;
-            line-height: 1.6;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 15px 35px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-primary {
-            background: white;
-            color: #28a745;
-            border: 2px solid #28a745;
-        }
-
-        .btn-primary:hover {
-            background: #28a745;
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.3);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            border: none;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(40, 167, 69, 0.4);
-        }
-
-        .hero-image {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2;
-        }
-
-        .hero-image img {
-            max-width: 100%;
-            height: auto;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .hero-stats {
-            display: flex;
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #28a745;
-        }
-
-        .stat-label {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        /* Features Section */
-        .section {
-            padding: 80px 50px;
-            text-align: center;
-        }
-
-        .section-header {
-            max-width: 700px;
-            margin: 0 auto 60px;
-        }
-
-        .section-header h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-
-        .section-header p {
-            color: #6c757d;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-
-        .section-header h2 span {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background: white;
-            padding: 40px 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(40, 167, 69, 0.1);
-            border-color: #28a745;
-        }
-
-        .card-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 25px;
-        }
-
-        .card-icon i {
-            font-size: 2.5rem;
-            color: white;
-        }
-
-        .card h3 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-
-        .card p {
-            color: #6c757d;
-            line-height: 1.6;
-        }
-
-        .card-hover {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            transform: translateX(-100%);
-            transition: transform 0.3s;
-        }
-
-        .card:hover .card-hover {
-            transform: translateX(0);
-        }
-
-        /* How It Works Section */
-        .steps-section {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-size: 2.8rem;
         }
 
         .steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            max-width: 1000px;
-            margin: 0 auto;
+            grid-template-columns: repeat(2, 1fr);
+            /* 2 rows on tablet */
         }
+    }
 
-        .step {
-            text-align: center;
-            position: relative;
-        }
-
-        .step-number {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 25px;
-            color: white;
-            font-weight: 700;
-            font-size: 1.5rem;
-            position: relative;
-            z-index: 2;
-        }
-
-        .step h4 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #2c3e50;
-        }
-
-        .step p {
-            color: #6c757d;
-        }
-
-        /* Testimonials Section */
-        .testimonials {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .testimonial-card {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            text-align: left;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .testimonial-card i {
-            color: #28a745;
-            font-size: 2rem;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .testimonial-text {
-            color: #2c3e50;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            font-style: italic;
-        }
-
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .author-avatar {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-        }
-
-        .author-info h5 {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #2c3e50;
-        }
-
-        .author-info p {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        /* Stats Section */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 30px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .stats-card {
-            background: white;
+    @media (max-width: 768px) {
+        .hero {
+            flex-direction: column;
             padding: 40px 20px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        }
-
-        .stats-card i {
-            font-size: 2.5rem;
-            color: #28a745;
-            margin-bottom: 15px;
-        }
-
-        .stats-card .number {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-
-        .stats-card .label {
-            color: #6c757d;
-        }
-
-        /* CTA Section */
-        .cta-section {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            padding: 80px 50px;
             text-align: center;
-            color: white;
-            border-radius: 0 100px 0 0;
+        }
+
+        .hero-content {
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: 2.2rem;
+        }
+
+        .hero-buttons {
+            justify-content: center;
+        }
+
+        .hero-stats {
+            justify-content: center;
+        }
+
+        .section {
+            padding: 60px 20px;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+        }
+
+        .steps {
+            grid-template-columns: 1fr;
+            /* 1 column on mobile */
+            gap: 20px;
+        }
+
+        .cta-section {
+            padding: 60px 20px;
+            border-radius: 0 50px 0 0;
         }
 
         .cta-section h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero h1 {
+            font-size: 1.8rem;
         }
 
-        .cta-section p {
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-            opacity: 0.9;
+        .hero p {
+            font-size: 1rem;
         }
 
-        .cta-buttons {
-            display: flex;
-            gap: 20px;
+        .btn {
+            width: 100%;
             justify-content: center;
-            flex-wrap: wrap;
         }
 
-        .btn-cta {
-            background: white;
-            color: #28a745;
-            border: none;
-        }
-
-        .btn-cta:hover {
-            background: rgba(255, 255, 255, 0.9);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-outline-cta {
-            background: transparent;
-            color: white;
-            border: 2px solid white;
-        }
-
-        .btn-outline-cta:hover {
-            background: white;
-            color: #28a745;
-            transform: translateY(-3px);
-        }
-
-        /* Footer */
-        .footer {
-            background: #1a2b3c;
-            color: #a0b3c9;
-            padding: 60px 50px 20px;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .footer-section h4 {
-            color: white;
-            font-size: 1.2rem;
-            margin-bottom: 25px;
-            font-weight: 600;
-        }
-
-        .footer-section ul {
-            list-style: none;
-        }
-
-        .footer-section ul li {
-            margin-bottom: 15px;
-        }
-
-        .footer-section ul li a {
-            color: #a0b3c9;
-            text-decoration: none;
-            transition: color 0.3s;
-            display: flex;
-            align-items: center;
+        .hero-buttons {
+            flex-direction: column;
             gap: 10px;
         }
 
-        .footer-section ul li a:hover {
-            color: #28a745;
-        }
-
-        .footer-section ul li i {
-            width: 20px;
-            color: #28a745;
-        }
-
-        .social-links {
-            display: flex;
+        .hero-stats {
+            flex-direction: column;
             gap: 15px;
-            margin-top: 20px;
         }
+    }
+</style>
+{% endblock %}
 
-        .social-links a {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
+{% block content %}
+<!-- Hero Section -->
+<div class="hero" id="home">
+    <div class="hero-content" data-aos="fade-right">
+        <span class="hero-badge"><i class="fas fa-heart"></i> Compassionate Care</span>
+        <h1>Connecting Families with <span>Verified Professional</span> Caretakers</h1>
+        <p>Find the perfect caregiver for your loved ones. Our platform ensures verified professionals, transparent
+            hiring, and peace of mind.</p>
 
-        .social-links a:hover {
-            background: #28a745;
-            transform: translateY(-3px);
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding-top: 40px;
-            margin-top: 40px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: #a0b3c9;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            .hero h1 {
-                font-size: 3rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 15px 20px;
-            }
-
-            .mobile-menu-btn {
-                display: block;
-            }
-
-            .nav-links {
-                position: fixed;
-                top: 80px;
-                left: -100%;
-                width: 100%;
-                height: calc(100vh - 80px);
-                background: white;
-                flex-direction: column;
-                padding: 40px 20px;
-                transition: left 0.3s;
-                z-index: 999;
-            }
-
-            .nav-links.active {
-                left: 0;
-            }
-
-            .hero {
-                flex-direction: column;
-                padding: 40px 20px;
-                text-align: center;
-            }
-
-            .hero-content {
-                margin-bottom: 40px;
-            }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .hero-buttons {
-                justify-content: center;
-            }
-
-            .hero-stats {
-                justify-content: center;
-            }
-
-            .section {
-                padding: 60px 20px;
-            }
-
-            .section-header h2 {
-                font-size: 2rem;
-            }
-
-            .cta-section {
-                padding: 60px 20px;
-                border-radius: 0 50px 0 0;
-            }
-
-            .cta-section h2 {
-                font-size: 2rem;
-            }
-
-            .footer {
-                padding: 40px 20px 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .hero p {
-                font-size: 1rem;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .hero-buttons {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .hero-stats {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .stat-item {
-                align-items: center;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <!-- Navbar -->
-    <div class="navbar" id="navbar">
-        <div class="logo">
-            <i class="fas fa-hand-holding-heart"></i>
-            <h2>CareLink</h2>
-        </div>
-        
-        <div class="mobile-menu-btn" onclick="toggleMenu()">
-            <i class="fas fa-bars"></i>
-        </div>
-
-        <div class="nav-links" id="navLinks">
-            <a href="#home">Home</a>
-            <a href="#features">Features</a>
-            <a href="#how-it-works">How It Works</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
-            <a href="{% url 'login' %}" class="btn-nav">Login</a>
-            <a href="{% url 'family_register' %}">Register as Family</a>
-            <a href="{% url 'caretaker_register' %}">Register as Caretaker</a>
-        </div>
-    </div>
-
-    <!-- Hero Section -->
-    <div class="hero" id="home">
-        <div class="hero-content" data-aos="fade-right">
-            <span class="hero-badge"><i class="fas fa-heart"></i> Compassionate Care</span>
-            <h1>Connecting Families with <span>Verified Professional</span> Caretakers</h1>
-            <p>Find the perfect caregiver for your loved ones. Our platform ensures verified professionals, transparent hiring, and peace of mind.</p>
-            
-            <div class="hero-buttons">
-                <a href="{% url 'family_register' %}" class="btn btn-success">
-                    <i class="fas fa-search"></i> Hire a Caretaker
-                </a>
-                <a href="{% url 'caretaker_register' %}" class="btn btn-primary">
-                    <i class="fas fa-user-plus"></i> Join as Caretaker
-                </a>
-            </div>
-
-            <div class="hero-stats">
-                <div class="stat-item">
-                    <span class="stat-number">500+</span>
-                    <span class="stat-label">Verified Caretakers</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">1000+</span>
-                    <span class="stat-label">Happy Families</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">98%</span>
-                    <span class="stat-label">Satisfaction Rate</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="hero-image" data-aos="fade-left">
-            <img src="https://illustrations.popsy.co/amber/doctor.svg" alt="Elderly Care Illustration">
-        </div>
-    </div>
-
-    <!-- Features Section -->
-    <div class="section" id="features">
-        <div class="section-header" data-aos="fade-up">
-            <h2>Why Choose <span>CareLink</span>?</h2>
-            <p>We provide a secure and reliable platform that connects families with qualified caretakers, ensuring the best care for your loved ones.</p>
-        </div>
-
-        <div class="cards">
-            <div class="card" data-aos="flip-left">
-                <div class="card-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <h3>Verified Professionals</h3>
-                <p>All caretakers undergo thorough background verification and document checks before approval, ensuring complete trust and safety.</p>
-                <div class="card-hover"></div>
-            </div>
-
-            <div class="card" data-aos="flip-left" data-aos-delay="100">
-                <div class="card-icon">
-                    <i class="fas fa-handshake"></i>
-                </div>
-                <h3>Easy Hiring Process</h3>
-                <p>Browse profiles, check reviews, interview candidates, and hire the perfect match for your family's needs in just a few clicks.</p>
-                <div class="card-hover"></div>
-            </div>
-
-            <div class="card" data-aos="flip-left" data-aos-delay="200">
-                <div class="card-icon">
-                    <i class="fas fa-lock"></i>
-                </div>
-                <h3>Secure Platform</h3>
-                <p>Role-based access control, encrypted data storage, and privacy protection ensure your information stays safe and secure.</p>
-                <div class="card-hover"></div>
-            </div>
-
-            <div class="card" data-aos="flip-left" data-aos-delay="300">
-                <div class="card-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <h3>24/7 Availability</h3>
-                <p>Find caretakers available for various shifts including full-time, part-time, night care, and emergency services.</p>
-                <div class="card-hover"></div>
-            </div>
-
-            <div class="card" data-aos="flip-left" data-aos-delay="400">
-                <div class="card-icon">
-                    <i class="fas fa-star"></i>
-                </div>
-                <h3>Rating & Reviews</h3>
-                <p>Make informed decisions based on authentic ratings and feedback from other families who have hired our caretakers.</p>
-                <div class="card-hover"></div>
-            </div>
-
-            <div class="card" data-aos="flip-left" data-aos-delay="500">
-                <div class="card-icon">
-                    <i class="fas fa-headset"></i>
-                </div>
-                <h3>Dedicated Support</h3>
-                <p>Our customer support team is always ready to assist you with any questions or concerns throughout your journey.</p>
-                <div class="card-hover"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- How It Works Section -->
-    <div class="section steps-section" id="how-it-works">
-        <div class="section-header" data-aos="fade-up">
-            <h2>How It <span>Works</span></h2>
-            <p>Simple steps to find the perfect caregiver for your loved ones</p>
-        </div>
-
-        <div class="steps">
-            <div class="step" data-aos="fade-up">
-                <div class="step-number">1</div>
-                <h4>Create Account</h4>
-                <p>Sign up as a family member and complete your profile with your requirements.</p>
-            </div>
-
-            <div class="step" data-aos="fade-up" data-aos-delay="100">
-                <div class="step-number">2</div>
-                <h4>Browse Caretakers</h4>
-                <p>Search through verified caretakers, filter by skills, experience, and location.</p>
-            </div>
-
-            <div class="step" data-aos="fade-up" data-aos-delay="200">
-                <div class="step-number">3</div>
-                <h4>Interview & Hire</h4>
-                <p>Connect with candidates, conduct interviews, and hire the best match.</p>
-            </div>
-
-            <div class="step" data-aos="fade-up" data-aos-delay="300">
-                <div class="step-number">4</div>
-                <h4>Start Care</h4>
-                <p>Begin care services with regular updates and feedback system.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Testimonials Section -->
-    <div class="section">
-        <div class="section-header" data-aos="fade-up">
-            <h2>What Families Are <span>Saying</span></h2>
-            <p>Real stories from families who found the perfect caretaker through CareLink</p>
-        </div>
-
-        <div class="testimonials">
-            <div class="testimonial-card" data-aos="fade-up">
-                <i class="fas fa-quote-left"></i>
-                <p class="testimonial-text">"CareLink helped me find a wonderful caretaker for my mother within days. The verification process gave me complete peace of mind."</p>
-                <div class="testimonial-author">
-                    <div class="author-avatar">P</div>
-                    <div class="author-info">
-                        <h5>Priya Sharma</h5>
-                        <p>Daughter of Patient</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
-                <i class="fas fa-quote-left"></i>
-                <p class="testimonial-text">"The platform is very user-friendly. I could easily filter caretakers based on experience and language preference."</p>
-                <div class="testimonial-author">
-                    <div class="author-avatar">R</div>
-                    <div class="author-info">
-                        <h5>Rajesh Kumar</h5>
-                        <p>Family Caregiver</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
-                <i class="fas fa-quote-left"></i>
-                <p class="testimonial-text">"Excellent service! The caretaker we hired is professional, compassionate, and exactly what we needed for my father."</p>
-                <div class="testimonial-author">
-                    <div class="author-avatar">A</div>
-                    <div class="author-info">
-                        <h5>Anita Desai</h5>
-                        <p>Family Member</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Statistics Section -->
-    <div class="section">
-        <div class="stats-grid">
-            <div class="stats-card" data-aos="zoom-in">
-                <i class="fas fa-user-md"></i>
-                <div class="number">500+</div>
-                <div class="label">Verified Caretakers</div>
-            </div>
-
-            <div class="stats-card" data-aos="zoom-in" data-aos-delay="100">
-                <i class="fas fa-users"></i>
-                <div class="number">1000+</div>
-                <div class="label">Happy Families</div>
-            </div>
-
-            <div class="stats-card" data-aos="zoom-in" data-aos-delay="200">
-                <i class="fas fa-clock"></i>
-                <div class="number">24/7</div>
-                <div class="label">Support Available</div>
-            </div>
-
-            <div class="stats-card" data-aos="zoom-in" data-aos-delay="300">
-                <i class="fas fa-star"></i>
-                <div class="number">4.8</div>
-                <div class="label">Average Rating</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- CTA Section -->
-    <div class="cta-section">
-        <div class="section-header" style="color: white;" data-aos="fade-up">
-            <h2>Ready to Find the Perfect Caretaker?</h2>
-            <p>Join thousands of families who trust CareLink for their loved ones' care needs</p>
-        </div>
-
-        <div class="cta-buttons" data-aos="fade-up" data-aos-delay="100">
-            <a href="{% url 'family_register' %}" class="btn btn-cta">
-                <i class="fas fa-search"></i> Find a Caretaker
+        <div class="hero-buttons">
+            <a href="{% url 'family_register' %}" class="btn btn-success">
+                <i class="fas fa-search"></i> Hire a Caretaker
             </a>
-            <a href="{% url 'caretaker_register' %}" class="btn btn-outline-cta">
+            <a href="{% url 'caretaker_register' %}" class="btn btn-primary">
                 <i class="fas fa-user-plus"></i> Join as Caretaker
             </a>
         </div>
-    </div>
 
-    <!-- Footer -->
-    <div class="footer" id="contact">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>CareLink</h4>
-                <p style="margin-bottom: 20px;">Compassionate elderly care, simplified. Connecting families with verified professional caretakers.</p>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                </div>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-number">500+</span>
+                <span class="stat-label">Verified Caretakers</span>
             </div>
-
-            <div class="footer-section">
-                <h4>Quick Links</h4>
-                <ul>
-                    <li><a href="#home"><i class="fas fa-chevron-right"></i> Home</a></li>
-                    <li><a href="#features"><i class="fas fa-chevron-right"></i> Features</a></li>
-                    <li><a href="#how-it-works"><i class="fas fa-chevron-right"></i> How It Works</a></li>
-                    <li><a href="#about"><i class="fas fa-chevron-right"></i> About Us</a></li>
-                    <li><a href="#contact"><i class="fas fa-chevron-right"></i> Contact</a></li>
-                </ul>
+            <div class="stat-item">
+                <span class="stat-number">1000+</span>
+                <span class="stat-label">Happy Families</span>
             </div>
-
-            <div class="footer-section">
-                <h4>For Families</h4>
-                <ul>
-                    <li><a href="{% url 'family_register' %}"><i class="fas fa-chevron-right"></i> Register as Family</a></li>
-                    <li><a href="#"><i class="fas fa-chevron-right"></i> Search Caretakers</a></li>
-                    <li><a href="#"><i class="fas fa-chevron-right"></i> Post Care Request</a></li>
-                    <li><a href="#"><i class="fas fa-chevron-right"></i> FAQs</a></li>
-                </ul>
+            <div class="stat-item">
+                <span class="stat-number">98%</span>
+                <span class="stat-label">Satisfaction Rate</span>
             </div>
-
-            <div class="footer-section">
-                <h4>For Caretakers</h4>
-                <ul>
-                    <li><a href="{% url 'caretaker_register' %}"><i class="fas fa-chevron-right"></i> Register as Caretaker</a></li>
-                    <li><a href="#"><i class="fas fa-chevron-right"></i> Browse Jobs</a></li>
-                    <li><a href="#"><i class="fas fa-chevron-right"></i> Verification Process</a></li>
-                    <li><a href="#"><i class="fas fa-chevron-right"></i> Success Stories</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h4>Contact Info</h4>
-                <ul>
-                    <li><i class="fas fa-map-marker-alt"></i> 123 Care Street, Bangalore, India</li>
-                    <li><i class="fas fa-phone"></i> +91 98765 43210</li>
-                    <li><i class="fas fa-envelope"></i> support@carelink.com</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <p>&copy; 2026 CareLink. All rights reserved. | MCA Main Project</p>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        // Initialize AOS
-        AOS.init({
-            duration: 1000,
-            once: true,
-            offset: 100
-        });
+    <div class="hero-image" data-aos="fade-left">
+        <img src="{% static 'elderly_care_cover.jpg' %}" alt="Elderly Care" class="img-fluid">
+    </div>
+</div>
 
-        // Navbar scroll effect
-        window.addEventListener('scroll', function() {
-            const navbar = document.getElementById('navbar');
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-        });
+<!-- Features Section -->
+<div class="section" id="features">
+    <div class="section-header" data-aos="fade-up">
+        <h2>Why Choose <span>CareLink</span>?</h2>
+        <p>We provide a secure and reliable platform that connects families with qualified caretakers, ensuring the best
+            care for your loved ones.</p>
+    </div>
 
-        // Mobile menu toggle
-        function toggleMenu() {
-            const navLinks = document.getElementById('navLinks');
-            navLinks.classList.toggle('active');
-        }
+    <div class="cards">
+        <div class="card" data-aos="flip-left">
+            <div class="card-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3>Verified Professionals</h3>
+            <p>All caretakers undergo thorough background verification and document checks before approval, ensuring
+                complete trust and safety.</p>
+        </div>
 
-        // Close mobile menu when clicking a link
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                document.getElementById('navLinks').classList.remove('active');
-            });
-        });
+        <div class="card" data-aos="flip-left" data-aos-delay="100">
+            <div class="card-icon">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <h3>Direct Hiring</h3>
+            <p>Review caretaker profiles directly. No third-party interviews, you choose the best match.</p>
+        </div>
 
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-    </script>
-</body>
+        <div class="card" data-aos="flip-left" data-aos-delay="200">
+            <div class="card-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h3>Secure Platform</h3>
+            <p>Role-based access control and privacy protection ensure your information stays safe and secure.</p>
+        </div>
 
-</html>
+        <div class="card" data-aos="flip-left" data-aos-delay="300">
+            <div class="card-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3>Flexible Scheduling</h3>
+            <p>Find caretakers available for full-time, part-time, night care, and emergency services.</p>
+        </div>
+
+        <div class="card" data-aos="flip-left" data-aos-delay="400">
+            <div class="card-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <h3>Ratings & Reviews</h3>
+            <p>Make informed decisions based on authentic ratings from other families.</p>
+        </div>
+
+        <div class="card" data-aos="flip-left" data-aos-delay="500">
+            <div class="card-icon">
+                <i class="fas fa-headset"></i>
+            </div>
+            <h3>Dedicated Support</h3>
+            <p>Our support team is always ready to assist you with any questions.</p>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section - FIXED one row, clean layout -->
+<div class="section steps-section" id="how-it-works">
+    <div class="section-header" data-aos="fade-up">
+        <h2>How It <span>Works</span></h2>
+        <p>Simple steps to find the perfect caregiver for your loved ones</p>
+    </div>
+
+    <div class="steps">
+        <div class="step" data-aos="fade-up">
+            <div class="step-number">1</div>
+            <h4>Create Account</h4>
+            <p>Sign up as a family and complete your profile with care requirements.</p>
+        </div>
+
+        <div class="step" data-aos="fade-up" data-aos-delay="100">
+            <div class="step-number">2</div>
+            <h4>Choose Your Way</h4>
+            <ul class="option-list">
+                <li>
+                    <i class="fas fa-paper-plane"></i>
+                    <span><strong>Post Request</strong> — Tell us your needs, caretakers apply</span>
+                </li>
+                <li>
+                    <i class="fas fa-search"></i>
+                    <span><strong>Browse & Connect</strong> — Search profiles, send requests</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="step" data-aos="fade-up" data-aos-delay="200">
+            <div class="step-number">3</div>
+            <h4>Review & Hire</h4>
+            <p>Check applications, review profiles, and confirm your hire directly.</p>
+        </div>
+
+        <div class="step" data-aos="fade-up" data-aos-delay="300">
+            <div class="step-number">4</div>
+            <h4>Start Care</h4>
+            <p>Begin care services with regular updates through our platform.</p>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="cta-section">
+    <div class="section-header" data-aos="fade-up">
+        <h2>Ready to Find the Perfect Caretaker?</h2>
+        <p>Join thousands of families who trust CareLink for their loved ones' care needs</p>
+    </div>
+
+    <div class="cta-buttons" data-aos="fade-up" data-aos-delay="100">
+        <a href="{% url 'family_register' %}" class="btn btn-cta">
+            <i class="fas fa-search"></i> Find a Caretaker
+        </a>
+        <a href="{% url 'caretaker_register' %}" class="btn btn-outline-cta">
+            <i class="fas fa-user-plus"></i> Join as Caretaker
+        </a>
+    </div>
+</div>
+{% endblock %}

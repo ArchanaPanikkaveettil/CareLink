@@ -1,0 +1,380 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}CareLink{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        .footer {
+            background: #03162e;
+            color: white;
+            padding-top: 20px;
+        }
+
+        .footer a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer h4 {
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .footer-section p {
+            margin-top: 15px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .social-links {
+            margin-top: 15px;
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Footer row layout */
+        .footer-row {
+            display: flex;
+            flex-direction: row;
+            gap: 40px;
+            justify-content: space-between;
+        }
+
+        .footer-col {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .footer-col h4 {
+            white-space: nowrap;
+        }
+
+        .footer-col ul {
+            margin-top: 10px;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* Adjust the main footer grid */
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 2fr;
+            /* Adjust column widths */
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            align-items: start;
+        }
+
+        /* Make first section wider */
+        .footer-section:first-child {
+            max-width: 300px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+
+            .footer-row {
+                grid-column: span 2;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-row {
+                flex-direction: column;
+                gap: 20px;
+                grid-column: span 1;
+            }
+
+            .footer-col {
+                width: 100%;
+            }
+        }
+
+
+        :root {
+            --brand-color: #0f3460;
+            --hover-color: #1e4a7a;
+            --button-gradient: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* ================= NAVBAR ================= */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: 10px 40px;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+            color: var(--brand-color);
+        }
+
+        .logo h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--brand-color);
+            margin: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            padding: 8px 12px;
+        }
+
+        .nav-links a:hover {
+            color: var(--hover-color);
+        }
+
+        /* LOGIN BUTTON */
+        .nav-links .btn-nav {
+            background: var(--button-gradient);
+            color: white !important;
+            padding: 8px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(15, 52, 96, 0.2);
+        }
+
+        .nav-links .btn-nav:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(15, 52, 96, 0.3);
+            color: white !important;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .main-content {
+            padding-top: 80px;
+            min-height: calc(100vh - 300px);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- ================= NAVBAR ================= -->
+    <div class="navbar" id="navbar">
+        <div class="logo">
+            <i class="fas fa-hand-holding-heart"></i>
+            <h2>CareLink</h2>
+        </div>
+
+        <div class="mobile-menu-btn" onclick="toggleMenu()">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <div class="nav-links" id="navLinks">
+            <a href="{% url 'index' %}">Home</a>
+
+            {% if user.is_authenticated %}
+            {% if user.role == "family" %}
+            <a href="{% url 'family_dashboard' %}">Dashboard</a>
+            {% elif user.role == "caretaker" %}
+            <a href="{% url 'caretaker_dashboard' %}">Dashboard</a>
+            {% endif %}
+            <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+            <!-- Login button with btn-nav class for visibility -->
+            <a href="{% url 'login' %}" class="btn-nav">Login</a>
+
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>CareLink</h4>
+                <p>Connecting families with verified professional caretakers for compassionate elderly care.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="{% url 'index' %}"><i class="fas fa-chevron-right"></i> Home</a></li>
+                    <li><a href="#features"><i class="fas fa-chevron-right"></i> Features</a></li>
+                    <li><a href="#how-it-works"><i class="fas fa-chevron-right"></i> How It Works</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>For Families</h4>
+                <ul>
+                    <li><a href="{% url 'family_register' %}"><i class="fas fa-chevron-right"></i> Register</a></li>
+                    <li><a href="{% url 'login' %}"><i class="fas fa-chevron-right"></i> Login</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section" style="display: flex; flex-direction: row; gap: 40px;">
+                <div>
+                    <h4>For Caretakers</h4>
+                    <ul>
+                        <li><a href="{% url 'caretaker_register' %}"><i class="fas fa-chevron-right"></i> Register</a>
+                        </li>
+                        <li><a href="{% url 'login' %}"><i class="fas fa-chevron-right"></i> Login</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> Bangalore, India</li>
+                        <li><i class="fas fa-envelope"></i> support@carelink.com</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 CareLink. All rights reserved. | MCA Main Project</p>
+        </div>
+    </div>
+
+
+
+    <!-- Scripts -->
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function () {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>
