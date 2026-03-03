@@ -2,14 +2,15 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
-from datetime import timedelta  # Import timedelta from datetime
+from datetime import timedelta
+from django.db import transaction
 
 User = get_user_model()
 
 class CareRequest(models.Model):
     CARE_TYPES = [
         ('full_time', 'Full Time'),
-        ('part_time', ' Part Time'),
+        ('part_time', 'Part Time'),
         ('night_care', 'Night Care'),
         ('home_visit', 'Home Visit'),
         ('emergency', 'Emergency Care'),
@@ -127,6 +128,16 @@ class CareRequest(models.Model):
         ('phone', 'Phone Call'),
     ], default='video')
     
+    # Emergency Contact Information
+    emergency_contact_name = models.CharField(max_length=100, blank=True, null=True, 
+                                             help_text="Emergency contact person's name")
+    emergency_contact_phone = models.CharField(max_length=20, blank=True, null=True,
+                                              help_text="Emergency contact phone number")
+    
+    # Care Details (for detailed requirements)
+    care_details = models.TextField(blank=True, null=True,
+                                   help_text="Detailed description of care requirements")
+    
     # Assigned Caretaker
     assigned_caretaker = models.ForeignKey(
         User,
@@ -174,7 +185,7 @@ class CareRequest(models.Model):
                 if not isinstance(self.duration_days, int):
                     self.duration_days = int(self.duration_days)
                 
-                # Use datetime.timedelta (not timezone.timedelta) for date arithmetic
+                # Use datetime.timedelta for date arithmetic
                 from datetime import timedelta
                 self.end_date = self.start_date + timedelta(days=self.duration_days)
             except (ValueError, TypeError) as e:
@@ -187,45 +198,174 @@ class CareRequest(models.Model):
     def __str__(self):
         return f"{self.request_id} - {self.patient_name}"
     
+    # ============================================================================
+    # STATUS CHECK METHODS
+    # ============================================================================
+    
+    def can_edit(self):
+        """Check if request can be edited - Only drafts can be edited"""
+        return self.status == 'draft'
+    
+    def can_publish(self):
+        """Check if request can be published - Only drafts can be published"""
+        return self.status == 'draft'
+    
+    def can_apply(self):
+        """Check if caretakers can apply - Only open requests with no assigned caretaker"""
+        return self.status == 'open' and not self.assigned_caretaker
+    
+    def can_send_offer(self):
+        """Check if offers can be sent - Only open requests with no assigned caretaker"""
+        return self.status == 'open' and not self.assigned_caretaker
+    
+    def can_close(self):
+        """Check if request can be closed - Open or assigned requests can be closed"""
+        return self.status in ['open', 'assigned', 'in_progress']
+    
+    def can_reopen(self):
+        """Check if closed request can be reopened - Only if no caretaker was assigned"""
+        return self.status == 'closed' and not self.assigned_caretaker
+    
+    def is_active(self):
+        """Check if request is active (accepting applications)"""
+        return self.status == 'open' and not self.assigned_caretaker
+    
+    def is_assigned(self):
+        """Check if request has an assigned caretaker"""
+        return self.assigned_caretaker is not None and self.status in ['assigned', 'in_progress']
+    
+    # ============================================================================
+    # ACTION METHODS
+    # ============================================================================
+    
     def publish(self):
         """Publish the request (make it open)"""
+        if not self.can_publish():
+            raise ValueError("Only draft requests can be published.")
         self.status = 'open'
         self.published_at = timezone.now()
         self.save()
+        return True
     
     def close(self):
         """Close the request"""
-        self.status = 'closed'
-        self.closed_at = timezone.now()
+        if not self.can_close():
+            raise ValueError(f"Cannot close a request with status: {self.status}")
+        
+        from apps.Applications.models import CareApplication
+        
+        with transaction.atomic():
+            self.status = 'closed'
+            self.closed_at = timezone.now()
+            self.save()
+            
+            # Reject all pending applications
+            CareApplication.objects.filter(
+                request=self,
+                status='pending'
+            ).update(
+                status='rejected', 
+                rejection_note='Request closed by family'
+            )
+        return True
+    
+    def reopen(self):
+        """Reopen a closed request"""
+        if not self.can_reopen():
+            raise ValueError("Cannot reopen a request that has an assigned caretaker or is not closed.")
+        self.status = 'open'
+        self.closed_at = None
         self.save()
+        return True
     
     def assign_caretaker(self, caretaker):
         """Assign a caretaker to this request"""
-        self.assigned_caretaker = caretaker
-        self.assigned_date = timezone.now()
-        self.status = 'assigned'
+        if self.assigned_caretaker:
+            raise ValueError("This request already has an assigned caretaker.")
+        
+        if self.status not in ['open', 'assigned']:
+            raise ValueError(f"Cannot assign caretaker to request with status: {self.status}")
+        
+        from apps.Applications.models import CareApplication
+        
+        with transaction.atomic():
+            self.assigned_caretaker = caretaker
+            self.assigned_date = timezone.now()
+            self.status = 'assigned'
+            self.save()
+            
+            # Reject all other applications
+            CareApplication.objects.filter(
+                request=self
+            ).exclude(
+                caretaker=caretaker
+            ).update(status='rejected')
+        return True
+    
+    def start_care(self):
+        """Mark care as started"""
+        if self.status != 'assigned':
+            raise ValueError(f"Cannot start care for request with status: {self.status}")
+        if not self.assigned_caretaker:
+            raise ValueError("Cannot start care without an assigned caretaker")
+        
+        self.status = 'in_progress'
         self.save()
+        return True
+    
+    def complete_care(self):
+        """Mark care as completed"""
+        if self.status != 'in_progress':
+            raise ValueError(f"Cannot complete care for request with status: {self.status}")
+        
+        self.status = 'completed'
+        self.save()
+        return True
     
     def increment_views(self):
         """Increment view count"""
         self.views_count += 1
         self.save(update_fields=['views_count'])
     
+    # ============================================================================
+    # UTILITY METHODS
+    # ============================================================================
+    
+    def get_applications_count(self):
+        """Get total number of applications"""
+        from apps.Applications.models import CareApplication
+        return CareApplication.objects.filter(request=self).count()
+    
+    def get_pending_applications_count(self):
+        """Get number of pending applications"""
+        from apps.Applications.models import CareApplication
+        return CareApplication.objects.filter(request=self, status='pending').count()
+    
+    def get_shortlisted_count(self):
+        """Get number of shortlisted candidates"""
+        from apps.Applications.models import CareApplication
+        return CareApplication.objects.filter(request=self, status='shortlisted').count()
+    
+    def get_offers_sent_count(self):
+        """Get number of offers sent"""
+        from apps.Applications.models import CareApplication
+        return CareApplication.objects.filter(
+            request=self, 
+            status__in=['offer_sent', 'offer_accepted', 'offer_declined']
+        ).count()
+    
+    def has_active_shortlist(self):
+        """Check if request has active shortlisted candidates"""
+        from apps.Applications.models import CareApplication
+        return CareApplication.objects.filter(
+            request=self,
+            status='shortlisted'
+        ).exists()
+    
     class Meta:
         ordering = ['-created_at']
         verbose_name = 'Care Request'
         verbose_name_plural = 'Care Requests'
-
-
-class CareRequestDocument(models.Model):
-    """Additional documents for care requests"""
-    request = models.ForeignKey(CareRequest, on_delete=models.CASCADE, related_name='documents')
-    document = models.FileField(upload_to='request_docs/')
-    description = models.CharField(max_length=200)
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"Document for {self.request.request_id}"
 
 
 class CareRequestSchedule(models.Model):

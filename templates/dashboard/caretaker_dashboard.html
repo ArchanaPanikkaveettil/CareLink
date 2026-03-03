@@ -2,15 +2,17 @@
 
 {% block title %}Nurse Dashboard · CareLink{% endblock %}
 
-{% block page_title %}<i class="fas fa-chart-line" style="color: #4bc3a3; margin-right: 10px;"></i>Nurse Dashboard{% endblock %}
+{% block page_title %}<i class="fas fa-chart-line" style="color: #4bc3a3; margin-right: 10px;"></i>Nurse Dashboard{%
+endblock %}
 
 {% block sidebar_links %}
 <!-- Override sidebar links to mark Dashboard as active -->
-<a href="{% url 'caretaker_dashboard' %}" class="nav-item active">
+<a href="{% url 'dashboard:caretaker_dashboard' %}" class="nav-item active"> <!-- Add dashboard: namespace -->
     <i class="fas fa-chart-pie"></i>
     <span>Dashboard</span>
 </a>
 
+<!-- Rest of the links remain the same -->
 <a href="{% url 'browse_requests' %}" class="nav-item">
     <i class="fas fa-search"></i>
     <span>Browse care requests</span>
@@ -43,6 +45,9 @@
     </a>
 </div>
 {% endblock %}
+
+
+
 
 {% block extra_css %}
 <style>
@@ -226,7 +231,7 @@
         .stats-grid {
             grid-template-columns: 1fr;
         }
-        
+
         .assignment-preview {
             flex-direction: column;
             align-items: flex-start;
@@ -307,7 +312,8 @@
             </div>
             <div>
                 <div class="profile-name">{{ request.user.get_full_name|default:request.user.username }}</div>
-                <div class="muted"><i class="fas fa-envelope"></i> {{ request.user.email|default:"nurse@carelink.com" }} · <i class="fas fa-check-circle" style="color: #28a745;"></i> verified</div>
+                <div class="muted"><i class="fas fa-envelope"></i> {{ request.user.email|default:"nurse@carelink.com" }}
+                    · <i class="fas fa-check-circle" style="color: #28a745;"></i> verified</div>
             </div>
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -317,7 +323,8 @@
     </div>
     <hr>
     <div style="display: flex; justify-content: flex-end;">
-        <a href="{% url 'caretaker_profile' %}" class="muted" style="text-decoration: none; display: flex; align-items: center; gap: 5px;">
+        <a href="{% url 'caretaker_profile' %}" class="muted"
+            style="text-decoration: none; display: flex; align-items: center; gap: 5px;">
             <i class="fas fa-arrow-right" style="color: #4bc3a3;"></i> profile & settings
         </a>
     </div>
@@ -332,7 +339,7 @@
 {% block extra_js %}
 <script>
     // Update any stat numbers that might be using default values
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // This ensures that if Django variables are empty, we still show numbers
         const statNumbers = document.querySelectorAll('.stat-number');
         statNumbers.forEach(el => {

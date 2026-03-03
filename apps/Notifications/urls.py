@@ -1,10 +1,13 @@
+# apps/Notifications/urls.py
 from django.urls import path
 from . import views
 
+app_name = 'notifications'
+
+
 urlpatterns = [
-    path('get/', views.get_notifications, name='get_notifications'),
-    path('count/', views.notification_count, name='notification_count'),
-    path('mark/<int:notification_id>/', views.mark_notification_read, name='mark_notification_read'),
-    path('mark-all/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
-    path('all/', views.all_notifications, name='all_notifications'),
+    path('', views.all_notifications, name='all'),
+    path('get/', views.get_notifications_ajax, name='get'),
+    path('mark-all-read/', views.mark_all_read, name='mark_all_read'),
+    path('<int:notification_id>/mark-read/', views.mark_notification_read, name='mark_read'),
 ]

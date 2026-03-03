@@ -84,16 +84,26 @@
         background: #10b981;
     }
 
+    .application-card.status-offer_accepted::before,
     .application-card.status-accepted::before {
         background: #059669;
     }
 
+    .application-card.status-offer_declined::before,
     .application-card.status-rejected::before {
         background: #ef4444;
     }
 
     .application-card.status-withdrawn::before {
         background: #64748b;
+    }
+
+    .application-card.status-on_hold::before {
+        background: #94a3b8;
+    }
+
+    .application-card.status-expired::before {
+        background: #6b7280;
     }
 
     .application-card:hover {
@@ -158,9 +168,19 @@
         color: #065f46;
     }
 
+    .status-offer_accepted {
+        background: #dcfce7;
+        color: #166534;
+    }
+
     .status-accepted {
         background: #dcfce7;
         color: #166534;
+    }
+
+    .status-offer_declined {
+        background: #fee2e2;
+        color: #991b1b;
     }
 
     .status-rejected {
@@ -171,6 +191,16 @@
     .status-withdrawn {
         background: #e2e8f0;
         color: #475569;
+    }
+
+    .status-on_hold {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .status-expired {
+        background: #e2e8f0;
+        color: #6b7280;
     }
 
     .application-details {
@@ -208,11 +238,79 @@
         color: #0f3460;
     }
 
+    /* Job Type & Schedule Section */
+    .schedule-info {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .job-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .job-type-full_time {
+        background: #0f3460;
+        color: white;
+    }
+
+    .job-type-part_time {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .job-type-night_care {
+        background: #1e293b;
+        color: white;
+    }
+
+    .job-type-home_visit {
+        background: #0891b2;
+        color: white;
+    }
+
+    .schedule-days {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .day-chip {
+        background: white;
+        border: 1px solid #e2e8f0;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        color: #475569;
+    }
+
+    .time-chip {
+        background: white;
+        border: 1px solid #0f3460;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        color: #0f3460;
+        font-weight: 600;
+    }
+
     /* Offer Card Styles */
     .offer-card {
         background: linear-gradient(135deg, #f0f9ff 0%, #e6f7f0 100%);
         border-radius: 15px;
-        padding: 20px;
+        padding: 25px;
         margin-bottom: 20px;
         border: 2px solid #10b981;
         position: relative;
@@ -270,6 +368,14 @@
         align-items: center;
         gap: 10px;
         margin-top: 10px;
+    }
+
+    .countdown-timer.warning {
+        background: #f59e0b;
+    }
+
+    .countdown-timer.expired {
+        background: #6b7280;
     }
 
     .countdown-timer i {
@@ -334,6 +440,17 @@
     .btn-sm {
         padding: 8px 16px;
         font-size: 0.9rem;
+    }
+
+    .btn-danger-outline {
+        background: transparent;
+        border: 1.5px solid #dc2626;
+        color: #dc2626;
+    }
+
+    .btn-danger-outline:hover {
+        background: #dc2626;
+        color: white;
     }
 
     .application-footer {
@@ -405,6 +522,23 @@
         color: #64748b;
         font-size: 0.9rem;
     }
+
+    .conflict-warning {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 10px;
+        padding: 12px 15px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #92400e;
+    }
+
+    .conflict-warning i {
+        font-size: 1.2rem;
+        color: #f59e0b;
+    }
 </style>
 
 <div class="container">
@@ -421,7 +555,7 @@
     <!-- Statistics Summary -->
     <div class="stats-summary">
         <div class="stat-card">
-            <div class="number">{{ applications|length }}</div>
+            <div class="number">{{ applications.paginator.count|default:applications|length }}</div>
             <div class="label">Total</div>
         </div>
         <div class="stat-card">
@@ -446,6 +580,7 @@
         <a href="?status=offer_sent" class="filter-tab {% if request.GET.status == 'offer_sent' %}active{% endif %}">Offers</a>
         <a href="?status=accepted" class="filter-tab {% if request.GET.status == 'accepted' %}active{% endif %}">Accepted</a>
         <a href="?status=rejected" class="filter-tab {% if request.GET.status == 'rejected' %}active{% endif %}">Rejected</a>
+        <a href="?status=on_hold" class="filter-tab {% if request.GET.status == 'on_hold' %}active{% endif %}">On Hold</a>
     </div>
 
     <!-- Applications List -->
@@ -461,9 +596,36 @@
                     </h3>
                 </div>
                 <span class="status-badge status-{{ application.status }}">
-                    <i class="fas fa-{% if application.status == 'pending' %}clock{% elif application.status == 'shortlisted' %}star{% elif application.status == 'offer_sent' %}envelope{% elif application.status == 'accepted' %}check-circle{% elif application.status == 'rejected' %}times-circle{% else %}minus-circle{% endif %}"></i>
+                    <i class="fas fa-{% if application.status == 'pending' %}clock{% elif application.status == 'shortlisted' %}star{% elif application.status == 'offer_sent' %}envelope{% elif application.status == 'offer_accepted' %}check-circle{% elif application.status == 'accepted' %}check-double{% elif application.status == 'rejected' %}times-circle{% elif application.status == 'on_hold' %}pause-circle{% elif application.status == 'expired' %}hourglass-end{% else %}minus-circle{% endif %}"></i>
                     {{ application.get_status_display }}
                 </span>
+            </div>
+
+            <!-- Job Type and Schedule Information -->
+            <div class="schedule-info">
+                <span class="job-type-badge job-type-{{ application.job_type }}">
+                    <i class="fas fa-{% if application.job_type == 'full_time' %}briefcase{% elif application.job_type == 'part_time' %}clock{% elif application.job_type == 'night_care' %}moon{% else %}home{% endif %}"></i>
+                    {{ application.get_job_type_display }}
+                </span>
+
+                {% if application.work_days %}
+                <div class="schedule-days">
+                    <span class="day-chip">
+                        <i class="fas fa-calendar-week"></i>
+                        {% for day in application.work_days %}
+                            {% if day == 0 %}Mon{% elif day == 1 %}Tue{% elif day == 2 %}Wed{% elif day == 3 %}Thu{% elif day == 4 %}Fri{% elif day == 5 %}Sat{% elif day == 6 %}Sun{% endif %}
+                            {% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                {% endif %}
+
+                {% if application.work_start_time and application.work_end_time %}
+                <span class="time-chip">
+                    <i class="fas fa-hourglass-half"></i>
+                    {{ application.work_start_time|time:"H:i" }} - {{ application.work_end_time|time:"H:i" }}
+                </span>
+                {% endif %}
             </div>
 
             <div class="application-details">
@@ -489,7 +651,32 @@
                 </div>
             </div>
 
-            <!-- OFFER SECTION - This is what the nurse sees when they have an offer -->
+            <!-- Hold/Freeze Information -->
+            {% if application.status == 'on_hold' and application.hold_reason %}
+            <div class="conflict-warning">
+                <i class="fas fa-pause-circle"></i>
+                <div>
+                    <strong>Application on Hold:</strong> {{ application.hold_reason }}
+                    {% if application.hold_placed_at %}
+                    <br><small>Since {{ application.hold_placed_at|date:"M d, Y" }}</small>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if application.status == 'frozen' and application.frozen_reason %}
+            <div class="conflict-warning">
+                <i class="fas fa-snowflake"></i>
+                <div>
+                    <strong>Application Frozen:</strong> {{ application.frozen_reason }}
+                    {% if application.frozen_at %}
+                    <br><small>Frozen on {{ application.frozen_at|date:"M d, Y" }}</small>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- OFFER SECTION - Enhanced with conflict checking -->
             {% if application.status == 'offer_sent' %}
             <div class="offer-card">
                 <div class="offer-ribbon">
@@ -499,15 +686,31 @@
                 <h3 style="color: #0f3460; margin-bottom: 15px;">
                     <i class="fas fa-envelope-open-text"></i> Offer Letter
                 </h3>
+
+                <!-- Check for potential conflicts with existing assignments -->
+                {% if application.check_caretaker_availability %}
+                    {% with availability=application.check_caretaker_availability %}
+                        {% if not availability.0 %}
+                        <div class="conflict-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>
+                                <strong>⚠️ Potential Schedule Conflict:</strong> {{ availability.1 }}
+                                <br>
+                                <small>Accepting this offer may affect your existing assignments.</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endwith %}
+                {% endif %}
                 
                 <div class="offer-details-grid">
                     <div class="offer-detail-item">
                         <div class="offer-detail-label">Start Date</div>
-                        <div class="offer-detail-value">{{ application.offer_details.start_date }}</div>
+                        <div class="offer-detail-value">{{ application.offer_details.start_date|default:"Not specified" }}</div>
                     </div>
                     <div class="offer-detail-item">
-                        <div class="offer-detail-label">Start Time</div>
-                        <div class="offer-detail-value">{{ application.offer_details.start_time }}</div>
+                        <div class="offer-detail-label">Shift Timing</div>
+                        <div class="offer-detail-value">{{ application.offer_details.shift_timing|default:"Not specified" }}</div>
                     </div>
                     <div class="offer-detail-item">
                         <div class="offer-detail-label">Final Rate</div>
@@ -521,7 +724,7 @@
 
                 <div style="background: white; padding: 15px; border-radius: 10px; margin: 15px 0;">
                     <strong><i class="fas fa-tasks"></i> Daily Duties:</strong>
-                    <p style="margin-top: 5px;">{{ application.offer_details.daily_duties }}</p>
+                    <p style="margin-top: 5px;">{{ application.offer_details.daily_duties|default:"Not specified" }}</p>
                     
                     {% if application.offer_details.special_instructions %}
                     <hr style="margin: 10px 0;">
@@ -531,24 +734,35 @@
                     
                     <hr style="margin: 10px 0;">
                     <strong><i class="fas fa-phone-alt"></i> Emergency Contact:</strong>
-                    <p>{{ application.offer_details.emergency_contact }} - {{ application.offer_details.emergency_phone }}</p>
+                    <p>{{ application.offer_details.emergency_contact|default:"Not specified" }} - {{ application.offer_details.emergency_phone|default:"Not specified" }}</p>
                 </div>
 
-                <div class="countdown-timer">
+                {% if application.is_offer_expired %}
+                <div class="countdown-timer expired">
+                    <i class="fas fa-hourglass-end"></i>
+                    <span>This offer has expired</span>
+                </div>
+                {% else %}
+                <div class="countdown-timer {% if application.time_until_offer_expiry|slice:':1' == '0' %}warning{% endif %}">
                     <i class="fas fa-hourglass-half"></i>
                     <span>Offer expires in: <strong>{{ application.time_until_offer_expiry }}</strong></span>
                 </div>
+                {% endif %}
 
                 <div class="offer-actions">
                     <a href="{% url 'view_offer' application.id %}" class="btn btn-outline" style="flex: 0.5;">
                         <i class="fas fa-eye"></i> View Full Offer
                     </a>
-                    <a href="{% url 'respond_to_offer' application.id 'accept' %}" class="btn btn-accept" onclick="return confirm('Accept this offer? You will be committed to this position.')">
+                    {% if not application.is_offer_expired %}
+                    <a href="{% url 'respond_to_offer' application.id 'accept' %}" class="btn btn-accept" 
+                       onclick="return confirm('Accept this offer? You will be committed to this position and any other active applications will be withdrawn.')">
                         <i class="fas fa-check-circle"></i> Accept Offer
                     </a>
-                    <a href="{% url 'respond_to_offer' application.id 'decline' %}" class="btn btn-decline" onclick="return confirm('Decline this offer? This action cannot be undone.')">
+                    <a href="{% url 'respond_to_offer' application.id 'decline' %}" class="btn btn-decline" 
+                       onclick="return confirm('Decline this offer? This action cannot be undone.')">
                         <i class="fas fa-times-circle"></i> Decline
                     </a>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
@@ -557,15 +771,23 @@
                 <div class="applied-date">
                     <i class="far fa-calendar-check"></i>
                     Applied on {{ application.applied_at|date:"M d, Y" }}
+                    {% if application.shortlisted_at %}
+                    <br><small>Shortlisted on {{ application.shortlisted_at|date:"M d, Y" }}</small>
+                    {% endif %}
                 </div>
                 <div>
                     <a href="{% url 'request_detail' application.request.id %}" class="btn btn-outline btn-sm">
                         <i class="fas fa-eye"></i> View Request
                     </a>
                     {% if application.status == 'pending' %}
-                    <a href="{% url 'withdraw_application' application.id %}" class="btn btn-outline-danger btn-sm">
+                    <a href="{% url 'withdraw_application' application.id %}" class="btn btn-danger-outline btn-sm">
                         <i class="fas fa-times"></i> Withdraw
                     </a>
+                    {% endif %}
+                    {% if application.status == 'on_hold' %}
+                    <span class="btn btn-sm" style="background: #e2e8f0; color: #475569; cursor: default;">
+                        <i class="fas fa-pause-circle"></i> On Hold
+                    </span>
                     {% endif %}
                 </div>
             </div>
@@ -581,5 +803,43 @@
         </div>
         {% endfor %}
     </div>
+
+    <!-- Pagination -->
+    {% if applications.has_other_pages %}
+    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 30px;">
+        {% if applications.has_previous %}
+        <a href="?page={{ applications.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+           class="btn btn-outline btn-sm">
+            <i class="fas fa-chevron-left"></i> Previous
+        </a>
+        {% endif %}
+
+        <span style="padding: 8px 16px; background: white; border-radius: 8px; border: 1px solid #e2e8f0;">
+            Page {{ applications.number }} of {{ applications.paginator.num_pages }}
+        </span>
+
+        {% if applications.has_next %}
+        <a href="?page={{ applications.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" 
+           class="btn btn-outline btn-sm">
+            Next <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
+
+<script>
+    // Auto-refresh countdown timers
+    function updateCountdowns() {
+        document.querySelectorAll('.countdown-timer').forEach(timer => {
+            if (!timer.classList.contains('expired')) {
+                // In a real implementation, you'd update the time here
+                // For now, we'll just let the page refresh if needed
+            }
+        });
+    }
+    
+    // Update every minute
+    setInterval(updateCountdowns, 60000);
+</script>
 {% endblock %}

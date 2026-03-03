@@ -18,6 +18,10 @@ urlpatterns = [
         name='login'
     ),
 
+# logout
+path('logout/', views.custom_logout, name='logout'),
+
+
     # Registration
     path(
         'register/family/',

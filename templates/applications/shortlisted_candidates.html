@@ -15,7 +15,7 @@
     
     .shortlist-stats {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 20px;
         margin-bottom: 30px;
     }
@@ -42,7 +42,7 @@
     
     .comparison-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
         gap: 25px;
         margin-top: 20px;
     }
@@ -70,6 +70,7 @@
     
     .candidate-card.rank-2 {
         border-color: silver;
+        background: linear-gradient(145deg, white, #f8fafc);
     }
     
     .candidate-card.rank-3 {
@@ -129,6 +130,73 @@
         margin: 5px 0 0;
     }
     
+    /* Job Type Badge */
+    .job-type-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+    
+    .job-type-full_time {
+        background: #0f3460;
+        color: white;
+    }
+    
+    .job-type-part_time {
+        background: #f59e0b;
+        color: white;
+    }
+    
+    .job-type-night_care {
+        background: #1e293b;
+        color: white;
+    }
+    
+    .job-type-home_visit {
+        background: #0891b2;
+        color: white;
+    }
+    
+    /* Schedule Info */
+    .schedule-info {
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 12px 15px;
+        margin: 15px 0;
+        border-left: 3px solid #0f3460;
+    }
+    
+    .schedule-days {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+    }
+    
+    .day-chip {
+        background: white;
+        border: 1px solid #e2e8f0;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        color: #475569;
+    }
+    
+    .time-chip {
+        background: #0f3460;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
     .comparison-table {
         width: 100%;
         margin: 15px 0;
@@ -146,12 +214,18 @@
         width: 40%;
     }
     
+    .comparison-table td:last-child {
+        color: #0f3460;
+        font-weight: 500;
+    }
+    
     .notes-section {
         background: #f8fafc;
         padding: 15px;
         border-radius: 10px;
         margin: 15px 0;
         font-size: 0.9rem;
+        border-left: 3px solid #f59e0b;
     }
     
     .action-buttons {
@@ -206,9 +280,26 @@
         color: white;
     }
     
+    .btn-warning:hover {
+        background: #d97706;
+    }
+    
     .btn-danger {
         background: #ef4444;
         color: white;
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+    
+    .btn-info {
+        background: #0f3460;
+        color: white;
+    }
+    
+    .btn-info:hover {
+        background: #1e4a7a;
     }
     
     .empty-state {
@@ -217,6 +308,7 @@
         background: white;
         border-radius: 20px;
         border: 1px solid #e2e8f0;
+        grid-column: 1/-1;
     }
     
     .rank-controls {
@@ -238,11 +330,74 @@
         align-items: center;
         justify-content: center;
         transition: all 0.2s;
+        text-decoration: none;
     }
     
     .rank-btn:hover {
         background: #0f3460;
         color: white;
+    }
+    
+    .rank-btn.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+        border-color: #cbd5e1;
+        color: #cbd5e1;
+    }
+    
+    .offer-badge {
+        background: #10b981;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .expiry-warning {
+        color: #dc2626;
+        font-size: 0.8rem;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .text-muted {
+        color: #94a3b8;
+        font-style: italic;
+    }
+    
+    .filter-section {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .filter-chip {
+        padding: 6px 15px;
+        border-radius: 25px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+    
+    .filter-chip:hover {
+        border-color: #0f3460;
+        color: #0f3460;
+    }
+    
+    .filter-chip.active {
+        background: #0f3460;
+        color: white;
+        border-color: #0f3460;
     }
 </style>
 
@@ -254,7 +409,10 @@
                 <i class="fas fa-star" style="margin-right: 10px;"></i>Shortlisted Candidates
             </h1>
             <p style="color: #64748b;">
-                For: <strong>{{ care_request.patient_name }}</strong> ({{ care_request.get_care_type_display }})
+                For: <strong>{{ care_request.patient_name }}</strong> 
+                <span class="job-type-badge job-type-{{ care_request.care_type }}">
+                    {{ care_request.get_care_type_display }}
+                </span>
             </p>
         </div>
         <a href="{% url 'request_applications' care_request.id %}" class="btn btn-outline">
@@ -276,12 +434,38 @@
             <div class="number">{{ pending_decision_count }}</div>
             <div class="label">Awaiting Decision</div>
         </div>
+        <div class="stat-card">
+            <div class="number">{{ on_hold_count|default:"0" }}</div>
+            <div class="label">On Hold</div>
+        </div>
+    </div>
+
+    <!-- Filter Chips -->
+    <div class="filter-section">
+        <a href="?filter=all" class="filter-chip {% if request.GET.filter == 'all' or not request.GET.filter %}active{% endif %}">
+            All
+        </a>
+        <a href="?filter=shortlisted" class="filter-chip {% if request.GET.filter == 'shortlisted' %}active{% endif %}">
+            Shortlisted
+        </a>
+        <a href="?filter=offer_sent" class="filter-chip {% if request.GET.filter == 'offer_sent' %}active{% endif %}">
+            Offer Sent
+        </a>
+        <a href="?filter=on_hold" class="filter-chip {% if request.GET.filter == 'on_hold' %}active{% endif %}">
+            On Hold
+        </a>
+        <a href="?filter=part_time" class="filter-chip {% if request.GET.filter == 'part_time' %}active{% endif %}">
+            Part Time
+        </a>
+        <a href="?filter=full_time" class="filter-chip {% if request.GET.filter == 'full_time' %}active{% endif %}">
+            Full Time
+        </a>
     </div>
 
     <!-- Shortlisted Candidates Grid -->
     <div class="comparison-grid">
         {% for app in shortlisted_applications %}
-        <div class="candidate-card rank-{% if app.shortlist_rank %}{{ app.shortlist_rank }}{% endif %}">
+        <div class="candidate-card rank-{% if app.shortlist_rank and app.shortlist_rank <= 3 %}{{ app.shortlist_rank }}{% endif %}">
             {% if app.shortlist_rank %}
             <div class="rank-badge rank-{% if app.shortlist_rank == 1 %}1{% endif %}">
                 #{{ app.shortlist_rank }}
@@ -293,10 +477,44 @@
                     <i class="fas fa-user-nurse"></i>
                 </div>
                 <div class="candidate-info">
-                    <h3>{{ app.caretaker.get_full_name|default:app.caretaker.username }}</h3>
+                    <h3>
+                        {{ app.caretaker.get_full_name|default:app.caretaker.username }}
+                        <span class="job-type-badge job-type-{{ app.job_type }}">
+                            {{ app.get_job_type_display }}
+                        </span>
+                    </h3>
                     <p><i class="fas fa-envelope"></i> {{ app.caretaker.email }}</p>
                 </div>
             </div>
+
+            <!-- Schedule Information for Part-Time -->
+            {% if app.job_type != 'full_time' and app.work_days %}
+            <div class="schedule-info">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong><i class="fas fa-clock"></i> Availability</strong>
+                    {% if app.work_start_time and app.work_end_time %}
+                    <span class="time-chip">
+                        <i class="fas fa-hourglass-half"></i>
+                        {{ app.work_start_time|time:"H:i" }} - {{ app.work_end_time|time:"H:i" }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="schedule-days">
+                    {% for day in app.work_days %}
+                        <span class="day-chip">
+                            {% if day == 0 %}Monday
+                            {% elif day == 1 %}Tuesday
+                            {% elif day == 2 %}Wednesday
+                            {% elif day == 3 %}Thursday
+                            {% elif day == 4 %}Friday
+                            {% elif day == 5 %}Saturday
+                            {% elif day == 6 %}Sunday
+                            {% endif %}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Comparison Table -->
             <table class="comparison-table">
@@ -332,33 +550,66 @@
                     <td>Shortlisted On</td>
                     <td>{{ app.shortlisted_at|date:"M d, Y" }}</td>
                 </tr>
+                {% if app.status == 'offer_sent' %}
+                <tr>
+                    <td>Offer Expires</td>
+                    <td>
+                        {% if app.is_offer_expired %}
+                            <span style="color: #dc2626;">Expired</span>
+                        {% else %}
+                            <span style="color: #10b981;">{{ app.offer_expires_at|date:"M d, H:i" }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
             </table>
 
             <!-- Private Notes -->
             {% if app.shortlist_notes %}
             <div class="notes-section">
-                <i class="fas fa-sticky-note" style="color: #0f3460; margin-right: 5px;"></i>
+                <i class="fas fa-sticky-note" style="color: #f59e0b; margin-right: 5px;"></i>
                 <strong>Your Notes:</strong> {{ app.shortlist_notes }}
             </div>
             {% else %}
-            <div class="notes-section" style="background: #f1f5f9;">
+            <div class="notes-section" style="background: #f1f5f9; border-left-color: #94a3b8;">
                 <i class="fas fa-sticky-note" style="color: #94a3b8; margin-right: 5px;"></i>
                 <span class="text-muted">No notes added yet</span>
             </div>
             {% endif %}
 
-            <!-- Rank Controls -->
+            <!-- Hold/Frozen Information -->
+            {% if app.status == 'on_hold' and app.hold_reason %}
+            <div style="background: #f1f5f9; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                <i class="fas fa-pause-circle" style="color: #64748b;"></i>
+                <small><strong>On Hold:</strong> {{ app.hold_reason }}</small>
+            </div>
+            {% endif %}
+
+            {% if app.status == 'frozen' and app.frozen_reason %}
+            <div style="background: #e0f2fe; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                <i class="fas fa-snowflake" style="color: #0369a1;"></i>
+                <small><strong>Frozen:</strong> {{ app.frozen_reason }}</small>
+            </div>
+            {% endif %}
+
+            <!-- Rank Controls (only for shortlisted) -->
+            {% if app.status == 'shortlisted' %}
             <div class="rank-controls">
-                <a href="{% url 'update_shortlist_rank' app.id 'up' %}" class="rank-btn" title="Move up">
+                <a href="{% url 'update_shortlist_rank' app.id 'up' %}" 
+                   class="rank-btn {% if app.shortlist_rank == 1 %}disabled{% endif %}" 
+                   title="Move up">
                     <i class="fas fa-chevron-up"></i>
                 </a>
-                <a href="{% url 'update_shortlist_rank' app.id 'down' %}" class="rank-btn" title="Move down">
+                <a href="{% url 'update_shortlist_rank' app.id 'down' %}" 
+                   class="rank-btn {% if app.shortlist_rank == shortlisted_count %}disabled{% endif %}" 
+                   title="Move down">
                     <i class="fas fa-chevron-down"></i>
                 </a>
                 <a href="{% url 'add_shortlist_notes' app.id %}" class="rank-btn" title="Add notes">
                     <i class="fas fa-pen"></i>
                 </a>
             </div>
+            {% endif %}
 
             <!-- Action Buttons -->
             <div class="action-buttons">
@@ -367,21 +618,58 @@
                 </a>
                 
                 {% if app.status == 'shortlisted' %}
-                <a href="{% url 'send_offer' app.id %}" class="btn btn-success btn-sm">
-                    <i class="fas fa-paper-plane"></i> Send Offer
-                </a>
-                <a href="{% url 'remove_shortlist' app.id %}" class="btn btn-danger btn-sm"
-                   onclick="return confirm('Remove this candidate from shortlist?')">
-                    <i class="fas fa-times"></i> Remove
-                </a>
+                    {% if care_request.can_send_offer %}
+                    <a href="{% url 'send_offer' app.id %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-paper-plane"></i> Send Offer
+                    </a>
+                    {% else %}
+                    <span class="btn btn-sm" style="background: #e2e8f0; color: #64748b; cursor: not-allowed;">
+                        <i class="fas fa-ban"></i> Cannot Send Offer
+                    </span>
+                    {% endif %}
+                    <a href="{% url 'remove_shortlist' app.id %}" class="btn btn-danger btn-sm"
+                       onclick="return confirm('Remove this candidate from shortlist?')">
+                        <i class="fas fa-times"></i> Remove
+                    </a>
+                    
                 {% elif app.status == 'offer_sent' %}
-                <span class="badge bg-info">Offer Sent</span>
-                <small>Expires: {{ app.offer_expires_at|date:"M d, H:i" }}</small>
+                    <span class="offer-badge">
+                        <i class="fas fa-paper-plane"></i> Offer Sent
+                    </span>
+                    {% if app.is_offer_expired %}
+                        <span class="expiry-warning">
+                            <i class="fas fa-exclamation-circle"></i> Expired
+                        </span>
+                    {% else %}
+                        <small style="color: #64748b;">
+                            Expires: {{ app.offer_expires_at|date:"M d, H:i" }}
+                        </small>
+                    {% endif %}
+                    
+                {% elif app.status == 'on_hold' %}
+                    <span class="btn btn-sm" style="background: #f1f5f9; color: #475569;">
+                        <i class="fas fa-pause-circle"></i> On Hold
+                    </span>
+                    
+                {% elif app.status == 'frozen' %}
+                    <span class="btn btn-sm" style="background: #e0f2fe; color: #0369a1;">
+                        <i class="fas fa-snowflake"></i> Frozen
+                    </span>
+                    
+                {% elif app.status == 'offer_accepted' %}
+                    <span class="btn btn-sm" style="background: #10b981; color: white;">
+                        <i class="fas fa-check-circle"></i> Accepted
+                    </span>
+                    
+                {% elif app.status == 'offer_declined' %}
+                    <span class="btn btn-sm" style="background: #ef4444; color: white;">
+                        <i class="fas fa-times-circle"></i> Declined
+                    </span>
                 {% endif %}
             </div>
         </div>
         {% empty %}
-        <div class="empty-state" style="grid-column: 1/-1;">
+        <div class="empty-state">
             <i class="fas fa-star" style="font-size: 4rem; color: #cbd5e1;"></i>
             <h3>No Shortlisted Candidates</h3>
             <p>You haven't shortlisted any candidates yet. Go back to applications and shortlist candidates you're interested in.</p>

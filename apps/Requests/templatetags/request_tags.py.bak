@@ -1,0 +1,40 @@
+from django import template
+from apps.Applications.models import Application
+
+register = template.Library()
+
+@register.filter
+def check_caretaker_eligibility(request, user):
+    """
+    Custom filter to check if a caretaker is eligible for a specific request
+    """
+    result = {
+        'eligible': False,
+        'reason': ''
+    }
+    
+    # Check if user is authenticated and is a caretaker
+    if not user.is_authenticated:
+        result['reason'] = 'You must be logged in'
+        return result
+    
+    # Check if user has caretaker profile
+    try:
+        caretaker = user.caretaker_profile
+    except AttributeError:
+        result['reason'] = 'You must be a caretaker to apply'
+        return result
+    
+    # Check if caretaker has already applied for this request
+    if Application.objects.filter(request=request, caretaker=caretaker).exists():
+        result['reason'] = 'You have already applied for this request'
+        return result
+    
+    # Check if request is still open
+    if request.status != 'open':
+        result['reason'] = f'This request is {request.status}'
+        return result
+    
+    # All checks passed
+    result['eligible'] = True
+    return result

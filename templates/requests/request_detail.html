@@ -515,6 +515,14 @@
             background: #1e4a7a;
         }
 
+        .btn-warning {
+            background: #f59e0b;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
         .btn-large {
             padding: 15px 30px;
             font-size: 1.1rem;
@@ -589,6 +597,112 @@
             margin-bottom: 20px;
         }
 
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-header.warning {
+            background: #fef3c7;
+            border-bottom-color: #f59e0b;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #64748b;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #0f3460;
+        }
+
+        .modal-body {
+            padding: 25px;
+            text-align: center;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            background: #f8fafc;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .modal-footer .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .draft-icon {
+            font-size: 4rem;
+            color: #f59e0b;
+            margin-bottom: 20px;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -615,11 +729,35 @@
                 width: 100%;
                 justify-content: center;
             }
+
+            .modal-footer {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 
+
+<script>
+    // Handle logout link click
+    document.querySelector('.logout-item a')?.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.getElementById('logout-form').submit();
+    });
+
+    // Also handle any other logout links if they exist
+    document.querySelectorAll("a[href=\"{% url 'logout' %}\"]").forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.getElementById('logout-form').submit();
+        });
+    });
+</script>
+
+
+
 <body>
+
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
@@ -634,7 +772,8 @@
 
         <div class="nav-menu">
             {% if user.role == 'family' %}
-            <a href="{% url 'family_dashboard' %}" class="nav-item">
+            <!-- FIXED: Added dashboard: namespace -->
+            <a href="{% url 'dashboard:family_dashboard' %}" class="nav-item">
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
             </a>
@@ -655,7 +794,8 @@
                 <span>My Profile</span>
             </a>
             {% else %}
-            <a href="{% url 'caretaker_dashboard' %}" class="nav-item">
+            <!-- FIXED: Added dashboard: namespace -->
+            <a href="{% url 'dashboard:caretaker_dashboard' %}" class="nav-item">
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
             </a>
@@ -678,13 +818,15 @@
             {% endif %}
 
             <div class="logout-item">
-                <a href="{% url 'index' %}" class="nav-item">
+                <a href="{% url 'logout' %}" class="nav-item">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </a>
             </div>
+
         </div>
     </div>
+
 
     <!-- Main Content -->
     <div class="main-content">
@@ -966,18 +1108,18 @@
             </div>
             {% endif %}
 
-            <!-- Conditional Section: Statistics for Family, Apply Button for Caretakers -->
+            <!-- Statistics Section (Only for Family)
             {% if user.role == 'family' %}
-            <!-- Statistics Section (Only for Family) -->
-            <div class="section-title">
+            Statistics Section (Only for Family) -->
+            <!-- <div class="section-title">
                 <i class="fas fa-chart-bar"></i> Statistics
             </div>
             <div class="statistics-row">
                 <div class="statistic">
-                    <i class="fas fa-eye"></i> {{ request.views_count }} Views
+                    <i class="fas fa-eye"></i> {{ request.views_count|default:"0" }} Views
                 </div>
                 <div class="statistic">
-                    <i class="fas fa-users"></i> {{ request.applications_count }} Applications
+                    <i class="fas fa-users"></i> {{ applications_count|default:"0" }} Applications
                 </div>
                 <div class="statistic">
                     <i class="fas fa-clock"></i> Posted {{ request.created_at|timesince }} ago
@@ -988,11 +1130,10 @@
                 </div>
                 {% endif %}
             </div>
-            {% elif user.role == 'caretaker' %}
-           
-           
-            <!-- Apply Section (Only for Caretakers) -->
+            {% endif %} -->
 
+            <!-- Caretaker Section -->
+            {% if user.role == 'caretaker' %}
             {% if request.status != 'open' %}
             <!-- Request is not open -->
             <div class="already-applied">
@@ -1014,15 +1155,13 @@
                     <i class="fas fa-eye"></i> View My Applications
                 </a>
             </div>
-            
+
             {% else %}
             <!-- Can apply -->
             <div class="apply-section">
                 <i class="fas fa-hand-holding-heart"></i>
                 <h3>Interested in this position?</h3>
                 <p>Submit your application to let the family know you're interested in providing care.</p>
-                
-           
                 <a href="{% url 'apply_for_request' request.id %}" class="btn btn-success btn-large">
                     <i class="fas fa-paper-plane"></i> Apply Now
                 </a>
@@ -1033,13 +1172,20 @@
             <!-- Action Buttons (Only for Family who owns the request) -->
             {% if request.family == user %}
             <div class="action-buttons">
+                <!-- Back to List Button with Draft Warning -->
+                {% if request.status == "draft" %}
+                <button onclick="showDraftWarning()" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </button>
+                {% else %}
                 <a href="{% url 'my_requests' %}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back to List
                 </a>
+                {% endif %}
 
                 {% if request.status == "open" %}
                 <a href="{% url 'request_applications' request.id %}" class="btn">
-                    <i class="fas fa-users"></i> View Applications ({{ request.applications_count }})
+                    <i class="fas fa-users"></i> View Applications ({{ applications_count|default:"0" }})
                 </a>
                 {% endif %}
 
@@ -1072,6 +1218,123 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- Draft Warning Modal -->
+    <div id="draftWarningModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header warning">
+                <h3 style="color: #92400e;">
+                    <i class="fas fa-exclamation-triangle"></i> Unsaved Draft
+                </h3>
+                <button class="close-btn" onclick="closeDraftWarning()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="draft-icon">
+                    <i class="fas fa-pen"></i>
+                </div>
+                <h4 style="color: #0f3460; margin-bottom: 15px;">You have an unsaved draft!</h4>
+                <p style="color: #64748b; margin-bottom: 25px;">
+                    This request is still in draft mode. If you leave now, your progress will be lost.
+                    What would you like to do?
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <a href="{% url 'edit_request' request.id %}" class="btn btn-warning" style="width: 100%;">
+                        <i class="fas fa-edit"></i> Continue Editing
+                    </a>
+
+                    <!-- Save Draft & Exit - POST to save_draft with current data -->
+                    <form method="POST" action="{% url 'save_draft' request.id %}" style="width: 100%;">
+                        {% csrf_token %}
+                        <!-- Include all form fields to save the current state -->
+                        <input type="hidden" name="patient_name" value="{{ request.patient_name }}">
+                        <input type="hidden" name="patient_age" value="{{ request.patient_age }}">
+                        <input type="hidden" name="medical_conditions" value="{{ request.medical_condition }}">
+                        <input type="hidden" name="care_type" value="{{ request.care_type }}">
+                        <input type="hidden" name="duration_days" value="{{ request.duration_days }}">
+                        <input type="hidden" name="start_date" value="{{ request.start_date|date:'Y-m-d' }}">
+                        <input type="hidden" name="start_time" value="{{ request.start_time|time:'H:i' }}">
+                        <input type="hidden" name="address" value="{{ request.address }}">
+                        <input type="hidden" name="city" value="{{ request.city }}">
+                        <input type="hidden" name="state" value="{{ request.state }}">
+                        <input type="hidden" name="pincode" value="{{ request.pincode }}">
+                        <input type="hidden" name="salary_offered" value="{{ request.salary_offered }}">
+                        <input type="hidden" name="payment_frequency" value="{{ request.payment_frequency }}">
+                        <input type="hidden" name="care_details" value="{{ request.care_details }}">
+                        <input type="hidden" name="experience_required" value="{{ request.experience_required }}">
+                        <input type="hidden" name="gender_preference" value="{{ request.gender_preference }}">
+                        <input type="hidden" name="required_skills" value="{{ request.required_skills }}">
+                        <input type="hidden" name="emergency_contact_name"
+                            value="{{ request.emergency_contact_name|default:'' }}">
+                        <input type="hidden" name="emergency_contact_phone"
+                            value="{{ request.emergency_contact_phone|default:'' }}">
+
+                        <button type="submit" class="btn btn-success" style="width: 100%;">
+                            <i class="fas fa-save"></i> Save Draft & Exit
+                        </button>
+                    </form>
+
+                    <a href="{% url 'my_requests' %}" class="btn btn-outline"
+                        style="width: 100%; background: transparent; border: 1.5px solid #0f3460; color: #0f3460;"
+                        onclick="return confirm('⚠️ Are you sure? All unsaved changes will be lost forever!');">
+                        <i class="fas fa-trash-alt"></i> Discard & Exit
+                    </a>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i> Drafts are saved only when you click "Save Draft"
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Draft Warning Modal Functions
+        function showDraftWarning() {
+            document.getElementById('draftWarningModal').style.display = 'flex';
+        }
+
+        function closeDraftWarning() {
+            document.getElementById('draftWarningModal').style.display = 'none';
+        }
+
+        function confirmDiscard() {
+            closeDraftWarning();
+            return confirm('⚠️ Are you sure? All unsaved changes will be lost forever!');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('draftWarningModal');
+            if (event.target === modal) {
+                closeDraftWarning();
+            }
+        }
+
+        // Prevent accidental navigation away from draft
+        let isDraft = "{{ request.status }}" === "draft";
+
+        if (isDraft) {
+            window.addEventListener('beforeunload', function (e) {
+                // Don't show warning when clicking on modal buttons
+                if (!document.getElementById('draftWarningModal').style.display === 'flex') {
+                    e.preventDefault();
+                    e.returnValue = 'You have an unsaved draft. Are you sure you want to leave?';
+                }
+            });
+        }
+
+
+        document.querySelector('.logout-item a')?.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.getElementById('logout-form').submit();
+        });
+
+
+    </script>
 </body>
 
 </html>

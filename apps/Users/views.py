@@ -5,6 +5,8 @@ from django.contrib.auth import authenticate, login, get_user_model
 from django.db.models import Q
 from django.utils import timezone
 from .models import User, CaretakerProfile, FamilyProfile, CaretakerAvailability
+from django.contrib.auth import logout
+from django.shortcuts import redirect
 
 User = get_user_model()
 
@@ -15,6 +17,15 @@ User = get_user_model()
 
 def index(request):
     return render(request, "users/index.html")
+
+
+# --------------------
+# logout
+# ----------------------
+
+def custom_logout(request):
+    logout(request)
+    return redirect('index')
 
 
 # -------------------------------------------------------------------------
@@ -222,51 +233,42 @@ def family_register(request):
     return render(request, "users/family_register.html")
 
 
+
 # -------------------------------------------------------------------------
 # Custom Login (Role-Based Redirection)
 # -------------------------------------------------------------------------
 
 def custom_login(request):
-    # Clear any existing messages before processing login
-    storage = messages.get_messages(request)
-    storage.used = True
-    
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-
-        if not username or not password:
-            messages.error(request, "Please enter both username and password.")
-            return render(request, "users/login.html")
-
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        # Authenticate user
         user = authenticate(request, username=username, password=password)
-
+        
         if user is not None:
             login(request, user)
             
-            # Clear messages again before redirect to prevent them from showing on next page
-            storage = messages.get_messages(request)
-            storage.used = True
-
-            if user.role == "admin":
-                return redirect("/admin/")
-
-            elif user.role == "family":
-                # Add welcome message that will ONLY show on dashboard
-                messages.success(request, f"Welcome back, {user.email}!")
-                return redirect("family_dashboard")
-
-            elif user.role == "caretaker":
-                # Check BOTH is_verified and verification_status
-                if user.is_verified and user.verification_status == "verified":
-                    messages.success(request, f"Welcome back, {user.first_name}!")
-                    return redirect("caretaker_dashboard")
-                else:
-                    return redirect("verification_pending")
+            # Redirect based on user role
+            if user.role == 'family':
+                return redirect('dashboard:family_dashboard')  # Use namespace
+            elif user.role == 'caretaker':
+                # Check if caretaker is approved
+                try:
+                    if hasattr(user, 'caretaker_profile') and user.caretaker_profile.is_approved:
+                        return redirect('dashboard:caretaker_dashboard')  # Use namespace
+                    else:
+                        return redirect('verification_pending')
+                except:
+                    return redirect('verification_pending')
+            else:
+                return redirect('index')
         else:
-            messages.error(request, "Invalid username or password.")
+            # Invalid login
+            return render(request, 'users/login.html', {'error': 'Invalid email or password'})
+    
+    return render(request, 'users/login.html')
 
-    return render(request, "users/login.html")
 
 
 # -------------------------------------------------------------------------
@@ -712,7 +714,7 @@ def caretaker_dashboard(request):
     except CaretakerProfile.DoesNotExist:
         profile = None
     
-    # Get statistics
+    # Get statistics - update these with actual data from your apps
     total_applications = 0  # This would come from applications app
     assigned_jobs = 0       # This would come from assignments app
     pending_applications = 0 # This would come from applications app
@@ -723,11 +725,31 @@ def caretaker_dashboard(request):
         'assigned_jobs': assigned_jobs,
         'pending_applications': pending_applications,
     }
-    return render(request, 'users/caretaker_dashboard.html', context)
+    return render(request, 'users/caretaker_dashboard.html', context)  # Note: using 'users/' prefix
 
 
 @login_required
 def family_dashboard(request):
+    """Family dashboard view"""
+    if request.user.role != 'family':
+        messages.error(request, "Access denied.")
+        return redirect('index')
+    
+    # Clear any messages from previous pages (like login)
+    storage = messages.get_messages(request)
+    storage.used = True
+    
+    try:
+        profile = request.user.family_profile
+    except FamilyProfile.DoesNotExist:
+        profile = None
+    
+    context = {
+        'profile': profile,
+    }
+    return render(request, 'users/family_dashboard.html', context)  # Note: using 'users/' prefix
+
+
     """Family dashboard view"""
     if request.user.role != 'family':
         messages.error(request, "Access denied.")

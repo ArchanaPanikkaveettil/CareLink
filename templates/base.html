@@ -272,9 +272,9 @@
 
             {% if user.is_authenticated %}
             {% if user.role == "family" %}
-            <a href="{% url 'family_dashboard' %}">Dashboard</a>
+            <a href="{% url 'dashboard:family_dashboard' %}">Dashboard</a> <!-- Using namespace -->
             {% elif user.role == "caretaker" %}
-            <a href="{% url 'caretaker_dashboard' %}">Dashboard</a>
+            <a href="{% url 'dashboard:caretaker_dashboard' %}">Dashboard</a> <!-- Using namespace -->
             {% endif %}
             <a href="{% url 'logout' %}">Logout</a>
             {% else %}
@@ -282,6 +282,8 @@
             <a href="{% url 'login' %}" class="btn-nav">Login</a>
 
             {% endif %}
+
+
         </div>
     </div>
 

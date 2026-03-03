@@ -7,7 +7,7 @@
 {% block content %}
 <style>
     .offer-container {
-        max-width: 800px;
+        max-width: 900px;
         margin: 0 auto;
     }
     
@@ -46,6 +46,32 @@
         font-size: 2rem;
         color: #0a2a38;
         margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .job-type-badge {
+        display: inline-block;
+        padding: 4px 15px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: #0f3460;
+        color: white;
+    }
+    
+    .job-type-part_time {
+        background: #f59e0b;
+    }
+    
+    .job-type-night_care {
+        background: #1e293b;
+    }
+    
+    .job-type-home_visit {
+        background: #0891b2;
     }
     
     .offer-meta {
@@ -62,6 +88,7 @@
         align-items: center;
         gap: 20px;
         flex-wrap: wrap;
+        border-left: 4px solid #4bc3a3;
     }
     
     .family-avatar {
@@ -116,6 +143,12 @@
         background: #f8fafc;
         padding: 15px;
         border-radius: 10px;
+        transition: transform 0.2s;
+    }
+    
+    .offer-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
     
     .offer-item.full-width {
@@ -123,16 +156,25 @@
     }
     
     .offer-label {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         color: #64748b;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
         margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .offer-label i {
+        color: #4bc3a3;
     }
     
     .offer-value {
         font-weight: 600;
         color: #0a2a38;
         font-size: 1.1rem;
+        line-height: 1.4;
     }
     
     .duties-box {
@@ -140,6 +182,13 @@
         padding: 20px;
         border-radius: 10px;
         line-height: 1.6;
+        border-left: 4px solid #4bc3a3;
+    }
+    
+    .duties-box hr {
+        border: none;
+        border-top: 1px dashed #e2e8f0;
+        margin: 15px 0;
     }
     
     .countdown-box {
@@ -155,15 +204,25 @@
         margin: 20px 0;
     }
     
+    .countdown-box.warning {
+        background: #f59e0b;
+    }
+    
+    .countdown-box.expired {
+        background: #6b7280;
+    }
+    
     .countdown {
         font-size: 1.5rem;
         font-weight: 700;
+        font-family: monospace;
     }
     
     .action-buttons {
         display: flex;
         gap: 15px;
         margin-top: 30px;
+        flex-wrap: wrap;
     }
     
     .btn {
@@ -190,6 +249,7 @@
     .btn-accept:hover {
         background: #3aa082;
         transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(75, 195, 163, 0.3);
     }
     
     .btn-decline {
@@ -211,6 +271,119 @@
         background: #475569;
     }
     
+    .btn:disabled, .btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    
+    /* Schedule Display */
+    .schedule-info {
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+    }
+    
+    .day-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    
+    .day-chip {
+        background: white;
+        border: 1px solid #e2e8f0;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        color: #475569;
+    }
+    
+    .day-chip.selected {
+        background: #4bc3a3;
+        color: white;
+        border-color: #4bc3a3;
+    }
+    
+    .time-chip {
+        background: #0a2a38;
+        color: white;
+        padding: 6px 15px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    
+    /* Conflict Warning */
+    .conflict-warning {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: #92400e;
+        animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .conflict-warning i {
+        font-size: 1.5rem;
+        color: #f59e0b;
+    }
+    
+    .conflict-warning .warning-content {
+        flex: 1;
+    }
+    
+    .conflict-warning .warning-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .conflict-warning .warning-details {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: #e2e8f0;
+        color: #475569;
+    }
+    
+    .badge-success {
+        background: #4bc3a3;
+        color: white;
+    }
+    
+    .badge-warning {
+        background: #f59e0b;
+        color: white;
+    }
+    
     @media (max-width: 768px) {
         .offer-grid {
             grid-template-columns: 1fr;
@@ -223,14 +396,48 @@
         .action-buttons {
             flex-direction: column;
         }
+        
+        .btn {
+            width: 100%;
+        }
     }
 </style>
 
 <div class="offer-container">
+    <!-- Conflict Warning if any -->
+    {% with conflict_check=application.check_caretaker_availability %}
+        {% if not conflict_check.0 %}
+        <div class="conflict-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div class="warning-content">
+                <div class="warning-title">⚠️ Schedule Conflict Detected</div>
+                <div class="warning-details">{{ conflict_check.1 }}</div>
+                <div style="margin-top: 8px; font-size: 0.85rem;">
+                    <strong>Conflicting Assignments:</strong>
+                    <ul style="margin-top: 5px; margin-left: 20px;">
+                    {% for assignment in conflict_check.2 %}
+                        <li>{{ assignment.request.patient_name }} - {{ assignment.get_job_type_display }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endwith %}
+
     <div class="offer-header">
         <span class="offer-badge"><i class="fas fa-gift"></i> OFFER LETTER</span>
-        <h1 class="offer-title">Care Position Offer</h1>
-        <p class="offer-meta">Offer ID: #{{ application.id }} • Sent on {{ application.offer_sent_at|date:"F d, Y" }}</p>
+        <div class="offer-title">
+            Care Position Offer
+            <span class="job-type-badge job-type-{{ application.job_type }}">
+                {{ application.get_job_type_display }}
+            </span>
+        </div>
+        <p class="offer-meta">
+            <i class="fas fa-hashtag"></i> Offer ID: #{{ application.id }} • 
+            <i class="fas fa-calendar"></i> Sent on {{ application.offer_sent_at|date:"F d, Y" }} • 
+            <i class="fas fa-clock"></i> {{ application.offer_sent_at|time:"h:i A" }}
+        </p>
         
         <div class="family-info">
             <div class="family-avatar">
@@ -238,7 +445,10 @@
             </div>
             <div class="family-details">
                 <h3>{{ application.request.family.get_full_name|default:application.request.family.username }}</h3>
-                <p><i class="fas fa-envelope"></i> {{ application.request.family.email }} | <i class="fas fa-phone"></i> {{ application.request.family.phone|default:"Not provided" }}</p>
+                <p>
+                    <i class="fas fa-envelope"></i> {{ application.request.family.email }} | 
+                    <i class="fas fa-phone"></i> {{ application.request.family.phone|default:"Not provided" }}
+                </p>
             </div>
         </div>
     </div>
@@ -247,20 +457,28 @@
         <h2 class="section-title"><i class="fas fa-user"></i> Patient Details</h2>
         <div class="offer-grid">
             <div class="offer-item">
-                <div class="offer-label">Patient Name</div>
+                <div class="offer-label"><i class="fas fa-user"></i> Patient Name</div>
                 <div class="offer-value">{{ application.request.patient_name }}</div>
             </div>
             <div class="offer-item">
-                <div class="offer-label">Age / Gender</div>
+                <div class="offer-label"><i class="fas fa-venus-mars"></i> Age / Gender</div>
                 <div class="offer-value">{{ application.request.patient_age }} years / {{ application.request.get_patient_gender_display }}</div>
             </div>
-            <div class="offer-item">
-                <div class="offer-label">Medical Condition</div>
+            <div class="offer-item full-width">
+                <div class="offer-label"><i class="fas fa-heartbeat"></i> Medical Condition</div>
                 <div class="offer-value">{{ application.request.medical_condition }}</div>
             </div>
             <div class="offer-item">
-                <div class="offer-label">Care Type</div>
+                <div class="offer-label"><i class="fas fa-clock"></i> Care Type</div>
                 <div class="offer-value">{{ application.request.get_care_type_display }}</div>
+            </div>
+            <div class="offer-item">
+                <div class="offer-label"><i class="fas fa-exclamation-triangle"></i> Urgency</div>
+                <div class="offer-value">
+                    <span class="badge {% if application.request.urgency_level == 'urgent' %}badge-warning{% elif application.request.urgency_level == 'high' %}badge-warning{% else %}badge-success{% endif %}">
+                        {{ application.request.get_urgency_level_display }}
+                    </span>
+                </div>
             </div>
         </div>
     </div>
@@ -269,37 +487,64 @@
         <h2 class="section-title"><i class="fas fa-calendar-check"></i> Schedule & Compensation</h2>
         <div class="offer-grid">
             <div class="offer-item">
-                <div class="offer-label">Start Date</div>
-                <div class="offer-value">{{ application.offer_details.start_date }}</div>
+                <div class="offer-label"><i class="fas fa-calendar-alt"></i> Start Date</div>
+                <div class="offer-value">{{ application.offer_details.start_date|default:"Not specified" }}</div>
             </div>
             <div class="offer-item">
-                <div class="offer-label">Start Time</div>
-                <div class="offer-value">{{ application.offer_details.start_time }}</div>
+                <div class="offer-label"><i class="fas fa-clock"></i> Shift Timing</div>
+                <div class="offer-value">{{ application.offer_details.shift_timing|default:"Not specified" }}</div>
             </div>
             <div class="offer-item">
-                <div class="offer-label">Duration</div>
+                <div class="offer-label"><i class="fas fa-hourglass-half"></i> Duration</div>
                 <div class="offer-value">{{ application.request.duration_days }} days</div>
             </div>
             <div class="offer-item">
-                <div class="offer-label">Final Rate</div>
+                <div class="offer-label"><i class="fas fa-tag"></i> Final Rate</div>
                 <div class="offer-value">₹{{ application.offer_details.final_rate }}/{{ application.offer_details.payment_frequency }}</div>
             </div>
             <div class="offer-item full-width">
-                <div class="offer-label">Reporting Address</div>
+                <div class="offer-label"><i class="fas fa-map-marker-alt"></i> Reporting Address</div>
                 <div class="offer-value">{{ application.offer_details.reporting_address }}</div>
             </div>
         </div>
+        
+        <!-- Schedule Information for Part-Time -->
+        {% if application.job_type != 'full_time' and application.work_days %}
+        <div class="schedule-info">
+            <strong><i class="fas fa-calendar-week"></i> Your Availability Schedule:</strong>
+            <div class="day-chips">
+                {% for day in application.work_days %}
+                    <span class="day-chip selected">
+                        {% if day == 0 %}Monday
+                        {% elif day == 1 %}Tuesday
+                        {% elif day == 2 %}Wednesday
+                        {% elif day == 3 %}Thursday
+                        {% elif day == 4 %}Friday
+                        {% elif day == 5 %}Saturday
+                        {% elif day == 6 %}Sunday
+                        {% endif %}
+                    </span>
+                {% endfor %}
+            </div>
+            {% if application.work_start_time and application.work_end_time %}
+            <div class="time-chip">
+                <i class="fas fa-hourglass-start"></i> {{ application.work_start_time|time:"h:i A" }} - 
+                <i class="fas fa-hourglass-end"></i> {{ application.work_end_time|time:"h:i A" }}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
     
     <div class="offer-section">
         <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Duties & Instructions</h2>
         <div class="duties-box">
-            <strong>Daily Duties:</strong>
-            <p style="margin-top: 10px;">{{ application.offer_details.daily_duties }}</p>
+            <strong><i class="fas fa-tasks"></i> Daily Duties:</strong>
+            <p style="margin-top: 10px;">{{ application.offer_details.daily_duties|default:"Not specified" }}</p>
             
             {% if application.offer_details.special_instructions %}
-            <hr style="margin: 20px 0;">
-            <strong>Special Instructions:</strong>
+            <hr>
+            <strong><i class="fas fa-exclamation-circle"></i> Special Instructions:</strong>
             <p style="margin-top: 10px;">{{ application.offer_details.special_instructions }}</p>
             {% endif %}
         </div>
@@ -309,12 +554,12 @@
         <h2 class="section-title"><i class="fas fa-phone-alt"></i> Emergency Contact</h2>
         <div class="offer-grid">
             <div class="offer-item">
-                <div class="offer-label">Contact Name</div>
-                <div class="offer-value">{{ application.offer_details.emergency_contact }}</div>
+                <div class="offer-label"><i class="fas fa-user"></i> Contact Name</div>
+                <div class="offer-value">{{ application.offer_details.emergency_contact|default:"Not specified" }}</div>
             </div>
             <div class="offer-item">
-                <div class="offer-label">Phone Number</div>
-                <div class="offer-value">{{ application.offer_details.emergency_phone }}</div>
+                <div class="offer-label"><i class="fas fa-phone"></i> Phone Number</div>
+                <div class="offer-value">{{ application.offer_details.emergency_phone|default:"Not specified" }}</div>
             </div>
         </div>
     </div>
@@ -322,28 +567,56 @@
     {% if application.offer_details.accommodation_details %}
     <div class="offer-section">
         <h2 class="section-title"><i class="fas fa-bed"></i> Accommodation</h2>
-        <p>{{ application.offer_details.accommodation_details }}</p>
+        <div class="offer-grid">
+            <div class="offer-item full-width">
+                <div class="offer-value">{{ application.offer_details.accommodation_details }}</div>
+            </div>
+        </div>
         {% if application.offer_details.meals_provided %}
-        <p><i class="fas fa-check-circle" style="color: #4bc3a3;"></i> Meals will be provided</p>
+        <div style="margin-top: 10px;">
+            <span style="background: #4bc3a3; color: white; padding: 5px 15px; border-radius: 25px; font-size: 0.85rem;">
+                <i class="fas fa-utensils"></i> Meals will be provided
+            </span>
+        </div>
         {% endif %}
     </div>
     {% endif %}
     
-    <div class="countdown-box">
+    {% if application.required_skills %}
+    <div class="offer-section">
+        <h2 class="section-title"><i class="fas fa-tools"></i> Required Skills</h2>
+        <div class="skills-tags" style="display: flex; flex-wrap: wrap; gap: 8px;">
+            {% for skill in application.required_skills.split %}
+                <span class="skill-tag" style="background: #e2e8f0; padding: 5px 12px; border-radius: 20px;">{{ skill|cut:"," }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="countdown-box {% if application.is_offer_expired %}expired{% elif application.time_until_offer_expiry|slice:':1' == '0' %}warning{% endif %}">
         <span><i class="fas fa-hourglass-half"></i> Offer expires in:</span>
         <span class="countdown">{{ application.time_until_offer_expiry }}</span>
     </div>
     
     <div class="action-buttons">
         <a href="{% url 'my_applications' %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back
+            <i class="fas fa-arrow-left"></i> Back to Applications
         </a>
-        <a href="{% url 'respond_to_offer' application.id 'accept' %}" class="btn btn-accept" onclick="return confirm('Accept this offer? You will be committed to this position.')">
-            <i class="fas fa-check-circle"></i> Accept Offer
-        </a>
-        <a href="{% url 'respond_to_offer' application.id 'decline' %}" class="btn btn-decline" onclick="return confirm('Decline this offer? This action cannot be undone.')">
-            <i class="fas fa-times-circle"></i> Decline
-        </a>
+        
+        {% if application.is_offer_expired %}
+            <span class="btn btn-secondary disabled">
+                <i class="fas fa-clock"></i> Offer Expired
+            </span>
+        {% else %}
+            <a href="{% url 'respond_to_offer' application.id 'accept' %}" class="btn btn-accept" 
+               onclick="return confirm('Accept this offer? You will be committed to this position and any other active applications will be withdrawn.')">
+                <i class="fas fa-check-circle"></i> Accept Offer
+            </a>
+            <a href="{% url 'respond_to_offer' application.id 'decline' %}" class="btn btn-decline" 
+               onclick="return confirm('Decline this offer? This action cannot be undone.')">
+                <i class="fas fa-times-circle"></i> Decline Offer
+            </a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

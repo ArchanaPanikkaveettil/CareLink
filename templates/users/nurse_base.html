@@ -279,7 +279,7 @@
         .notifications-dropdown {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-height: 500px;
             overflow-y: auto;
@@ -453,7 +453,7 @@
         <div class="nav-menu">
             {% block sidebar_links %}
             <!-- Default links - will be overridden in child templates -->
-            <a href="{% url 'caretaker_dashboard' %}"
+            <a href="{% url 'dashboard:caretaker_dashboard' %}"
                 class="nav-item {% if request.resolver_match.url_name == 'caretaker_dashboard' %}active{% endif %}">
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
@@ -561,23 +561,50 @@
         }
 
         // Load notifications via AJAX
+        // Update the loadNotifications function
         function loadNotifications() {
-            fetch('/notifications/get/')
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('notifications-panel').innerHTML = html;
+            fetch("{% url 'notifications:get' %}")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('notifications-panel').innerHTML = data.html;
+                    // Update the count badge
+                    const badge = document.getElementById('notification-count');
+                    if (badge) {
+                        badge.textContent = data.count;
+                        badge.style.display = data.count > 0 ? 'flex' : 'none';
+                    }
                 })
                 .catch(error => {
-                    document.getElementById('notifications-panel').innerHTML = 
+                    document.getElementById('notifications-panel').innerHTML =
                         '<div class="notification-empty">Error loading notifications</div>';
                 });
         }
 
+        // Add function to mark individual notification as read
+        function markNotificationRead(notificationId) {
+            fetch(`/notifications/${notificationId}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload notifications to update the list
+                        loadNotifications();
+                        // Update the count
+                        updateNotificationCount();
+                    }
+                })
+                .catch(error => console.error('Error marking notification as read:', error));
+        }
         // Close notifications when clicking outside
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const panel = document.getElementById('notifications-panel');
             const bell = document.querySelector('.notification-bell');
-            
+
             if (panel && bell && !bell.contains(event.target) && !panel.contains(event.target)) {
                 panel.style.display = 'none';
             }
@@ -601,7 +628,7 @@
         setInterval(updateNotificationCount, 60000);
 
         // Initial load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             updateNotificationCount();
         });
     </script>

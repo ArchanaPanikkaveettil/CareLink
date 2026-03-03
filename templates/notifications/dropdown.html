@@ -1,0 +1,49 @@
+<!-- templates/notifications/dropdown.html -->
+<div class="notifications-dropdown">
+    <div class="notifications-header">
+        <h3>
+            <i class="fas fa-bell" style="color: #0a2a38;"></i>
+            Notifications
+        </h3>
+        <a href="{% url 'notifications:all' %}">
+            <i class="fas fa-external-link-alt"></i> View All
+        </a>
+    </div>
+
+    <div class="notifications-list">
+        {% if notifications %}
+        {% for notification in notifications %}
+        <div class="notification-item {% if not notification.is_read %}unread{% endif %}"
+            data-id="{{ notification.id }}">
+            <div class="notification-icon">
+                <i
+                    class="fas {% if notification.notification_type == 'assignment' %}fa-calendar-check{% elif notification.notification_type == 'application' %}fa-file-alt{% elif notification.notification_type == 'message' %}fa-envelope{% else %}fa-bell{% endif %}"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-message">{{ notification.message|truncatechars:50 }}</div>
+                <div class="notification-time">
+                    <i class="far fa-clock"></i>
+                    {{ notification.created_at|timesince }} ago
+                </div>
+            </div>
+            {% if not notification.is_read %}
+            <button class="mark-read-btn" onclick="markNotificationRead('{{ notification.id }}')">
+                <i class="fas fa-check"></i>
+            </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="notification-empty">
+            <i class="far fa-bell-slash" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+            <p>No notifications yet</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="notifications-footer">
+        <a href="{% url 'notifications:all' %}">
+            <i class="fas fa-arrow-right"></i> See all notifications
+        </a>
+    </div>
+</div>

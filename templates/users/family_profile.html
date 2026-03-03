@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,14 +14,14 @@
             background: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         .profile-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 40px 0;
             margin-bottom: 30px;
         }
-        
+
         .profile-avatar {
             width: 120px;
             height: 120px;
@@ -30,33 +31,33 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
-            border: 4px solid rgba(255,255,255,0.3);
+            border: 4px solid rgba(255, 255, 255, 0.3);
         }
-        
+
         .profile-avatar i {
             font-size: 60px;
             color: #667eea;
         }
-        
+
         .profile-name {
             font-size: 28px;
             font-weight: 600;
             margin-bottom: 5px;
         }
-        
+
         .profile-email {
             font-size: 16px;
             opacity: 0.9;
         }
-        
+
         .profile-card {
             background: white;
             border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
             padding: 25px;
             margin-bottom: 25px;
         }
-        
+
         .card-title {
             color: #495057;
             font-size: 18px;
@@ -65,21 +66,21 @@
             padding-bottom: 10px;
             border-bottom: 2px solid #e9ecef;
         }
-        
+
         .info-label {
             color: #6c757d;
             font-size: 14px;
             font-weight: 500;
             margin-bottom: 5px;
         }
-        
+
         .info-value {
             color: #212529;
             font-size: 16px;
             margin-bottom: 15px;
             padding-left: 10px;
         }
-        
+
         .badge-status {
             background: #28a745;
             color: white;
@@ -88,7 +89,7 @@
             font-size: 12px;
             font-weight: 500;
         }
-        
+
         .btn-edit {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -98,13 +99,13 @@
             font-weight: 500;
             transition: all 0.3s;
         }
-        
+
         .btn-edit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
             color: white;
         }
-        
+
         .btn-back {
             background: #6c757d;
             color: white;
@@ -116,28 +117,29 @@
             text-decoration: none;
             display: inline-block;
         }
-        
+
         .btn-back:hover {
             background: #5a6268;
             color: white;
         }
-        
+
         .empty-field {
             color: #999;
             font-style: italic;
         }
-        
+
         .document-link {
             color: #667eea;
             text-decoration: none;
             font-weight: 500;
         }
-        
+
         .document-link:hover {
             text-decoration: underline;
         }
     </style>
 </head>
+
 <body>
     <!-- Profile Header -->
     <div class="profile-header">
@@ -158,17 +160,17 @@
     <div class="container mb-5">
         <!-- Messages -->
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
         {% endif %}
 
         <!-- Action Buttons -->
         <div class="text-end mb-4">
-            <a href="{% url 'family_dashboard' %}" class="btn-back me-2">
+            <a href="{% url 'dashboard:family_dashboard' %}" class="btn-back me-2">
                 <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
             </a>
             <a href="{% url 'update_family_profile' %}" class="btn-edit">
@@ -188,9 +190,9 @@
                             <div class="info-label">Phone Number</div>
                             <div class="info-value">
                                 {% if profile.phone %}
-                                    <i class="fas fa-phone me-2 text-muted"></i>{{ profile.phone }}
+                                <i class="fas fa-phone me-2 text-muted"></i>{{ profile.phone }}
                                 {% else %}
-                                    <span class="empty-field">Not provided</span>
+                                <span class="empty-field">Not provided</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -198,9 +200,9 @@
                             <div class="info-label">Alternate Phone</div>
                             <div class="info-value">
                                 {% if profile.alternate_phone %}
-                                    <i class="fas fa-phone-alt me-2 text-muted"></i>{{ profile.alternate_phone }}
+                                <i class="fas fa-phone-alt me-2 text-muted"></i>{{ profile.alternate_phone }}
                                 {% else %}
-                                    <span class="empty-field">Not provided</span>
+                                <span class="empty-field">Not provided</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -208,9 +210,9 @@
                             <div class="info-label">Emergency Contact</div>
                             <div class="info-value">
                                 {% if profile.emergency_contact %}
-                                    <i class="fas fa-exclamation-circle me-2 text-muted"></i>{{ profile.emergency_contact }}
+                                <i class="fas fa-exclamation-circle me-2 text-muted"></i>{{ profile.emergency_contact }}
                                 {% else %}
-                                    <span class="empty-field">Not provided</span>
+                                <span class="empty-field">Not provided</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -223,20 +225,20 @@
                         <i class="fas fa-map-marker-alt me-2 text-primary"></i>Address Details
                     </h5>
                     {% if profile.address %}
-                        <div class="info-value">{{ profile.address }}</div>
-                        <div class="info-value">
-                            {{ profile.city }}{% if profile.city and profile.state %}, {% endif %}
-                            {{ profile.state }} - {{ profile.pincode }}
-                        </div>
-                        <div class="info-value">{{ profile.country }}</div>
-                        {% if profile.landmark %}
-                            <div class="info-label">Landmark</div>
-                            <div class="info-value">{{ profile.landmark }}</div>
-                        {% endif %}
-                        <div class="info-label">Residence Type</div>
-                        <div class="info-value">{{ profile.get_residence_type_display }}</div>
+                    <div class="info-value">{{ profile.address }}</div>
+                    <div class="info-value">
+                        {{ profile.city }}{% if profile.city and profile.state %}, {% endif %}
+                        {{ profile.state }} - {{ profile.pincode }}
+                    </div>
+                    <div class="info-value">{{ profile.country }}</div>
+                    {% if profile.landmark %}
+                    <div class="info-label">Landmark</div>
+                    <div class="info-value">{{ profile.landmark }}</div>
+                    {% endif %}
+                    <div class="info-label">Residence Type</div>
+                    <div class="info-value">{{ profile.get_residence_type_display }}</div>
                     {% else %}
-                        <div class="empty-field">No address information provided</div>
+                    <div class="empty-field">No address information provided</div>
                     {% endif %}
                 </div>
             </div>
@@ -252,9 +254,9 @@
                             <div class="info-label">Patient Name</div>
                             <div class="info-value">
                                 {% if profile.patient_name %}
-                                    {{ profile.patient_name }}
+                                {{ profile.patient_name }}
                                 {% else %}
-                                    <span class="empty-field">Not provided</span>
+                                <span class="empty-field">Not provided</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -262,9 +264,9 @@
                             <div class="info-label">Age</div>
                             <div class="info-value">
                                 {% if profile.patient_age %}
-                                    {{ profile.patient_age }} years
+                                {{ profile.patient_age }} years
                                 {% else %}
-                                    <span class="empty-field">Not provided</span>
+                                <span class="empty-field">Not provided</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -272,9 +274,9 @@
                             <div class="info-label">Gender</div>
                             <div class="info-value">
                                 {% if profile.patient_gender %}
-                                    {{ profile.get_patient_gender_display }}
+                                {{ profile.get_patient_gender_display }}
                                 {% else %}
-                                    <span class="empty-field">Not provided</span>
+                                <span class="empty-field">Not provided</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -282,9 +284,9 @@
                             <div class="info-label">Blood Group</div>
                             <div class="info-value">
                                 {% if profile.patient_blood_group %}
-                                    {{ profile.get_patient_blood_group_display }}
+                                {{ profile.get_patient_blood_group_display }}
                                 {% else %}
-                                    <span class="empty-field">Not provided</span>
+                                <span class="empty-field">Not provided</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -299,30 +301,30 @@
                     <div class="info-label">Primary Medical Condition</div>
                     <div class="info-value">
                         {% if profile.primary_medical_condition %}
-                            {{ profile.primary_medical_condition }}
+                        {{ profile.primary_medical_condition }}
                         {% else %}
-                            <span class="empty-field">Not provided</span>
+                        <span class="empty-field">Not provided</span>
                         {% endif %}
                     </div>
-                    
+
                     {% if profile.secondary_conditions %}
-                        <div class="info-label">Secondary Conditions</div>
-                        <div class="info-value">{{ profile.secondary_conditions }}</div>
+                    <div class="info-label">Secondary Conditions</div>
+                    <div class="info-value">{{ profile.secondary_conditions }}</div>
                     {% endif %}
-                    
+
                     {% if profile.allergies %}
-                        <div class="info-label">Allergies</div>
-                        <div class="info-value">{{ profile.allergies }}</div>
+                    <div class="info-label">Allergies</div>
+                    <div class="info-value">{{ profile.allergies }}</div>
                     {% endif %}
-                    
+
                     {% if profile.medications %}
-                        <div class="info-label">Current Medications</div>
-                        <div class="info-value">{{ profile.medications }}</div>
+                    <div class="info-label">Current Medications</div>
+                    <div class="info-value">{{ profile.medications }}</div>
                     {% endif %}
-                    
+
                     {% if profile.dietary_restrictions %}
-                        <div class="info-label">Dietary Restrictions</div>
-                        <div class="info-value">{{ profile.dietary_restrictions }}</div>
+                    <div class="info-label">Dietary Restrictions</div>
+                    <div class="info-value">{{ profile.dietary_restrictions }}</div>
                     {% endif %}
                 </div>
             </div>
@@ -338,18 +340,18 @@
                     <div class="info-label">Care Needed</div>
                     <div class="info-value">
                         {% if profile.care_required %}
-                            {{ profile.care_required }}
+                        {{ profile.care_required }}
                         {% else %}
-                            <span class="empty-field">Not specified</span>
+                        <span class="empty-field">Not specified</span>
                         {% endif %}
                     </div>
-                    
+
                     <div class="info-label">Care Frequency</div>
                     <div class="info-value">
                         {% if profile.care_frequency %}
-                            {{ profile.get_care_frequency_display }}
+                        {{ profile.get_care_frequency_display }}
                         {% else %}
-                            <span class="empty-field">Not specified</span>
+                        <span class="empty-field">Not specified</span>
                         {% endif %}
                     </div>
                 </div>
@@ -372,9 +374,9 @@
                             <div class="info-label">Preferred Language</div>
                             <div class="info-value">
                                 {% if profile.preferred_language %}
-                                    {{ profile.preferred_language }}
+                                {{ profile.preferred_language }}
                                 {% else %}
-                                    <span class="empty-field">Not specified</span>
+                                <span class="empty-field">Not specified</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -382,23 +384,23 @@
                             <div class="info-label">Monthly Budget</div>
                             <div class="info-value">
                                 {% if profile.monthly_budget %}
-                                    ₹{{ profile.monthly_budget }}
+                                ₹{{ profile.monthly_budget }}
                                 {% else %}
-                                    <span class="empty-field">Not specified</span>
+                                <span class="empty-field">Not specified</span>
                                 {% endif %}
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row mt-3">
                         <div class="col-md-4">
                             <div class="info-label">Pets at Home</div>
                             <div class="info-value">
                                 {% if profile.pets_at_home %}
-                                    <span class="text-success">Yes</span>
-                                    {% if profile.pet_details %} - {{ profile.pet_details }}{% endif %}
+                                <span class="text-success">Yes</span>
+                                {% if profile.pet_details %} - {{ profile.pet_details }}{% endif %}
                                 {% else %}
-                                    No
+                                No
                                 {% endif %}
                             </div>
                         </div>
@@ -431,11 +433,11 @@
                             <div class="info-label">Identity Proof</div>
                             <div class="info-value">
                                 {% if profile.identity_proof %}
-                                    <a href="{{ profile.identity_proof.url }}" class="document-link" target="_blank">
-                                        <i class="fas fa-eye me-1"></i>View Document
-                                    </a>
+                                <a href="{{ profile.identity_proof.url }}" class="document-link" target="_blank">
+                                    <i class="fas fa-eye me-1"></i>View Document
+                                </a>
                                 {% else %}
-                                    <span class="empty-field">Not uploaded</span>
+                                <span class="empty-field">Not uploaded</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -443,11 +445,11 @@
                             <div class="info-label">Address Proof</div>
                             <div class="info-value">
                                 {% if profile.address_proof %}
-                                    <a href="{{ profile.address_proof.url }}" class="document-link" target="_blank">
-                                        <i class="fas fa-eye me-1"></i>View Document
-                                    </a>
+                                <a href="{{ profile.address_proof.url }}" class="document-link" target="_blank">
+                                    <i class="fas fa-eye me-1"></i>View Document
+                                </a>
                                 {% else %}
-                                    <span class="empty-field">Not uploaded</span>
+                                <span class="empty-field">Not uploaded</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -455,11 +457,11 @@
                             <div class="info-label">Medical Reports</div>
                             <div class="info-value">
                                 {% if profile.medical_reports %}
-                                    <a href="{{ profile.medical_reports.url }}" class="document-link" target="_blank">
-                                        <i class="fas fa-eye me-1"></i>View Document
-                                    </a>
+                                <a href="{{ profile.medical_reports.url }}" class="document-link" target="_blank">
+                                    <i class="fas fa-eye me-1"></i>View Document
+                                </a>
                                 {% else %}
-                                    <span class="empty-field">Not uploaded</span>
+                                <span class="empty-field">Not uploaded</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -471,16 +473,17 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
         // Auto-hide alerts after 5 seconds
-        setTimeout(function() {
+        setTimeout(function () {
             let alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
+            alerts.forEach(function (alert) {
                 let bsAlert = new bootstrap.Alert(alert);
                 bsAlert.close();
             });
         }, 5000);
     </script>
 </body>
+
 </html>

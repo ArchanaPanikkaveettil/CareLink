@@ -264,7 +264,7 @@
             color: #dc3545;
         }
 
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 12px 15px;
             border: 1.5px solid #e2e8f0;
@@ -272,15 +272,49 @@
             font-family: 'Inter', sans-serif;
             font-size: 0.95rem;
             transition: all 0.3s;
+            background: white;
         }
 
-        input:focus, textarea:focus {
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475669' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        select[multiple] {
+            background-image: none;
+            padding-right: 12px;
+            min-height: 140px;
+        }
+
+        select[multiple] option {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        select[multiple] option:last-child {
+            border-bottom: none;
+        }
+
+        select[multiple] option:hover {
+            background-color: #f0f9ff;
+        }
+
+        select[multiple] option:checked {
+            background-color: #0f3460;
+            color: white;
+        }
+
+        input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #0f3460;
             box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
         }
 
-        input.error-field, textarea.error-field {
+        input.error-field, textarea.error-field, select.error-field {
             border-color: #dc3545;
             background-color: #fff8f8;
         }
@@ -428,6 +462,77 @@
             margin-top: 2px;
         }
 
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .help-text {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .help-text i {
+            color: #0f3460;
+            font-size: 0.75rem;
+        }
+
+        .info-box {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .info-box i {
+            font-size: 1.5rem;
+            color: #0f3460;
+        }
+
+        .info-box-content {
+            flex: 1;
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            color: #0f3460;
+            margin-bottom: 5px;
+        }
+
+        .info-box-text {
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        .availability-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .badge-available {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-unavailable {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -448,6 +553,11 @@
                 width: 100%;
                 justify-content: center;
             }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
         }
     </style>
 </head>
@@ -465,11 +575,11 @@
         </div>
 
         <div class="nav-menu">
-            <a href="{% url 'caretaker_dashboard' %}" class="nav-item">
+            <a href="{% url 'dashboard:caretaker_dashboard' %}" class="nav-item">
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{% url 'browse_requests' %}" class="nav-item">
+            <a href="{% url 'browse_requests' %}" class="nav-item active">
                 <i class="fas fa-search"></i>
                 <span>Browse Requests</span>
             </a>
@@ -544,6 +654,21 @@
                 </div>
             </div>
 
+            <!-- Availability Info Box -->
+            <div class="info-box">
+                <i class="fas fa-clock"></i>
+                <div class="info-box-content">
+                    <div class="info-box-title">Availability Check</div>
+                    <div class="info-box-text">
+                        {% if care_request.care_type in 'part_time,night_care,home_visit' %}
+                            This is a part-time position. Please specify your available days and times below.
+                        {% else %}
+                            This is a full-time position. You can only apply if you don't have any active assignments.
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
             <!-- Messages -->
             {% if messages %}
                 {% for message in messages %}
@@ -558,13 +683,71 @@
             <form method="POST">
                 {% csrf_token %}
 
+                <!-- Job Type Section (only show for non-full-time positions) -->
+                {% if care_request.care_type in 'part_time,night_care,home_visit' %}
                 <div class="form-group">
-                    <label class="required-field">Proposed Rate (₹ per day)</label>
+                    <label class="required-field">
+                        <i class="fas fa-clock"></i> Job Type
+                    </label>
+                    <select name="job_type" id="jobType" required>
+                        <option value="">Select job type...</option>
+                        <option value="part_time" {% if job_type == 'part_time' %}selected{% endif %}>Part Time</option>
+                        <option value="night_care" {% if job_type == 'night_care' %}selected{% endif %}>Night Care</option>
+                        <option value="home_visit" {% if job_type == 'home_visit' %}selected{% endif %}>Home Visit</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="workDaysGroup">
+                    <label class="required-field">
+                        <i class="fas fa-calendar-week"></i> Available Days
+                    </label>
+                    <select name="work_days" id="workDays" multiple required size="7">
+                        <option value="0">Monday</option>
+                        <option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option>
+                        <option value="3">Thursday</option>
+                        <option value="4">Friday</option>
+                        <option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                    </select>
+                    <div class="help-text">
+                        <i class="fas fa-info-circle"></i> Hold Ctrl/Cmd to select multiple days
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="required-field">
+                            <i class="fas fa-hourglass-start"></i> Start Time
+                        </label>
+                        <input type="time" name="work_start_time" id="workStartTime" 
+                               value="{{ work_start_time|default:'' }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required-field">
+                            <i class="fas fa-hourglass-end"></i> End Time
+                        </label>
+                        <input type="time" name="work_end_time" id="workEndTime" 
+                               value="{{ work_end_time|default:'' }}" required>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Hidden field for full-time jobs -->
+                <input type="hidden" name="job_type" value="full_time">
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="required-field">
+                        <i class="fas fa-tag"></i> Proposed Rate (₹ per day)
+                    </label>
                     <input type="number" name="proposed_rate" step="0.01" min="0" 
                            value="{{ proposed_rate|default:'' }}"
                            placeholder="e.g., 500"
                            class="{% if messages and 'rate' in messages.0.message|lower %}error-field{% endif %}" required>
-                    <small style="color: #64748b; display: block; margin-top: 5px;">Suggested: ₹{{ care_request.salary_offered }}/{{ care_request.get_payment_frequency_display }}</small>
+                    <div class="help-text">
+                        <i class="fas fa-info-circle"></i> Suggested: ₹{{ care_request.salary_offered }}/{{ care_request.get_payment_frequency_display }}
+                    </div>
                     {% if messages %}
                         {% for message in messages %}
                             {% if 'rate' in message.message|lower %}
@@ -575,7 +758,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="required-field">Why are you suitable for this position?</label>
+                    <label class="required-field">
+                        <i class="fas fa-comment"></i> Why are you suitable for this position?
+                    </label>
                     <textarea name="message" required 
                               placeholder="Describe your experience, skills, and why you'd be a good fit for this patient..."
                               class="{% if messages and 'message' in messages.0.message|lower %}error-field{% endif %}">{{ message|default:'' }}</textarea>
@@ -599,6 +784,84 @@
             </form>
         </div>
     </div>
+
+    <script>
+        // Form validation for part-time jobs
+        document.addEventListener('DOMContentLoaded', function() {
+            const jobTypeSelect = document.getElementById('jobType');
+            const workDaysGroup = document.getElementById('workDaysGroup');
+            const workStartTime = document.getElementById('workStartTime');
+            const workEndTime = document.getElementById('workEndTime');
+
+            // Validate time range
+            function validateTimeRange() {
+                if (workStartTime && workEndTime && workStartTime.value && workEndTime.value) {
+                    const start = workStartTime.value;
+                    const end = workEndTime.value;
+                    
+                    if (start >= end) {
+                        workEndTime.setCustomValidity('End time must be after start time');
+                    } else {
+                        workEndTime.setCustomValidity('');
+                    }
+                }
+            }
+
+            if (workStartTime && workEndTime) {
+                workStartTime.addEventListener('change', validateTimeRange);
+                workEndTime.addEventListener('change', validateTimeRange);
+            }
+
+            // Form submission validation
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const jobType = jobTypeSelect ? jobTypeSelect.value : 'full_time';
+                
+                if (jobType !== 'full_time') {
+                    const workDays = document.getElementById('workDays');
+                    const startTime = document.getElementById('workStartTime');
+                    const endTime = document.getElementById('workEndTime');
+                    
+                    if (!workDays || workDays.selectedOptions.length === 0) {
+                        e.preventDefault();
+                        alert('Please select at least one working day.');
+                        return;
+                    }
+                    
+                    if (!startTime || !startTime.value) {
+                        e.preventDefault();
+                        alert('Please enter start time.');
+                        return;
+                    }
+                    
+                    if (!endTime || !endTime.value) {
+                        e.preventDefault();
+                        alert('Please enter end time.');
+                        return;
+                    }
+                    
+                    if (startTime.value >= endTime.value) {
+                        e.preventDefault();
+                        alert('End time must be after start time.');
+                        return;
+                    }
+                }
+            });
+
+            // Pre-select days if returning with errors
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedDays = urlParams.getAll('work_days');
+            if (selectedDays.length > 0) {
+                const workDays = document.getElementById('workDays');
+                if (workDays) {
+                    Array.from(workDays.options).forEach(option => {
+                        if (selectedDays.includes(option.value)) {
+                            option.selected = true;
+                        }
+                    });
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -1,508 +1,554 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'users/family_base.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Dashboard - CareLink</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% load static %}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f4f6f9;
-            color: #333;
-        }
+{% block title %}Family Dashboard - CareLink{% endblock %}
 
-        .navbar {
-            background: #28a745;
-            color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
+{% block page_icon %}<i class="fas fa-chart-line"></i>{% endblock %}
+{% block page_title %}Family Dashboard{% endblock %}
 
-        .navbar h2 {
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
+{% block sidebar_links %}
+{{ block.super }}
+<!-- Override or add any family-specific sidebar links here if needed -->
+{% endblock %}
 
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin-left: 2rem;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
+{% block extra_css %}
+<style>
+    /* Welcome Section */
+    .welcome-section {
+        background: linear-gradient(135deg, #0f3460, #1a4a8a);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(15, 52, 96, 0.2);
+    }
 
-        .nav-links a:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+    .welcome-section h1 {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-        .nav-links .logout-btn {
-            background: rgba(255, 255, 255, 0.15);
-        }
+    .welcome-section p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
 
-        .container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
 
-        .welcome-section {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            padding: 2rem;
-            margin-top: 20px;
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
-        }
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s, box-shadow 0.3s;
+        border-left: 5px solid #0f3460;
+        border: 1px solid #e2e8f0;
+    }
 
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card h3 {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .stat-card .number {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #0f3460;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card .stat-link {
+        color: #0f3460;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stat-card .stat-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Section Title */
+    .section-title {
+        font-size: 1.5rem;
+        color: #0f3460;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #0f3460;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title i {
+        color: #0f3460;
+        font-size: 1.5rem;
+    }
+
+    /* Action Grid */
+    .action-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .action-card {
+        background: white;
+        padding: 2rem 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        transition: all 0.3s;
+        text-decoration: none;
+        color: inherit;
+        border: 2px solid transparent;
+        border: 1px solid #e2e8f0;
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(15, 52, 96, 0.15);
+        border-color: #0f3460;
+    }
+
+    .action-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #0f3460;
+    }
+
+    .action-card h3 {
+        color: #0f3460;
+        margin-bottom: 0.5rem;
+        font-size: 1.2rem;
+    }
+
+    .action-card p {
+        color: #64748b;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    /* Recent Section */
+    .recent-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        background: #f8fafc;
+        color: #0f3460;
+        font-weight: 600;
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        color: #334155;
+    }
+
+    tr:hover {
+        background: #f8fafc;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-open {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-assigned {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-closed {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-accepted {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-rejected {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-withdrawn {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    /* View Button */
+    .view-btn {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        background: #0f3460;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        transition: background 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .view-btn:hover {
+        background: #1a4a8a;
+    }
+
+    .view-btn i {
+        margin-right: 5px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: #94a3b8;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state a {
+        color: #0f3460;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .empty-state a:hover {
+        text-decoration: underline;
+    }
+
+    /* Footer */
+    .footer {
+        text-align: center;
+        padding: 2rem;
+        color: #64748b;
+        border-top: 1px solid #e2e8f0;
+        margin-top: 2rem;
+    }
+
+    @media (max-width: 768px) {
         .welcome-section h1 {
-            font-size: 2.2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .welcome-section p {
-            font-size: 1.1rem;
-            opacity: 0.95;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s, box-shadow 0.3s;
-            border-left: 5px solid #28a745;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
-        }
-
-        .stat-card h3 {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .stat-card .number {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: #28a745;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-card .stat-link {
-            color: #28a745;
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .stat-card .stat-link:hover {
-            text-decoration: underline;
-        }
-
-        .section-title {
             font-size: 1.5rem;
-            color: #333;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #28a745;
         }
-
+        
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        
         .action-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
+            grid-template-columns: 1fr;
         }
-
-        .action-card {
-            background: white;
-            padding: 2rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-            text-align: center;
-            transition: all 0.3s;
-            text-decoration: none;
-            color: inherit;
-            border: 2px solid transparent;
-        }
-
-        .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            border-color: #28a745;
-        }
-
-        .action-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .action-card h3 {
-            color: #28a745;
-            margin-bottom: 0.5rem;
-            font-size: 1.2rem;
-        }
-
-        .action-card p {
-            color: #666;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
+        
         .recent-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-            margin-bottom: 2rem;
+            padding: 1.5rem;
         }
-
-        .table-responsive {
-            overflow-x: auto;
+        
+        th, td {
+            padding: 0.75rem;
         }
+    }
+</style>
+{% endblock %}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+{% block content %}
+<div class="welcome-section">
+    <h1>
+        <i class="fas fa-hand-wave"></i> 
+        Welcome back, {{ user.get_full_name|default:user.username }}!
+    </h1>
+    <p>
+        <i class="fas fa-info-circle"></i> 
+        Manage your care requests, find caretakers, and track applications from your family dashboard.
+    </p>
+</div>
 
-        th {
-            background: #f8f9fa;
-            color: #495057;
-            font-weight: 600;
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        tr:hover {
-            background: #f8f9fa;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .status-open {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-assigned {
-            background: #cce5ff;
-            color: #004085;
-        }
-
-        .status-closed {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-accepted {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-rejected {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .view-btn {
-            display: inline-block;
-            padding: 0.3rem 1rem;
-            background: #28a745;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            transition: background 0.3s;
-        }
-
-        .view-btn:hover {
-            background: #218838;
-        }
-
-        .messages {
-            margin-bottom: 2rem;
-        }
-
-        .alert {
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .nav-links {
-                margin-top: 1rem;
-            }
-
-            .nav-links a {
-                margin: 0 0.5rem;
-                display: inline-block;
-            }
-
-            .welcome-section h1 {
-                font-size: 1.5rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .action-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <div class="navbar">
-        <h2>CareLink - Family Dashboard</h2>
-        <div class="nav-links">
-            <a href="{% url 'family_dashboard' %}">Dashboard</a>
-            <a href="{% url 'search_caretakers' %}">Search Caretakers</a>
-            <a href="{% url 'my_requests' %}">My Requests</a>
-            <a href="{% url 'family_profile' %}">
-                <i class="fas fa-user-circle me-2"></i>Profile
-            </a>
-            <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
-        </div>
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3><i class="fas fa-clipboard-list"></i> Total Requests</h3>
+        <div class="number">{{ total_requests|default:"0" }}</div>
+        <a href="{% url 'my_requests' %}" class="stat-link">
+            View all <i class="fas fa-arrow-right"></i>
+        </a>
     </div>
 
-
-
-        <div class="welcome-section">
-            <h1>Welcome back, {{ user.username }}! 👋</h1>
-            <p>Manage your care requests, find caretakers, and track applications from your family dashboard.</p>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Requests</h3>
-                <div class="number">{{ total_requests|default:"0" }}</div>
-                <a href="{% url 'my_requests' %}" class="stat-link">View all →</a>
-            </div>
-
-            <div class="stat-card">
-                <h3>Open</h3>
-                <div class="number">{{ open_requests|default:"0" }}</div>
-                <a href="{% url 'my_requests' %}?status=open" class="stat-link">View open →</a>
-            </div>
-
-            <div class="stat-card">
-                <h3>Assigned</h3>
-                <div class="number">{{ assigned_requests|default:"0" }}</div>
-                <a href="{% url 'my_requests' %}?status=assigned" class="stat-link">View assigned →</a>
-            </div>
-
-            <div class="stat-card">
-                <h3>Closed</h3>
-                <div class="number">{{ closed_requests|default:"0" }}</div>
-                <a href="{% url 'my_requests' %}?status=closed" class="stat-link">View closed →</a>
-            </div>
-
-            <div class="stat-card">
-                <h3>Applications</h3>
-                <div class="number">{{ total_applications|default:"0" }}</div>
-                <a href="#" onclick="alert('Applications page coming soon!')" class="stat-link">View all →</a>
-            </div>
-
-            <div class="stat-card">
-                <h3>Pending Apps</h3>
-                <div class="number">{{ pending_applications|default:"0" }}</div>
-                <a href="#" onclick="alert('Pending applications coming soon!')" class="stat-link">View pending →</a>
-            </div>
-        </div>
-
-        <h2 class="section-title">Quick Actions</h2>
-        <div class="action-grid">
-            <a href="{% url 'post_request' %}" class="action-card">
-                <div class="action-icon">📝</div>
-                <h3>Post Care Request</h3>
-                <p>Create a new care request for your loved one.</p>
-            </a>
-
-            <a href="{% url 'search_caretakers' %}" class="action-card">
-                <div class="action-icon">🔍</div>
-                <h3>Search Caretakers</h3>
-                <p>Find qualified caretakers based on experience and qualifications.</p>
-            </a>
-
-            <a href="{% url 'my_requests' %}" class="action-card">
-                <div class="action-icon">📋</div>
-                <h3>My Requests</h3>
-                <p>View and manage all your care requests.</p>
-            </a>
-
-
-        </div>
-
-        <div class="recent-section">
-            <h2 class="section-title">Recent Care Requests</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Patient Name</th>
-                            <th>Care Type</th>
-                            <th>Start Date</th>
-                            <th>Duration</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for request in recent_requests %}
-                        <tr>
-                            <td>{{ request.patient_name }}</td>
-                            <td>{{ request.get_care_type_display }}</td>
-                            <td>{{ request.start_date|date:"M d, Y" }}</td>
-                            <td>{{ request.duration_days }} days</td>
-                            <td>
-                                <span class="status-badge status-{{ request.status }}">
-                                    {% if request.status == 'open' %}Open
-                                    {% elif request.status == 'assigned' %}Assigned
-                                    {% elif request.status == 'closed' %}Closed
-                                    {% else %}{{ request.status }}
-                                    {% endif %}
-                                </span>
-                            </td>
-                            <td>
-                                <a href="{% url 'request_detail' request.id %}" class="view-btn">View</a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 2rem;">
-                                <p>No care requests yet. <a href="{% url 'post_request' %}" style="color: #28a745;">Post
-                                        your first request!</a></p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="recent-section">
-            <h2 class="section-title">Recent Applications Received</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Caretaker</th>
-                            <th>Request</th>
-                            <th>Applied On</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for application in recent_applications %}
-                        <tr>
-                            <td>{{ application.caretaker.username }}</td>
-                            <td>{{ application.request.patient_name }}</td>
-                            <td>{{ application.applied_at|date:"M d, Y" }}</td>
-                            <td>
-                                <span class="status-badge status-{{ application.status }}">
-                                    {% if application.status == 'pending' %}Pending
-                                    {% elif application.status == 'accepted' %}Accepted
-                                    {% elif application.status == 'rejected' %}Rejected
-                                    {% elif application.status == 'withdrawn' %}Withdrawn
-                                    {% else %}{{ application.status }}
-                                    {% endif %}
-                                </span>
-                            </td>
-                            <td>
-                                <a href="#" onclick="alert('Application detail page coming soon!')"
-                                    class="view-btn">Review</a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 2rem;">
-                                <p>No applications yet.</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <div class="stat-card">
+        <h3><i class="fas fa-clock"></i> Open</h3>
+        <div class="number">{{ open_requests|default:"0" }}</div>
+        <a href="{% url 'my_requests' %}?status=open" class="stat-link">
+            View open <i class="fas fa-arrow-right"></i>
+        </a>
     </div>
 
-    <div style="text-align: center; padding: 2rem; color: #666; border-top: 1px solid #dee2e6; margin-top: 2rem;">
-        <p>&copy; 2025 CareLink. All rights reserved.</p>
+    <div class="stat-card">
+        <h3><i class="fas fa-check-circle"></i> Assigned</h3>
+        <div class="number">{{ assigned_requests|default:"0" }}</div>
+        <a href="{% url 'my_requests' %}?status=assigned" class="stat-link">
+            View assigned <i class="fas fa-arrow-right"></i>
+        </a>
     </div>
 
-    <form id="logout-form" method="POST" action="{% url 'logout' %}" style="display: none;">
-        {% csrf_token %}
-    </form>
+    <div class="stat-card">
+        <h3><i class="fas fa-times-circle"></i> Closed</h3>
+        <div class="number">{{ closed_requests|default:"0" }}</div>
+        <a href="{% url 'my_requests' %}?status=closed" class="stat-link">
+            View closed <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
 
-    <script>
-        document.querySelector('.logout-btn').addEventListener('click', function (e) {
-            e.preventDefault();
-            document.getElementById('logout-form').submit();
-        });
-    </script>
-</body>
+    <div class="stat-card">
+        <h3><i class="fas fa-file-alt"></i> Applications</h3>
+        <div class="number">{{ total_applications|default:"0" }}</div>
+        <a href="#" onclick="alert('Applications page coming soon!')" class="stat-link">
+            View all <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
 
-</html>
+    <div class="stat-card">
+        <h3><i class="fas fa-hourglass-half"></i> Pending Apps</h3>
+        <div class="number">{{ pending_applications|default:"0" }}</div>
+        <a href="#" onclick="alert('Pending applications coming soon!')" class="stat-link">
+            View pending <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<h2 class="section-title">
+    <i class="fas fa-bolt"></i> Quick Actions
+</h2>
+<div class="action-grid">
+    <a href="{% url 'post_request' %}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-plus-circle"></i>
+        </div>
+        <h3>Post Care Request</h3>
+        <p>Create a new care request for your loved one.</p>
+    </a>
+
+    <a href="{% url 'search_caretakers' %}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-search"></i>
+        </div>
+        <h3>Search Caretakers</h3>
+        <p>Find qualified caretakers based on experience and qualifications.</p>
+    </a>
+
+    <a href="{% url 'my_requests' %}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-clipboard-list"></i>
+        </div>
+        <h3>My Requests</h3>
+        <p>View and manage all your care requests.</p>
+    </a>
+</div>
+
+<!-- Recent Care Requests -->
+<div class="recent-section">
+    <h2 class="section-title">
+        <i class="fas fa-history"></i> Recent Care Requests
+    </h2>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Patient Name</th>
+                    <th>Care Type</th>
+                    <th>Start Date</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in recent_requests %}
+                <tr>
+                    <td>{{ request.patient_name }}</td>
+                    <td>{{ request.get_care_type_display }}</td>
+                    <td>{{ request.start_date|date:"M d, Y" }}</td>
+                    <td>{{ request.duration_days }} days</td>
+                    <td>
+                        <span class="status-badge status-{{ request.status }}">
+                            {% if request.status == 'open' %}
+                                <i class="fas fa-clock"></i> Open
+                            {% elif request.status == 'assigned' %}
+                                <i class="fas fa-check-circle"></i> Assigned
+                            {% elif request.status == 'closed' %}
+                                <i class="fas fa-times-circle"></i> Closed
+                            {% else %}
+                                {{ request.status|title }}
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'request_detail' request.id %}" class="view-btn">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No care requests yet. 
+                            <a href="{% url 'post_request' %}">Post your first request!</a>
+                        </p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Recent Applications -->
+<div class="recent-section">
+    <h2 class="section-title">
+        <i class="fas fa-users"></i> Recent Applications Received
+    </h2>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Caretaker</th>
+                    <th>Request</th>
+                    <th>Applied On</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for application in recent_applications %}
+                <tr>
+                    <td>
+                        <i class="fas fa-user-nurse"></i> 
+                        {{ application.caretaker.get_full_name|default:application.caretaker.username }}
+                    </td>
+                    <td>{{ application.request.patient_name }}</td>
+                    <td>{{ application.applied_at|date:"M d, Y" }}</td>
+                    <td>
+                        <span class="status-badge status-{{ application.status }}">
+                            {% if application.status == 'pending' %}
+                                <i class="fas fa-hourglass-half"></i> Pending
+                            {% elif application.status == 'accepted' %}
+                                <i class="fas fa-check-circle"></i> Accepted
+                            {% elif application.status == 'rejected' %}
+                                <i class="fas fa-times-circle"></i> Rejected
+                            {% elif application.status == 'withdrawn' %}
+                                <i class="fas fa-arrow-left"></i> Withdrawn
+                            {% else %}
+                                {{ application.status|title }}
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="#" onclick="alert('Application detail page coming soon!')" class="view-btn">
+                            <i class="fas fa-search"></i> Review
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No applications received yet.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>&copy; {% now "Y" %} CareLink. All rights reserved.</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update notification count on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateNotificationCount();
+    });
+
+    // Update notification count function
+    function updateNotificationCount() {
+        fetch('/notifications/count/')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('notification-count');
+                if (badge) {
+                    badge.textContent = data.count;
+                    badge.style.display = data.count > 0 ? 'flex' : 'none';
+                }
+            })
+            .catch(error => console.error('Error updating count:', error));
+    }
+
+    // Auto-refresh notifications every 60 seconds
+    setInterval(updateNotificationCount, 60000);
+</script>
+{% endblock %}

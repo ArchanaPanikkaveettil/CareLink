@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Care Request - CareLink</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f5f1;
+            color: #2c3e50;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ========= SIDEBAR ========= */
+        .sidebar {
+            width: 280px;
+            background: #0f3460;
+            color: #e0edf5;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 32px 24px 20px;
+            border-bottom: 1px solid #1e4a7a;
+        }
+
+        .sidebar-header h2 {
+            font-weight: 600;
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+            color: white;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h2 i {
+            color: white;
+            font-size: 2rem;
+        }
+
+        .sidebar-header .user-greeting {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e4a7a;
+            padding: 10px 14px;
+            border-radius: 40px;
+            width: fit-content;
+        }
+
+        .sidebar-header .user-greeting i {
+            font-size: 1rem;
+            color: white;
+        }
+
+        /* navigation menu */
+        .nav-menu {
+            flex: 1;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+        }
+
+        .nav-item i {
+            width: 24px;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            transition: color 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #1e4a7a;
+            color: white;
+        }
+
+        .nav-item:hover i {
+            color: white;
+        }
+
+        .nav-item.active {
+            background: #1e4a7a;
+            color: white;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-item.active i {
+            color: white;
+        }
+
+        /* logout item */
+        .logout-item {
+            margin-top: 30px;
+            border-top: 1px solid #1e4a7a;
+            padding-top: 20px;
+        }
+
+        .logout-item .nav-item {
+            color: #fbc1c1;
+        }
+
+        .logout-item .nav-item i {
+            color: #f7a6a6;
+        }
+
+        .logout-item .nav-item:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .logout-item .nav-item:hover i {
+            color: white;
+        }
+
+        /* ========= MAIN CONTENT ========= */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px 40px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        /* top bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #0f3460;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-badge {
+            background: white;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 500;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            color: #0f3460;
+            border: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .date-badge i {
+            color: #0f3460;
+        }
+
+        /* form card */
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+        }
+
+        .form-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f5f1;
+        }
+
+        .form-header h3 {
+            color: #0f3460;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-header p {
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        /* form grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 5px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-group label i {
+            color: #0f3460;
+            margin-right: 6px;
+            width: 18px;
+        }
+
+        .form-group label .required {
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #0f3460;
+            box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
+        }
+
+        .form-control:hover:not(:focus) {
+            border-color: #94a3b8;
+        }
+
+        .form-control.is-invalid {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+
+        .invalid-feedback {
+            color: #ef4444;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475669' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        /* input groups */
+        .input-group {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .input-group-prepend {
+            position: absolute;
+            left: 12px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .input-group .form-control {
+            padding-left: 35px;
+        }
+
+        /* info box */
+        .info-box {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .info-box i {
+            font-size: 1.5rem;
+            color: #0f3460;
+        }
+
+        .info-box-content {
+            flex: 1;
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            color: #0f3460;
+            margin-bottom: 5px;
+        }
+
+        .info-box-text {
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        /* warning box */
+        .warning-box {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .warning-box i {
+            font-size: 1.5rem;
+            color: #b45309;
+        }
+
+        .warning-box-content {
+            flex: 1;
+        }
+
+        .warning-box-title {
+            font-weight: 600;
+            color: #b45309;
+            margin-bottom: 5px;
+        }
+
+        .warning-box-text {
+            color: #92400e;
+            font-size: 0.9rem;
+        }
+
+        /* form actions */
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f5f1;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #0f3460;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e4a7a;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(15, 52, 96, 0.2);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #0f3460;
+            color: #0f3460;
+        }
+
+        .btn-outline:hover {
+            background: #0f3460;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        /* current info card */
+        .current-info {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .current-info-title {
+            font-size: 1rem;
+            color: #64748b;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .current-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .current-info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .current-info-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .current-info-value {
+            font-weight: 600;
+            color: #0f3460;
+        }
+
+        /* alerts */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            border: 1px solid #86efac;
+            color: #166534;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            color: #92400e;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+            color: #1e40af;
+        }
+
+        .alert i {
+            font-size: 1.2rem;
+        }
+
+        /* help text */
+        .help-text {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .help-text i {
+            color: #0f3460;
+            font-size: 0.75rem;
+        }
+
+        /* loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, .3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #0f3460;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            pointer-events: none;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal[style*="display: flex"] {
+            display: flex !important;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-header.warning {
+            background: #fef3c7;
+            border-bottom-color: #f59e0b;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #64748b;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #0f3460;
+        }
+
+        .modal-body {
+            padding: 25px;
+            text-align: center;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            background: #f8fafc;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .modal-footer .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .draft-icon {
+            font-size: 4rem;
+            color: #f59e0b;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        /* background colours for each status */
+        .badge-open {
+            background-color: #10b981;
+        }
+
+        .badge-assigned {
+            background-color: #0f3460;
+        }
+
+        .badge-draft {
+            background-color: #64748b;
+        }
+
+        .badge-closed {
+            background-color: #ef4444;
+        }
+
+        .badge-other {
+            background-color: #64748b;
+        }
+
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+
+        ul li {
+            margin-bottom: 8px;
+        }
+
+        /* Message Alerts */
+        .messages-container {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .alert i {
+            font-size: 1.2rem;
+        }
+
+        .alert .message-content {
+            flex: 1;
+            font-size: 0.95rem;
+        }
+
+        .alert .close-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.7;
+            font-size: 1rem;
+            padding: 0 5px;
+        }
+
+        .alert .close-btn:hover {
+            opacity: 1;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>
+                <i class="fas fa-hand-holding-heart"></i> CareLink
+            </h2>
+            <div class="user-greeting">
+                <i class="fas fa-user-circle"></i> {{ user.get_full_name|default:user.username }} · family
+            </div>
+        </div>
+
+        <div class="nav-menu">
+            <a href="{% url 'dashboard:family_dashboard' %}" class="nav-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'post_request' %}" class="nav-item">
+                <i class="fas fa-plus-circle"></i>
+                <span>Post Care Request</span>
+            </a>
+            <a href="{% url 'my_requests' %}" class="nav-item active">
+                <i class="fas fa-clipboard-list"></i>
+                <span>My Requests</span>
+            </a>
+            <a href="{% url 'search_caretakers' %}" class="nav-item">
+                <i class="fas fa-search"></i>
+                <span>Find Caretakers</span>
+            </a>
+            <a href="{% url 'family_profile' %}" class="nav-item">
+                <i class="fas fa-id-badge"></i>
+                <span>My Profile</span>
+            </a>
+
+            <div class="logout-item">
+                <a href="{% url 'index' %}" class="nav-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="page-title">
+                <i class="fas fa-edit"></i>
+                Edit Care Request
+            </div>
+            <div class="date-badge">
+                <i class="far fa-calendar-alt"></i>
+                {% now "l, d M Y" %}
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            {% if forloop.first %}
+            <div class="alert alert-{% if message.tags == 'error' %}error{% else %}{{ message.tags }}{% endif %}">
+                <i class="fas 
+                    {% if message.tags == 'success' %}fa-check-circle
+                    {% elif message.tags == 'error' %}fa-exclamation-circle
+                    {% elif message.tags == 'warning' %}fa-exclamation-triangle
+                    {% else %}fa-info-circle{% endif %}">
+                </i>
+                <div class="message-content">{{ message }}</div>
+                {% if message.tags == 'error' or message.tags == 'warning' %}
+                <button class="close-btn" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Edit Form Card -->
+        <div class="form-card">
+            <div class="form-header">
+                <h3>
+                    <i class="fas fa-user-circle"></i>
+                    {{ care_request.patient_name }}
+                    <span style="font-size: 0.9rem; color: #64748b; font-weight: normal; margin-left: 10px;">
+                        Request #{{ care_request.id }}
+                    </span>
+                </h3>
+                <p>Update the details of your care request below. Fields marked with <span class="required">*</span> are
+                    required.</p>
+            </div>
+
+            <!-- Current Status Info -->
+            <div class="current-info">
+                <div class="current-info-title">
+                    <i class="fas fa-info-circle"></i>
+                    Current Status
+                </div>
+                <div class="current-info-grid">
+                    <div class="current-info-item">
+                        <span class="current-info-label">Status</span>
+                        <span class="current-info-value">
+                            <span class="badge 
+                                {% if care_request.status == 'open' %}badge-open
+                                {% elif care_request.status == 'assigned' %}badge-assigned
+                                {% elif care_request.status == 'draft' %}badge-draft
+                                {% elif care_request.status == 'closed' %}badge-closed
+                                {% else %}badge-other{% endif %}">
+                                {{ care_request.get_status_display }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="current-info-item">
+                        <span class="current-info-label">Posted On</span>
+                        <span class="current-info-value">{{ care_request.created_at|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="current-info-item">
+                        <span class="current-info-label">Total Applications</span>
+                        <span class="current-info-value">{{ applications_count|default:"0" }}</span>
+                    </div>
+                    <div class="current-info-item">
+                        <span class="current-info-label">Shortlisted</span>
+                        <span class="current-info-value">{{ shortlisted_count|default:"0" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Warning for Active Requests -->
+            {% if care_request.status != 'draft' and care_request.status != 'open' %}
+            <div class="warning-box">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="warning-box-content">
+                    <div class="warning-box-title">Limited Editing Available</div>
+                    <div class="warning-box-text">
+                        This request is {{ care_request.get_status_display|lower }}.
+                        Only certain fields can be edited. Some changes may affect existing applications.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Info Box -->
+            <div class="info-box">
+                <i class="fas fa-lightbulb"></i>
+                <div class="info-box-content">
+                    <div class="info-box-title">Editing Tips</div>
+                    <div class="info-box-text">
+                        {% if care_request.status == 'draft' %}
+                        Complete all required fields before publishing. You can save as draft and continue later.
+                        {% elif care_request.status == 'open' %}
+                        Be careful when changing requirements - this may affect existing applications.
+                        {% elif care_request.status == 'assigned' %}
+                        This request has an assigned caretaker. Major changes should be discussed with them directly.
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Form -->
+            <form method="POST" action="{% url 'edit_request' care_request.id %}" id="editRequestForm">
+                {% csrf_token %}
+
+                <div class="form-grid">
+                    <!-- Patient Information -->
+                    <div class="form-group full-width">
+                        <h4
+                            style="color: #0f3460; margin: 10px 0 20px; border-left: 4px solid #0f3460; padding-left: 15px;">
+                            <i class="fas fa-user-injured"></i> Patient Information
+                        </h4>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patient_name">
+                            <i class="fas fa-user"></i> Patient Full Name <span class="required">*</span>
+                        </label>
+                        <input type="text" class="form-control {% if errors.patient_name %}is-invalid{% endif %}"
+                            id="patient_name" name="patient_name" value="{{ care_request.patient_name }}" required>
+                        {% if errors.patient_name %}
+                        <div class="invalid-feedback">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.patient_name }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patient_age">
+                            <i class="fas fa-birthday-cake"></i> Patient Age <span class="required">*</span>
+                        </label>
+                        <input type="number" class="form-control {% if errors.patient_age %}is-invalid{% endif %}"
+                            id="patient_age" name="patient_age" value="{{ care_request.patient_age }}" min="0" max="120"
+                            required>
+                        {% if errors.patient_age %}
+                        <div class="invalid-feedback">
+                            <i class="fas fa-exclamation-circle"></i> {{ errors.patient_age }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="medical_conditions">
+                            <i class="fas fa-notes-medical"></i> Medical Conditions / Special Requirements
+                        </label>
+                        <textarea class="form-control" id="medical_conditions" name="medical_conditions"
+                            rows="3">{{ care_request.medical_conditions }}</textarea>
+                        <div class="help-text">
+                            <i class="fas fa-info-circle"></i> List any medical conditions, allergies, or special needs
+                        </div>
+                    </div>
+
+                    <!-- Care Requirements -->
+                    <div class="form-group full-width">
+                        <h4
+                            style="color: #0f3460; margin: 20px 0 20px; border-left: 4px solid #0f3460; padding-left: 15px;">
+                            <i class="fas fa-clock"></i> Care Requirements
+                        </h4>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="care_type">
+                            <i class="fas fa-hand-holding-heart"></i> Type of Care <span class="required">*</span>
+                        </label>
+                        <select class="form-control" id="care_type" name="care_type" required>
+                            <option value="">Select care type...</option>
+                            <option value="elderly" {% if care_request.care_type == 'elderly' %}selected{% endif %}>Elderly Care</option>
+                            <option value="child" {% if care_request.care_type == 'child' %}selected{% endif %}>Child Care</option>
+                            <option value="special_needs" {% if care_request.care_type == 'special_needs' %}selected{% endif %}>Special Needs Care</option>
+                            <option value="post_surgery" {% if care_request.care_type == 'post_surgery' %}selected{% endif %}>Post-Surgery Care</option>
+                            <option value="chronic_illness" {% if care_request.care_type == 'chronic_illness' %}selected{% endif %}>Chronic Illness Care</option>
+                            <option value="palliative" {% if care_request.care_type == 'palliative' %}selected{% endif %}>Palliative Care</option>
+                            <option value="other" {% if care_request.care_type == 'other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration_days">
+                            <i class="fas fa-hourglass-half"></i> Duration (Days) <span class="required">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-prepend"><i class="fas fa-calendar"></i></span>
+                            <input type="number" class="form-control" id="duration_days" name="duration_days"
+                                value="{{ care_request.duration_days }}" min="1" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="start_date">
+                            <i class="fas fa-calendar-alt"></i> Start Date <span class="required">*</span>
+                        </label>
+                        <input type="date" class="form-control" id="start_date" name="start_date"
+                            value="{{ care_request.start_date|date:'Y-m-d' }}" min="{% now 'Y-m-d' %}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="start_time">
+                            <i class="fas fa-clock"></i> Preferred Start Time
+                        </label>
+                        <input type="time" class="form-control" id="start_time" name="start_time"
+                            value="{{ care_request.start_time|time:'H:i' }}">
+                    </div>
+
+                    <!-- Location Information -->
+                    <div class="form-group full-width">
+                        <h4
+                            style="color: #0f3460; margin: 20px 0 20px; border-left: 4px solid #0f3460; padding-left: 15px;">
+                            <i class="fas fa-map-marker-alt"></i> Location Details
+                        </h4>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="address">
+                            <i class="fas fa-home"></i> Full Address <span class="required">*</span>
+                        </label>
+                        <textarea class="form-control" id="address" name="address" rows="2"
+                            required>{{ care_request.address }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city">
+                            <i class="fas fa-city"></i> City <span class="required">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="city" name="city" value="{{ care_request.city }}"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="state">
+                            <i class="fas fa-map"></i> State <span class="required">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="state" name="state" value="{{ care_request.state }}"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pincode">
+                            <i class="fas fa-mail-bulk"></i> Pincode <span class="required">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="pincode" name="pincode"
+                            value="{{ care_request.pincode }}" pattern="[0-9]{6}" maxlength="6" required>
+                        <div class="help-text">
+                            <i class="fas fa-info-circle"></i> Enter 6-digit pincode
+                        </div>
+                    </div>
+
+                    <!-- Compensation -->
+                    <div class="form-group full-width">
+                        <h4
+                            style="color: #0f3460; margin: 20px 0 20px; border-left: 4px solid #0f3460; padding-left: 15px;">
+                            <i class="fas fa-coins"></i> Compensation Details
+                        </h4>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="salary_offered">
+                            <i class="fas fa-tag"></i> Salary Offered <span class="required">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-prepend">₹</span>
+                            <input type="number" class="form-control" id="salary_offered" name="salary_offered"
+                                value="{{ care_request.salary_offered }}" min="0" step="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="payment_frequency">
+                            <i class="fas fa-calendar-week"></i> Payment Frequency <span class="required">*</span>
+                        </label>
+                        <select class="form-control" id="payment_frequency" name="payment_frequency" required>
+                            <option value="daily" {% if care_request.payment_frequency == 'daily' %}selected{% endif %}>Per Day</option>
+                            <option value="weekly" {% if care_request.payment_frequency == 'weekly' %}selected{% endif %}>Per Week</option>
+                            <option value="monthly" {% if care_request.payment_frequency == 'monthly' %}selected{% endif %}>Per Month</option>
+                        </select>
+                    </div>
+
+                    <!-- Additional Details -->
+                    <div class="form-group full-width">
+                        <h4
+                            style="color: #0f3460; margin: 20px 0 20px; border-left: 4px solid #0f3460; padding-left: 15px;">
+                            <i class="fas fa-clipboard-list"></i> Additional Details
+                        </h4>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="care_details">
+                            <i class="fas fa-file-alt"></i> Detailed Care Requirements <span class="required">*</span>
+                        </label>
+                        <textarea class="form-control" id="care_details" name="care_details" rows="5"
+                            required>{{ care_request.special_requirements }}</textarea>
+                        <div class="help-text">
+                            <i class="fas fa-info-circle"></i> Describe daily routines, specific tasks, and any special
+                            instructions
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="experience_required">
+                            <i class="fas fa-briefcase"></i> Minimum Experience Required (Years)
+                        </label>
+                        <input type="number" class="form-control" id="experience_required" name="experience_required"
+                            value="{{ care_request.experience_required }}" min="0" step="0.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender_preference">
+                            <i class="fas fa-venus-mars"></i> Gender Preference
+                        </label>
+                        <select class="form-control" id="gender_preference" name="gender_preference">
+                            <option value="">No Preference</option>
+                            <option value="male" {% if care_request.gender_preference == 'male' %}selected{% endif %}>Male</option>
+                            <option value="female" {% if care_request.gender_preference == 'female' %}selected{% endif %}>Female</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="required_skills">
+                            <i class="fas fa-tools"></i> Required Skills
+                        </label>
+                        <input type="text" class="form-control" id="required_skills" name="required_skills"
+                            value="{{ care_request.required_skills }}"
+                            placeholder="e.g., First Aid, CPR, Nursing, Cooking">
+                        <div class="help-text">
+                            <i class="fas fa-info-circle"></i> Separate skills with commas
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    {% if care_request.status == 'draft' %}
+                    <button type="button" class="btn btn-outline" onclick="confirmCancel()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" name="action" value="save_draft" class="btn btn-outline">
+                        <i class="fas fa-save"></i> Save as Draft
+                    </button>
+                    <button type="submit" name="action" value="publish" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Save & Publish
+                    </button>
+                    {% else %}
+                    <a href="{% url 'request_detail' care_request.id %}" class="btn btn-outline">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" name="action" value="save" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+
+                    {% if care_request.status == 'open' %}
+                    <button type="button" class="btn btn-danger" onclick="closeRequest()">
+                        <i class="fas fa-lock"></i> Close Request
+                    </button>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <!-- Danger Zone (for deleting) -->
+        {% if care_request.status == 'draft' %}
+        <div class="form-card" style="border-color: #fee2e2;">
+            <div class="form-header">
+                <h3 style="color: #dc2626;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Danger Zone
+                </h3>
+                <p>Once you delete a request, there is no going back. Please be certain.</p>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end;">
+                <form method="POST" action="{% url 'delete_request' care_request.id %}"
+                    onsubmit="return confirm('⚠️ Are you sure you want to delete this request? This action cannot be undone.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt"></i> Delete Request
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Cancel Confirmation Modal (for drafts) -->
+    <div id="cancelModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header warning">
+                <h3 style="color: #92400e;">
+                    <i class="fas fa-exclamation-triangle"></i> Unsaved Changes
+                </h3>
+                <button class="close-btn" onclick="closeCancelModal()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="draft-icon">
+                    <i class="fas fa-pen"></i>
+                </div>
+                <h4 style="color: #0f3460; margin-bottom: 15px;">You have unsaved changes!</h4>
+                <p style="color: #64748b; margin-bottom: 25px;">
+                    If you cancel now, your changes will be lost. What would you like to do?
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button type="button" class="btn btn-warning" style="width: 100%;" onclick="continueEditing()">
+                        <i class="fas fa-edit"></i> Continue Editing
+                    </button>
+
+                    <button type="button" class="btn btn-success" style="width: 100%;" onclick="saveDraftAndExit()">
+                        <i class="fas fa-save"></i> Save as Draft & Exit
+                    </button>
+
+                    <a href="{% url 'request_detail' care_request.id %}" class="btn btn-outline" style="width: 100%;"
+                        onclick="return confirmDiscard();">
+                        <i class="fas fa-trash-alt"></i> Discard Changes & Exit
+                    </a>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i> Changes are saved only when you click "Save"
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Close Request Confirmation Modal -->
+    <div id="closeRequestModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header warning">
+                <h3 style="color: #92400e;">
+                    <i class="fas fa-exclamation-triangle"></i> Close Care Request
+                </h3>
+                <button type="button" class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <i class="fas fa-ban" style="font-size: 4rem; color: #dc2626; margin-bottom: 20px;"></i>
+                <h4 style="color: #0f3460; margin-bottom: 15px;">Are you absolutely sure?</h4>
+                <p style="color: #64748b; margin-bottom: 25px;">
+                    Closing this request will:
+                </p>
+                <ul style="text-align: left; color: #475569; margin-bottom: 25px; padding-left: 20px;">
+                    <li>Prevent any new applications</li>
+                    <li>Reject all pending applications</li>
+                    <li>Mark the request as closed</li>
+                </ul>
+                <p style="color: #dc2626; font-weight: 600;">This action cannot be undone!</p>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <form method="POST" action="{% url 'close_request' care_request.id %}" style="flex: 1;"
+                    id="closeRequestForm">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" style="width: 100%;">
+                        <i class="fas fa-lock"></i> Yes, Close Request
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Track form changes
+        let formChanged = false;
+        const form = document.getElementById('editRequestForm');
+        const formInputs = form ? form.querySelectorAll('input, select, textarea') : [];
+
+        // Store initial values
+        const initialValues = {};
+        formInputs.forEach(input => {
+            initialValues[input.name] = input.value;
+            input.addEventListener('change', checkFormChanged);
+            input.addEventListener('keyup', checkFormChanged);
+        });
+
+        function checkFormChanged() {
+            formChanged = false;
+            formInputs.forEach(input => {
+                if (initialValues[input.name] !== input.value) {
+                    formChanged = true;
+                }
+            });
+        }
+
+        // Cancel modal functions (for drafts)
+        function confirmCancel() {
+            if (formChanged) {
+                document.getElementById('cancelModal').style.display = 'flex';
+            } else {
+                window.location.href = "{% url 'request_detail' care_request.id %}";
+            }
+        }
+
+        function closeCancelModal() {
+            document.getElementById('cancelModal').style.display = 'none';
+        }
+
+        function continueEditing() {
+            closeCancelModal();
+        }
+
+        function saveDraftAndExit() {
+            // Create hidden input for action
+            const form = document.getElementById('editRequestForm');
+            if (form) {
+                // Check if hidden input already exists
+                let hiddenInput = form.querySelector('input[name="action"][value="save_draft"]');
+                if (!hiddenInput) {
+                    hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'action';
+                    hiddenInput.value = 'save_draft';
+                    form.appendChild(hiddenInput);
+                }
+                form.submit();
+            }
+        }
+
+        function confirmDiscard() {
+            closeCancelModal();
+            return confirm('⚠️ Are you absolutely sure? All unsaved changes will be lost forever!');
+        }
+
+        // Close request modal functions
+        function closeRequest() {
+            const modal = document.getElementById('closeRequestModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            } else {
+                console.error('Close request modal not found');
+            }
+        }
+
+        function closeModal() {
+            const closeModal = document.getElementById('closeRequestModal');
+            if (closeModal) {
+                closeModal.style.display = 'none';
+            }
+            
+            const cancelModal = document.getElementById('cancelModal');
+            if (cancelModal) {
+                cancelModal.style.display = 'none';
+            }
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function (event) {
+            const cancelModal = document.getElementById('cancelModal');
+            const closeModalElem = document.getElementById('closeRequestModal');
+
+            if (event.target === cancelModal) {
+                closeCancelModal();
+            }
+            if (event.target === closeModalElem) {
+                closeModal();
+            }
+        };
+
+        // Form validation
+        const editForm = document.getElementById('editRequestForm');
+        if (editForm) {
+            editForm.addEventListener('submit', function (e) {
+                // Skip validation for close request form
+                if (e.target.id === 'closeRequestForm') return;
+                
+                const requiredFields = this.querySelectorAll('[required]');
+                let isValid = true;
+
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        field.classList.add('is-invalid');
+                        isValid = false;
+
+                        let errorDiv = field.nextElementSibling;
+                        if (!errorDiv || !errorDiv.classList.contains('invalid-feedback')) {
+                            errorDiv = document.createElement('div');
+                            errorDiv.className = 'invalid-feedback';
+                            field.parentNode.insertBefore(errorDiv, field.nextSibling);
+                        }
+                        errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> This field is required';
+                    } else {
+                        field.classList.remove('is-invalid');
+                    }
+                });
+
+                // Validate pincode
+                const pincode = document.getElementById('pincode');
+                if (pincode && pincode.value && !/^\d{6}$/.test(pincode.value)) {
+                    pincode.classList.add('is-invalid');
+                    let errorDiv = pincode.nextElementSibling;
+                    if (!errorDiv || !errorDiv.classList.contains('invalid-feedback')) {
+                        errorDiv = document.createElement('div');
+                        errorDiv.className = 'invalid-feedback';
+                        pincode.parentNode.insertBefore(errorDiv, pincode.nextSibling);
+                    }
+                    errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter a valid 6-digit pincode';
+                    isValid = false;
+                }
+
+                // Validate start date
+                const startDate = document.getElementById('start_date');
+                if (startDate && startDate.value) {
+                    const selectedDate = new Date(startDate.value);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    if (selectedDate < today) {
+                        startDate.classList.add('is-invalid');
+                        let errorDiv = startDate.nextElementSibling;
+                        if (!errorDiv || !errorDiv.classList.contains('invalid-feedback')) {
+                            errorDiv = document.createElement('div');
+                            errorDiv.className = 'invalid-feedback';
+                            startDate.parentNode.insertBefore(errorDiv, startDate.nextSibling);
+                        }
+                        errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Start date cannot be in the past';
+                        isValid = false;
+                    }
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    const firstError = document.querySelector('.is-invalid');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+        }
+
+        // Character counter for textareas
+        const textareas = document.querySelectorAll('textarea');
+        textareas.forEach(textarea => {
+            const maxLength = textarea.getAttribute('maxlength');
+            if (maxLength) {
+                const counter = document.createElement('div');
+                counter.className = 'help-text';
+                counter.style.textAlign = 'right';
+                counter.innerHTML = `<span>0/${maxLength}</span> characters`;
+                textarea.parentNode.appendChild(counter);
+
+                const counterSpan = counter.querySelector('span');
+                textarea.addEventListener('input', function () {
+                    counterSpan.textContent = `${this.value.length}/${maxLength}`;
+                });
+            }
+        });
+
+        // Warn before leaving if form is dirty
+        window.addEventListener('beforeunload', function (e) {
+            const cancelModal = document.getElementById('cancelModal');
+            if (formChanged && (!cancelModal || cancelModal.style.display !== 'flex')) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+            }
+        });
+
+        if (form) {
+            form.addEventListener('submit', () => {
+                formChanged = false;
+            });
+        }
+    </script>
+</body>
+
+</html>

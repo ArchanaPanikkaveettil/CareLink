@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Post Care Request - CareLink</title>
     <style>
@@ -66,9 +65,12 @@
             margin-bottom: 5px;
         }
 
-        input,
-        textarea,
-        select {
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        input, textarea, select {
             width: 100%;
             padding: 12px 15px;
             margin-bottom: 15px;
@@ -79,9 +81,7 @@
             box-sizing: border-box;
         }
 
-        input:focus,
-        textarea:focus,
-        select:focus {
+        input:focus, textarea:focus, select:focus {
             border-color: #28a745;
             outline: none;
             box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
@@ -197,14 +197,8 @@
             margin-bottom: 10px;
             display: block;
         }
-
-        .required-field::after {
-            content: " *";
-            color: #dc3545;
-        }
     </style>
 </head>
-
 <body>
 
     <div class="navbar">
@@ -212,14 +206,13 @@
     </div>
 
     <div class="container">
-
         <div class="form-card">
             <div class="info-note">
                 <i class="fas fa-info-circle"></i>
                 Fill in the details below to post a new care request. Fields marked with * are required.
             </div>
 
-            <!-- Messages Section - FIXED -->
+            <!-- Messages Section -->
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-warning{% endif %}">
@@ -228,8 +221,22 @@
                 {% endfor %}
             {% endif %}
 
+            <!-- Form Errors Summary -->
+            {% if form.errors %}
+                <div class="alert alert-error">
+                    <strong><i class="fas fa-exclamation-circle"></i> Please correct the following errors:</strong>
+                    <ul style="margin-top: 10px; margin-bottom: 0;">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li>{{ field|title }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
             <!-- Main Form -->
-            <form method="POST">
+            <form method="POST" novalidate>
                 {% csrf_token %}
 
                 <!-- Patient Information Section -->
@@ -240,32 +247,56 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="required-field">Patient Name</label>
-                        <input type="text" name="patient_name" placeholder="Full name of patient" required
-                               value="{{ request.POST.patient_name }}"
-                               class="{% if messages and 'patient_name' in messages.0.message|lower %}error-field{% endif %}">
+                        <input type="text" 
+                               name="patient_name" 
+                               placeholder="Full name of patient" 
+                               required
+                               value="{{ form.patient_name.value|default:'' }}"
+                               class="{% if form.patient_name.errors %}error-field{% endif %}">
+                        {% if form.patient_name.errors %}
+                            <span class="error-hint">{{ form.patient_name.errors.0 }}</span>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         <label class="required-field">Patient Age</label>
-                        <input type="number" name="patient_age" min="0" max="120" placeholder="Age in years" required
-                               value="{{ request.POST.patient_age }}"
-                               class="{% if messages and 'age' in messages.0.message|lower %}error-field{% endif %}">
+                        <input type="number" 
+                               name="patient_age" 
+                               min="0" 
+                               max="120" 
+                               placeholder="Age in years" 
+                               required
+                               value="{{ form.patient_age.value|default:'' }}"
+                               class="{% if form.patient_age.errors %}error-field{% endif %}">
+                        {% if form.patient_age.errors %}
+                            <span class="error-hint">{{ form.patient_age.errors.0 }}</span>
+                        {% endif %}
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="required-field">Patient Gender</label>
-                        <select name="patient_gender" required>
+                        <select name="patient_gender" required class="{% if form.patient_gender.errors %}error-field{% endif %}">
                             <option value="">Select Gender</option>
-                            <option value="male" {% if request.POST.patient_gender == 'male' %}selected{% endif %}>Male</option>
-                            <option value="female" {% if request.POST.patient_gender == 'female' %}selected{% endif %}>Female</option>
-                            <option value="other" {% if request.POST.patient_gender == 'other' %}selected{% endif %}>Other</option>
+                            <option value="male" {% if form.patient_gender.value == 'male' %}selected{% endif %}>Male</option>
+                            <option value="female" {% if form.patient_gender.value == 'female' %}selected{% endif %}>Female</option>
+                            <option value="other" {% if form.patient_gender.value == 'other' %}selected{% endif %}>Other</option>
                         </select>
+                        {% if form.patient_gender.errors %}
+                            <span class="error-hint">{{ form.patient_gender.errors.0 }}</span>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         <label class="required-field">Medical Condition</label>
-                        <input type="text" name="medical_condition" placeholder="Primary diagnosis/condition" required
-                               value="{{ request.POST.medical_condition }}">
+                        <input type="text" 
+                               name="medical_condition" 
+                               placeholder="Primary diagnosis/condition" 
+                               required
+                               value="{{ form.medical_condition.value|default:'' }}"
+                               class="{% if form.medical_condition.errors %}error-field{% endif %}">
+                        {% if form.medical_condition.errors %}
+                            <span class="error-hint">{{ form.medical_condition.errors.0 }}</span>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -273,19 +304,19 @@
                     <div class="form-group">
                         <label>Mobility Status</label>
                         <select name="mobility_status">
-                            <option value="independent" {% if request.POST.mobility_status == 'independent' %}selected{% endif %}>Independent</option>
-                            <option value="walker" {% if request.POST.mobility_status == 'walker' %}selected{% endif %}>Walker/Cane</option>
-                            <option value="wheelchair" {% if request.POST.mobility_status == 'wheelchair' %}selected{% endif %}>Wheelchair</option>
-                            <option value="bedridden" {% if request.POST.mobility_status == 'bedridden' %}selected{% endif %}>Bedridden</option>
+                            <option value="independent" {% if form.mobility_status.value == 'independent' %}selected{% endif %}>Independent</option>
+                            <option value="walker" {% if form.mobility_status.value == 'walker' %}selected{% endif %}>Walker/Cane</option>
+                            <option value="wheelchair" {% if form.mobility_status.value == 'wheelchair' %}selected{% endif %}>Wheelchair</option>
+                            <option value="bedridden" {% if form.mobility_status.value == 'bedridden' %}selected{% endif %}>Bedridden</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Cognitive Status</label>
                         <select name="cognitive_status">
-                            <option value="normal" {% if request.POST.cognitive_status == 'normal' %}selected{% endif %}>Normal</option>
-                            <option value="mild_impairment" {% if request.POST.cognitive_status == 'mild_impairment' %}selected{% endif %}>Mild Cognitive Impairment</option>
-                            <option value="dementia" {% if request.POST.cognitive_status == 'dementia' %}selected{% endif %}>Dementia</option>
-                            <option value="alzheimers" {% if request.POST.cognitive_status == 'alzheimers' %}selected{% endif %}>Alzheimer's</option>
+                            <option value="normal" {% if form.cognitive_status.value == 'normal' %}selected{% endif %}>Normal</option>
+                            <option value="mild_impairment" {% if form.cognitive_status.value == 'mild_impairment' %}selected{% endif %}>Mild Cognitive Impairment</option>
+                            <option value="dementia" {% if form.cognitive_status.value == 'dementia' %}selected{% endif %}>Dementia</option>
+                            <option value="alzheimers" {% if form.cognitive_status.value == 'alzheimers' %}selected{% endif %}>Alzheimer's</option>
                         </select>
                     </div>
                 </div>
@@ -298,42 +329,52 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="required-field">Care Type</label>
-                        <select name="care_type" required>
+                        <select name="care_type" required class="{% if form.care_type.errors %}error-field{% endif %}">
                             <option value="">Select Care Type</option>
-                            <option value="full_time" {% if request.POST.care_type == 'full_time' %}selected{% endif %}>Full Time</option>
-                            <option value="part_time" {% if request.POST.care_type == 'part_time' %}selected{% endif %}>Part Time</option>
-                            <option value="night_care" {% if request.POST.care_type == 'night_care' %}selected{% endif %}>Night Care</option>
-                            <option value="home_visit" {% if request.POST.care_type == 'home_visit' %}selected{% endif %}>Home Visit</option>
-                            <option value="emergency" {% if request.POST.care_type == 'emergency' %}selected{% endif %}>Emergency Care</option>
-                            <option value="respite" {% if request.POST.care_type == 'respite' %}selected{% endif %}>Respite Care</option>
-                            <option value="palliative" {% if request.POST.care_type == 'palliative' %}selected{% endif %}>Palliative Care</option>
-                            <option value="post_surgery" {% if request.POST.care_type == 'post_surgery' %}selected{% endif %}>Post-Surgery Care</option>
+                            <option value="full_time" {% if form.care_type.value == 'full_time' %}selected{% endif %}>Full Time</option>
+                            <option value="part_time" {% if form.care_type.value == 'part_time' %}selected{% endif %}>Part Time</option>
+                            <option value="night_care" {% if form.care_type.value == 'night_care' %}selected{% endif %}>Night Care</option>
+                            <option value="home_visit" {% if form.care_type.value == 'home_visit' %}selected{% endif %}>Home Visit</option>
+                            <option value="emergency" {% if form.care_type.value == 'emergency' %}selected{% endif %}>Emergency Care</option>
+                            <option value="respite" {% if form.care_type.value == 'respite' %}selected{% endif %}>Respite Care</option>
+                            <option value="palliative" {% if form.care_type.value == 'palliative' %}selected{% endif %}>Palliative Care</option>
+                            <option value="post_surgery" {% if form.care_type.value == 'post_surgery' %}selected{% endif %}>Post-Surgery Care</option>
                         </select>
+                        {% if form.care_type.errors %}
+                            <span class="error-hint">{{ form.care_type.errors.0 }}</span>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         <label>Urgency Level</label>
                         <select name="urgency_level">
-                            <option value="low" {% if request.POST.urgency_level == 'low' %}selected{% endif %}>Low - Can wait</option>
-                            <option value="medium" {% if request.POST.urgency_level == 'medium' or not request.POST.urgency_level %}selected{% endif %}>Medium - Within a week</option>
-                            <option value="high" {% if request.POST.urgency_level == 'high' %}selected{% endif %}>High - Within 2-3 days</option>
-                            <option value="urgent" {% if request.POST.urgency_level == 'urgent' %}selected{% endif %}>Urgent - Immediately</option>
+                            <option value="low" {% if form.urgency_level.value == 'low' %}selected{% endif %}>Low - Can wait</option>
+                            <option value="medium" {% if form.urgency_level.value == 'medium' or not form.urgency_level.value %}selected{% endif %}>Medium - Within a week</option>
+                            <option value="high" {% if form.urgency_level.value == 'high' %}selected{% endif %}>High - Within 2-3 days</option>
+                            <option value="urgent" {% if form.urgency_level.value == 'urgent' %}selected{% endif %}>Urgent - Immediately</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="required-field">Required Skills</label>
-                    <input type="text" name="required_skills"
+                    <input type="text" 
+                           name="required_skills"
                            placeholder="e.g., Patient care, Medication management, First aid (comma separated)"
-                           required value="{{ request.POST.required_skills }}">
+                           required 
+                           value="{{ form.required_skills.value|default:'' }}"
+                           class="{% if form.required_skills.errors %}error-field{% endif %}">
                     <div class="help-text">List skills required, separated by commas</div>
+                    {% if form.required_skills.errors %}
+                        <span class="error-hint">{{ form.required_skills.errors.0 }}</span>
+                    {% endif %}
                 </div>
 
                 <div class="form-group">
                     <label>Preferred Qualifications</label>
-                    <input type="text" name="preferred_qualifications"
+                    <input type="text" 
+                           name="preferred_qualifications"
                            placeholder="e.g., GNM, BSc Nursing, ICU experience"
-                           value="{{ request.POST.preferred_qualifications }}">
+                           value="{{ form.preferred_qualifications.value|default:'' }}">
                 </div>
 
                 <!-- Compensation Section -->
@@ -344,22 +385,31 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="required-field">Salary Offered (₹)</label>
-                        <input type="number" name="salary_offered" min="0" step="100" placeholder="Amount" required
-                               value="{{ request.POST.salary_offered }}">
+                        <input type="number" 
+                               name="salary_offered" 
+                               min="0" 
+                               step="100" 
+                               placeholder="Amount" 
+                               required
+                               value="{{ form.salary_offered.value|default:'' }}"
+                               class="{% if form.salary_offered.errors %}error-field{% endif %}">
+                        {% if form.salary_offered.errors %}
+                            <span class="error-hint">{{ form.salary_offered.errors.0 }}</span>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         <label>Payment Frequency</label>
                         <select name="payment_frequency">
-                            <option value="hourly" {% if request.POST.payment_frequency == 'hourly' %}selected{% endif %}>Per Hour</option>
-                            <option value="daily" {% if request.POST.payment_frequency == 'daily' %}selected{% endif %}>Per Day</option>
-                            <option value="weekly" {% if request.POST.payment_frequency == 'weekly' %}selected{% endif %}>Per Week</option>
-                            <option value="monthly" {% if request.POST.payment_frequency == 'monthly' or not request.POST.payment_frequency %}selected{% endif %}>Per Month</option>
+                            <option value="hourly" {% if form.payment_frequency.value == 'hourly' %}selected{% endif %}>Per Hour</option>
+                            <option value="daily" {% if form.payment_frequency.value == 'daily' %}selected{% endif %}>Per Day</option>
+                            <option value="weekly" {% if form.payment_frequency.value == 'weekly' %}selected{% endif %}>Per Week</option>
+                            <option value="monthly" {% if form.payment_frequency.value == 'monthly' or not form.payment_frequency.value %}selected{% endif %}>Per Month</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="checkbox-group">
-                    <input type="checkbox" name="negotiable" id="negotiable" {% if request.POST.negotiable == 'on' or not request.POST %}checked{% endif %}>
+                    <input type="checkbox" name="negotiable" id="negotiable" {% if form.negotiable.value %}checked{% endif %}>
                     <label for="negotiable">Salary is negotiable</label>
                 </div>
 
@@ -371,33 +421,63 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="required-field">Shift Timing</label>
-                        <input type="text" name="shift_timing"
-                               placeholder="e.g., 9 AM - 6 PM, Night shift, Flexible" required
-                               value="{{ request.POST.shift_timing }}">
+                        <input type="text" 
+                               name="shift_timing"
+                               placeholder="e.g., 9 AM - 6 PM, Night shift, Flexible" 
+                               required
+                               value="{{ form.shift_timing.value|default:'' }}"
+                               class="{% if form.shift_timing.errors %}error-field{% endif %}">
+                        {% if form.shift_timing.errors %}
+                            <span class="error-hint">{{ form.shift_timing.errors.0 }}</span>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         <label class="required-field">Start Date</label>
-                        <input type="date" name="start_date" required value="{{ request.POST.start_date }}">
+                        <input type="date" 
+                               name="start_date" 
+                               required 
+                               value="{{ form.start_date.value|date:'Y-m-d'|default:'' }}"
+                               class="{% if form.start_date.errors %}error-field{% endif %}">
+                        {% if form.start_date.errors %}
+                            <span class="error-hint">{{ form.start_date.errors.0 }}</span>
+                        {% endif %}
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="required-field">Duration (Days)</label>
-                        <input type="number" name="duration_days" min="1" placeholder="Number of days" required
-                               value="{{ request.POST.duration_days }}">
+                        <input type="number" 
+                               name="duration_days" 
+                               min="1" 
+                               placeholder="Number of days" 
+                               required
+                               value="{{ form.duration_days.value|default:'' }}"
+                               class="{% if form.duration_days.errors %}error-field{% endif %}">
+                        {% if form.duration_days.errors %}
+                            <span class="error-hint">{{ form.duration_days.errors.0 }}</span>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         <label>Hours per Day</label>
-                        <input type="number" name="hours_per_day" min="1" max="24" step="0.5"
-                               placeholder="e.g., 8, 12" value="{{ request.POST.hours_per_day }}">
+                        <input type="number" 
+                               name="hours_per_day" 
+                               min="1" 
+                               max="24" 
+                               step="0.5"
+                               placeholder="e.g., 8, 12" 
+                               value="{{ form.hours_per_day.value|default:'' }}">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Days per Week</label>
-                        <input type="number" name="days_per_week" min="1" max="7" value="{{ request.POST.days_per_week|default:'7' }}">
+                        <input type="number" 
+                               name="days_per_week" 
+                               min="1" 
+                               max="7" 
+                               value="{{ form.days_per_week.value|default:'7' }}">
                     </div>
                 </div>
 
@@ -410,28 +490,38 @@
                     <div class="form-group">
                         <label>Gender Preference</label>
                         <select name="gender_preference">
-                            <option value="any" {% if request.POST.gender_preference == 'any' or not request.POST.gender_preference %}selected{% endif %}>Any</option>
-                            <option value="female" {% if request.POST.gender_preference == 'female' %}selected{% endif %}>Female</option>
-                            <option value="male" {% if request.POST.gender_preference == 'male' %}selected{% endif %}>Male</option>
+                            <option value="any" {% if form.gender_preference.value == 'any' or not form.gender_preference.value %}selected{% endif %}>Any</option>
+                            <option value="female" {% if form.gender_preference.value == 'female' %}selected{% endif %}>Female</option>
+                            <option value="male" {% if form.gender_preference.value == 'male' %}selected{% endif %}>Male</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Language Preference</label>
-                        <input type="text" name="language_preference" placeholder="e.g., English, Hindi, Tamil"
-                               value="{{ request.POST.language_preference }}">
+                        <input type="text" 
+                               name="language_preference" 
+                               placeholder="e.g., English, Hindi, Tamil"
+                               value="{{ form.language_preference.value|default:'' }}">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Preferred Age (Min)</label>
-                        <input type="number" name="age_preference_min" min="18" max="100" placeholder="Min age"
-                               value="{{ request.POST.age_preference_min }}">
+                        <input type="number" 
+                               name="age_preference_min" 
+                               min="18" 
+                               max="100" 
+                               placeholder="Min age"
+                               value="{{ form.age_preference_min.value|default:'' }}">
                     </div>
                     <div class="form-group">
                         <label>Preferred Age (Max)</label>
-                        <input type="number" name="age_preference_max" min="18" max="100" placeholder="Max age"
-                               value="{{ request.POST.age_preference_max }}">
+                        <input type="number" 
+                               name="age_preference_max" 
+                               min="18" 
+                               max="100" 
+                               placeholder="Max age"
+                               value="{{ form.age_preference_max.value|default:'' }}">
                     </div>
                 </div>
 
@@ -442,28 +532,61 @@
 
                 <div class="form-group">
                     <label class="required-field">Complete Address</label>
-                    <textarea name="address" placeholder="House/Flat No., Building Name, Street" required>{{ request.POST.address }}</textarea>
+                    <textarea name="address" 
+                              placeholder="House/Flat No., Building Name, Street" 
+                              required
+                              class="{% if form.address.errors %}error-field{% endif %}">{{ form.address.value|default:'' }}</textarea>
+                    {% if form.address.errors %}
+                        <span class="error-hint">{{ form.address.errors.0 }}</span>
+                    {% endif %}
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="required-field">City</label>
-                        <input type="text" name="city" placeholder="City" required value="{{ request.POST.city }}">
+                        <input type="text" 
+                               name="city" 
+                               placeholder="City" 
+                               required 
+                               value="{{ form.city.value|default:'' }}"
+                               class="{% if form.city.errors %}error-field{% endif %}">
+                        {% if form.city.errors %}
+                            <span class="error-hint">{{ form.city.errors.0 }}</span>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         <label class="required-field">State</label>
-                        <input type="text" name="state" placeholder="State" required value="{{ request.POST.state }}">
+                        <input type="text" 
+                               name="state" 
+                               placeholder="State" 
+                               required 
+                               value="{{ form.state.value|default:'' }}"
+                               class="{% if form.state.errors %}error-field{% endif %}">
+                        {% if form.state.errors %}
+                            <span class="error-hint">{{ form.state.errors.0 }}</span>
+                        {% endif %}
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="required-field">Pincode</label>
-                        <input type="text" name="pincode" placeholder="Pincode" required value="{{ request.POST.pincode }}">
+                        <input type="text" 
+                               name="pincode" 
+                               placeholder="Pincode" 
+                               required 
+                               value="{{ form.pincode.value|default:'' }}"
+                               class="{% if form.pincode.errors %}error-field{% endif %}">
+                        {% if form.pincode.errors %}
+                            <span class="error-hint">{{ form.pincode.errors.0 }}</span>
+                        {% endif %}
                     </div>
                     <div class="form-group">
                         <label>Landmark</label>
-                        <input type="text" name="landmark" placeholder="Nearby landmark" value="{{ request.POST.landmark }}">
+                        <input type="text" 
+                               name="landmark" 
+                               placeholder="Nearby landmark" 
+                               value="{{ form.landmark.value|default:'' }}">
                     </div>
                 </div>
 
@@ -475,27 +598,29 @@
                 <div class="form-group">
                     <label>Special Requirements</label>
                     <textarea name="special_requirements"
-                              placeholder="Bedridden handling, dementia care, special dietary needs, etc.">{{ request.POST.special_requirements }}</textarea>
+                              placeholder="Bedridden handling, dementia care, special dietary needs, etc.">{{ form.special_requirements.value|default:'' }}</textarea>
                 </div>
 
                 <div class="form-group">
                     <label>Equipment Provided</label>
-                    <input type="text" name="equipment_provided"
+                    <input type="text" 
+                           name="equipment_provided"
                            placeholder="e.g., Hospital bed, Oxygen concentrator, Wheelchair"
-                           value="{{ request.POST.equipment_provided }}">
+                           value="{{ form.equipment_provided.value|default:'' }}">
                     <div class="help-text">Medical equipment that will be provided by family</div>
                 </div>
 
                 <!-- Accommodation -->
                 <div class="checkbox-group">
-                    <input type="checkbox" name="accommodation_provided" id="accommodation_provided" {% if request.POST.accommodation_provided == 'on' %}checked{% endif %}>
+                    <input type="checkbox" name="accommodation_provided" id="accommodation_provided" {% if form.accommodation_provided.value %}checked{% endif %}>
                     <label for="accommodation_provided">Accommodation provided for caretaker</label>
                 </div>
 
                 <div class="form-group">
                     <label>Accommodation Details</label>
                     <textarea name="accommodation_details"
-                              placeholder="Describe accommodation if provided (separate room, meals, etc.)">{{ request.POST.accommodation_details }}</textarea>
+                              placeholder="Describe accommodation if provided (separate room, meals, etc.)"
+                              {% if not form.accommodation_provided.value %}disabled{% endif %}>{{ form.accommodation_details.value|default:'' }}</textarea>
                 </div>
 
                 <!-- Interview Process -->
@@ -504,16 +629,16 @@
                 </div>
 
                 <div class="checkbox-group">
-                    <input type="checkbox" name="interview_required" id="interview_required" {% if request.POST.interview_required == 'on' or not request.POST %}checked{% endif %}>
+                    <input type="checkbox" name="interview_required" id="interview_required" {% if form.interview_required.value %}checked{% endif %}>
                     <label for="interview_required">Interview required before hiring</label>
                 </div>
 
                 <div class="form-group">
                     <label>Interview Type</label>
-                    <select name="interview_type">
-                        <option value="video" {% if request.POST.interview_type == 'video' or not request.POST.interview_type %}selected{% endif %}>Video Call</option>
-                        <option value="in_person" {% if request.POST.interview_type == 'in_person' %}selected{% endif %}>In Person</option>
-                        <option value="phone" {% if request.POST.interview_type == 'phone' %}selected{% endif %}>Phone Call</option>
+                    <select name="interview_type" {% if not form.interview_required.value %}disabled{% endif %}>
+                        <option value="video" {% if form.interview_type.value == 'video' or not form.interview_type.value %}selected{% endif %}>Video Call</option>
+                        <option value="in_person" {% if form.interview_type.value == 'in_person' %}selected{% endif %}>In Person</option>
+                        <option value="phone" {% if form.interview_type.value == 'phone' %}selected{% endif %}>Phone Call</option>
                     </select>
                 </div>
 
@@ -535,34 +660,68 @@
     <script>
         // Enable/disable accommodation details based on checkbox
         const accommodationCheckbox = document.getElementById('accommodation_provided');
+        const accommodationDetails = document.querySelector('textarea[name="accommodation_details"]');
+        
         if (accommodationCheckbox) {
-            accommodationCheckbox.addEventListener('change', function () {
-                const detailsField = document.querySelector('textarea[name="accommodation_details"]');
-                detailsField.disabled = !this.checked;
+            accommodationCheckbox.addEventListener('change', function() {
+                accommodationDetails.disabled = !this.checked;
                 if (!this.checked) {
-                    detailsField.value = '';
+                    accommodationDetails.value = '';
                 }
             });
         }
 
         // Enable/disable interview type based on interview required checkbox
         const interviewCheckbox = document.getElementById('interview_required');
+        const interviewType = document.querySelector('select[name="interview_type"]');
+        
         if (interviewCheckbox) {
-            interviewCheckbox.addEventListener('change', function () {
-                const interviewType = document.querySelector('select[name="interview_type"]');
+            interviewCheckbox.addEventListener('change', function() {
                 interviewType.disabled = !this.checked;
             });
         }
 
-        // Auto-hide alerts after 5 seconds (if any)
-        setTimeout(function () {
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
             let alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function (alert) {
-                alert.style.display = 'none';
+            alerts.forEach(function(alert) {
+                alert.style.transition = 'opacity 1s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.style.display = 'none', 1000);
             });
         }, 5000);
+
+        // Form validation before submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            let requiredFields = document.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(function(field) {
+                if (!field.value.trim()) {
+                    field.classList.add('error-field');
+                    isValid = false;
+                    
+                    // Add error hint if not exists
+                    let parent = field.parentElement;
+                    if (!parent.querySelector('.error-hint')) {
+                        let error = document.createElement('span');
+                        error.className = 'error-hint';
+                        error.textContent = 'This field is required';
+                        parent.appendChild(error);
+                    }
+                } else {
+                    field.classList.remove('error-field');
+                    let error = field.parentElement.querySelector('.error-hint');
+                    if (error) error.remove();
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please fill in all required fields');
+            }
+        });
     </script>
 
 </body>
-
 </html>

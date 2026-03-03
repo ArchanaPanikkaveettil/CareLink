@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
+        /* ... (keep all your existing styles) ... */
         * {
             margin: 0;
             padding: 0;
@@ -379,7 +380,8 @@
 
         <div class="nav-menu">
             {% block sidebar_links %}
-            <a href="{% url 'family_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'family_dashboard' %}active{% endif %}">
+            <!-- FIXED: Added dashboard: namespace -->
+            <a href="{% url 'dashboard:family_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'family_dashboard' %}active{% endif %}">
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
             </a>

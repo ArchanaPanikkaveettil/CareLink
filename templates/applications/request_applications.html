@@ -244,6 +244,11 @@
             color: #166534;
         }
 
+        .status-assigned {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
         .request-details-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -295,6 +300,7 @@
             padding: 5px;
             border-radius: 50px;
             border: 1px solid #e2e8f0;
+            flex-wrap: wrap;
         }
 
         .filter-tab {
@@ -329,6 +335,48 @@
             font-weight: 700;
             color: #0f3460;
             font-size: 1.2rem;
+        }
+
+        /* alert banner */
+        .alert-banner {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .alert-banner.warning {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        .alert-banner.info {
+            background: #dbeafe;
+            border-color: #0f3460;
+        }
+
+        .alert-banner i {
+            font-size: 1.5rem;
+            color: #0f3460;
+        }
+
+        .alert-banner .alert-content {
+            flex: 1;
+        }
+
+        .alert-banner .alert-title {
+            font-weight: 600;
+            color: #0f3460;
+            margin-bottom: 5px;
+        }
+
+        .alert-banner .alert-message {
+            color: #475569;
         }
 
         /* applications grid */
@@ -366,10 +414,24 @@
             background: #0f3460;
         }
 
+        .application-card.status-on_hold::before {
+            background: #94a3b8;
+        }
+
+        .application-card.status-frozen::before {
+            background: #60a5fa;
+        }
+
+        .application-card.status-offer_sent::before {
+            background: #8b5cf6;
+        }
+
+        .application-card.status-offer_accepted::before,
         .application-card.status-accepted::before {
             background: #10b981;
         }
 
+        .application-card.status-offer_declined::before,
         .application-card.status-rejected::before {
             background: #ef4444;
         }
@@ -420,6 +482,31 @@
         .status-shortlisted {
             background: #dbeafe;
             color: #1e40af;
+        }
+
+        .status-on_hold {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .status-frozen {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .status-offer_sent {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .status-offer_accepted {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-offer_declined {
+            background: #fee2e2;
+            color: #991b1b;
         }
 
         .status-accepted {
@@ -495,6 +582,56 @@
             color: #475569;
             line-height: 1.6;
             white-space: pre-line;
+        }
+
+        /* offer summary */
+        .offer-summary {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #bae6fd;
+        }
+
+        .offer-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #0369a1;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .offer-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .offer-item {
+            font-size: 0.95rem;
+        }
+
+        .offer-item .label {
+            color: #64748b;
+            font-size: 0.8rem;
+            display: block;
+        }
+
+        .offer-item .value {
+            font-weight: 600;
+            color: #0f3460;
+        }
+
+        .offer-expiry {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #bae6fd;
+            color: #dc2626;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .application-footer {
@@ -594,6 +731,25 @@
 
         .btn-secondary:hover {
             background: #475569;
+        }
+
+        .btn-info {
+            background: #0f3460;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #1e4a7a;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
         }
 
         .empty-state {
@@ -759,7 +915,8 @@
             margin-bottom: 8px;
         }
         
-        .form-group textarea {
+        .form-group textarea,
+        .form-group input {
             width: 100%;
             padding: 12px;
             border: 1.5px solid #e2e8f0;
@@ -770,7 +927,8 @@
             transition: all 0.3s;
         }
         
-        .form-group textarea:focus {
+        .form-group textarea:focus,
+        .form-group input:focus {
             outline: none;
             border-color: #0f3460;
             box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
@@ -802,6 +960,36 @@
             display: flex;
             align-items: center;
             gap: 5px;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #0f3460;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            pointer-events: none;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
         }
 
         @media (max-width: 768px) {
@@ -868,7 +1056,7 @@
         </div>
 
         <div class="nav-menu">
-            <a href="{% url 'family_dashboard' %}" class="nav-item">
+            <a href="{% url 'dashboard:family_dashboard' %}" class="nav-item">
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
             </a>
@@ -876,7 +1064,7 @@
                 <i class="fas fa-plus-circle"></i>
                 <span>Post Care Request</span>
             </a>
-            <a href="{% url 'my_requests' %}" class="nav-item">
+            <a href="{% url 'my_requests' %}" class="nav-item active">
                 <i class="fas fa-clipboard-list"></i>
                 <span>My Requests</span>
             </a>
@@ -918,10 +1106,11 @@
                 <h2>
                     <i class="fas fa-user-circle"></i>
                     {{ care_request.patient_name }}
-                    <span class="request-id">{{ care_request.request_id }}</span>
+                    <span class="request-id">#{{ care_request.id }}</span>
                 </h2>
-                <span class="status-badge status-open">
-                    <i class="fas fa-lock-open"></i> {{ care_request.get_status_display }}
+                <span class="status-badge {% if care_request.status == 'open' %}status-open{% elif care_request.status == 'assigned' %}status-assigned{% endif %}">
+                    <i class="fas {% if care_request.status == 'open' %}fa-lock-open{% else %}fa-lock{% endif %}"></i> 
+                    {{ care_request.get_status_display }}
                 </span>
             </div>
 
@@ -947,7 +1136,44 @@
                     <span class="detail-value">₹{{ care_request.salary_offered }}/{{ care_request.get_payment_frequency_display }}</span>
                 </div>
             </div>
+
+            {% if care_request.assigned_caretaker %}
+            <div style="margin-top: 20px; padding: 15px; background: #dbeafe; border-radius: 12px; display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-check-circle" style="color: #0f3460; font-size: 1.5rem;"></i>
+                <div>
+                    <strong>Assigned Caretaker:</strong> {{ care_request.assigned_caretaker.get_full_name|default:care_request.assigned_caretaker.username }}
+                    <br>
+                    <small>Assigned on {{ care_request.assigned_date|date:"M d, Y" }}</small>
+                </div>
+            </div>
+            {% endif %}
         </div>
+
+        <!-- Flow Status Alert -->
+        {% if has_active_shortlist and care_request.status == 'open' %}
+        <div class="alert-banner info">
+            <i class="fas fa-info-circle"></i>
+            <div class="alert-content">
+                <div class="alert-title">Shortlist Active</div>
+                <div class="alert-message">
+                    You have {{ shortlisted_count }} shortlisted candidates. You can send an offer to any of them. 
+                    If you directly accept a pending application, this shortlist will be frozen automatically.
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if is_position_filled %}
+        <div class="alert-banner warning">
+            <i class="fas fa-lock"></i>
+            <div class="alert-content">
+                <div class="alert-title">Position Filled</div>
+                <div class="alert-message">
+                    This care request already has an assigned caretaker. No further actions can be taken on applications.
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Filters Section -->
         <div class="filters-section">
@@ -955,6 +1181,9 @@
                 <a href="?status=all" class="filter-tab {% if request.GET.status == 'all' or not request.GET.status %}active{% endif %}">All Applications</a>
                 <a href="?status=pending" class="filter-tab {% if request.GET.status == 'pending' %}active{% endif %}">Pending</a>
                 <a href="?status=shortlisted" class="filter-tab {% if request.GET.status == 'shortlisted' %}active{% endif %}">Shortlisted</a>
+                <a href="?status=on_hold" class="filter-tab {% if request.GET.status == 'on_hold' %}active{% endif %}">On Hold</a>
+                <a href="?status=frozen" class="filter-tab {% if request.GET.status == 'frozen' %}active{% endif %}">Frozen</a>
+                <a href="?status=offer_sent" class="filter-tab {% if request.GET.status == 'offer_sent' %}active{% endif %}">Offers Sent</a>
                 <a href="?status=accepted" class="filter-tab {% if request.GET.status == 'accepted' %}active{% endif %}">Accepted</a>
                 <a href="?status=rejected" class="filter-tab {% if request.GET.status == 'rejected' %}active{% endif %}">Rejected</a>
             </div>
@@ -975,8 +1204,26 @@
                         </h3>
                     </div>
                     <span class="application-status status-{{ application.status }}">
-                        <i class="fas fa-{% if application.status == 'pending' %}clock{% elif application.status == 'shortlisted' %}star{% elif application.status == 'accepted' %}check-circle{% elif application.status == 'rejected' %}times-circle{% endif %}"></i>
-                        {{ application.status|title }}
+                        {% if application.status == 'pending' %}
+                            <i class="fas fa-clock"></i>
+                        {% elif application.status == 'shortlisted' %}
+                            <i class="fas fa-star"></i>
+                        {% elif application.status == 'on_hold' %}
+                            <i class="fas fa-pause-circle"></i>
+                        {% elif application.status == 'frozen' %}
+                            <i class="fas fa-snowflake"></i>
+                        {% elif application.status == 'offer_sent' %}
+                            <i class="fas fa-envelope"></i>
+                        {% elif application.status == 'offer_accepted' %}
+                            <i class="fas fa-check-circle"></i>
+                        {% elif application.status == 'offer_declined' %}
+                            <i class="fas fa-times-circle"></i>
+                        {% elif application.status == 'accepted' %}
+                            <i class="fas fa-check-double"></i>
+                        {% elif application.status == 'rejected' %}
+                            <i class="fas fa-ban"></i>
+                        {% endif %}
+                        {{ application.get_status_display }}
                     </span>
                 </div>
 
@@ -1039,43 +1286,196 @@
                     </div>
                 </div>
 
+                <!-- Shortlist Info -->
+                {% if application.shortlist_notes %}
+                <div style="background: #f8fafc; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #0f3460;">
+                    <div style="display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 0.85rem; margin-bottom: 5px;">
+                        <i class="fas fa-sticky-note"></i> Private Notes
+                    </div>
+                    <p style="color: #475569; margin: 0;">{{ application.shortlist_notes }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Offer Summary -->
+                {% if application.status == 'offer_sent' and application.offer_details %}
+                <div class="offer-summary">
+                    <div class="offer-header">
+                        <i class="fas fa-file-signature"></i>
+                        <span>Offer Details</span>
+                        {% if application.shortlist_rank %}
+                        <span class="badge" style="background: #0f3460; color: white; margin-left: auto;">
+                            Rank #{{ application.shortlist_rank }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="offer-details">
+                        <div class="offer-item">
+                            <span class="label">Start Date</span>
+                            <span class="value">{{ application.offer_details.start_date }}</span>
+                        </div>
+                        <div class="offer-item">
+                            <span class="label">Start Time</span>
+                            <span class="value">{{ application.offer_details.start_time }}</span>
+                        </div>
+                        <div class="offer-item">
+                            <span class="label">Rate</span>
+                            <span class="value">₹{{ application.offer_details.final_rate }}/day</span>
+                        </div>
+                    </div>
+                    {% if application.is_offer_expired %}
+                    <div class="offer-expiry">
+                        <i class="fas fa-exclamation-triangle"></i> Offer expired on {{ application.offer_expires_at|date:"M d, Y H:i" }}
+                    </div>
+                    {% else %}
+                    <div class="offer-expiry" style="color: #059669;">
+                        <i class="fas fa-hourglass-half"></i> Expires in {{ application.time_until_offer_expiry }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Status-specific Messages -->
+                {% if application.status == 'on_hold' %}
+                <div style="background: #f1f5f9; padding: 12px; border-radius: 8px; margin-bottom: 15px; color: #475569;">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>On Hold:</strong> 
+                    {% if application.hold_reason %}
+                        {{ application.hold_reason }}
+                    {% else %}
+                        Offer sent to another candidate
+                    {% endif %}
+                    {% if application.hold_placed_at %}
+                        <br><small>Since {{ application.hold_placed_at|date:"M d, Y" }}</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if application.status == 'frozen' %}
+                <div style="background: #e0f2fe; padding: 12px; border-radius: 8px; margin-bottom: 15px; color: #0369a1;">
+                    <i class="fas fa-snowflake"></i> 
+                    <strong>Frozen:</strong> 
+                    {% if application.frozen_reason %}
+                        {{ application.frozen_reason }}
+                    {% else %}
+                        Position filled through direct acceptance
+                    {% endif %}
+                    {% if application.frozen_at %}
+                        <br><small>Frozen on {{ application.frozen_at|date:"M d, Y" }}</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if application.rejection_note %}
+                <div style="background: #fee2e2; padding: 12px; border-radius: 8px; margin-bottom: 15px; color: #991b1b;">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Rejection Note:</strong> {{ application.rejection_note }}
+                </div>
+                {% endif %}
+
                 <div class="application-footer">
                     <div class="applied-date">
                         <i class="far fa-calendar-check"></i>
                         Applied on {{ application.applied_at|date:"M d, Y" }}
+                        {% if application.shortlisted_at %}
+                        <br><small>Shortlisted on {{ application.shortlisted_at|date:"M d, Y" }}</small>
+                        {% endif %}
                     </div>
                     <div class="action-buttons">
                         <a href="{% url 'caretaker_profile_detail' application.caretaker.id %}" class="btn btn-outline btn-sm">
-                            <i class="fas fa-eye"></i> View Full Profile
+                            <i class="fas fa-eye"></i> View Profile
                         </a>
                         
-                        {% if application.status == 'pending' %}
-                            <a href="{% url 'shortlist_application' application.id %}" class="btn btn-warning btn-sm">
-                                <i class="fas fa-star"></i> Shortlist
-                            </a>
-                            <a href="{% url 'accept_application' application.id %}" class="btn btn-success btn-sm">
-                                <i class="fas fa-check"></i> Accept
-                            </a>
-                            <button onclick="openRejectionModal(
-                                '{{ application.id }}',
-                                '{{ application.caretaker.get_full_name|default:application.caretaker.username }}',
-                                'Experience: {% if application.caretaker.caretaker_profile %}{{ application.caretaker.caretaker_profile.experience_years }} years • Proposed: ₹{{ application.proposed_rate }}/day{% else %}No profile data{% endif %}'
-                            )" class="btn btn-danger btn-sm">
-                                <i class="fas fa-times"></i> Reject
-                            </button>
-                        {% elif application.status == 'shortlisted' %}
-                            <span class="badge" style="background: #dbeafe; color: #1e40af; padding: 4px 10px; border-radius: 20px;">
-                                <i class="fas fa-star"></i> Shortlisted
-                                {% if application.shortlist_rank %}
-                                    #{{ application.shortlist_rank }}
+                        {% if not is_position_filled %}
+                            {% if application.status == 'pending' %}
+                                <a href="{% url 'shortlist_application' application.id %}" class="btn btn-warning btn-sm tooltip">
+                                    <i class="fas fa-star"></i> Shortlist
+                                    <span class="tooltip-text">Add to shortlist for later selection</span>
+                                </a>
+                                <button onclick="openDirectAcceptModal(
+                                    '{{ application.id }}',
+                                    '{{ application.caretaker.get_full_name|default:application.caretaker.username }}'
+                                )" class="btn btn-success btn-sm tooltip">
+                                    <i class="fas fa-check"></i> Direct Accept
+                                    <span class="tooltip-text">Accept immediately - will auto-freeze any existing shortlist</span>
+                                </button>
+                                <button onclick="openRejectionModal(
+                                    '{{ application.id }}',
+                                    '{{ application.caretaker.get_full_name|default:application.caretaker.username }}',
+                                    'Experience: {% if application.caretaker.caretaker_profile %}{{ application.caretaker.caretaker_profile.experience_years }} years • Proposed: ₹{{ application.proposed_rate }}/day{% else %}No profile data{% endif %}'
+                                )" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            
+                            {% elif application.status == 'shortlisted' %}
+                                <span class="badge" style="background: #dbeafe; color: #1e40af;">
+                                    <i class="fas fa-star"></i> Rank #{{ application.shortlist_rank|default:"-" }}
+                                </span>
+                                <a href="{% url 'send_offer' application.id %}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-envelope"></i> Send Offer
+                                </a>
+                                <a href="{% url 'add_shortlist_notes' application.id %}" class="btn btn-outline btn-sm">
+                                    <i class="fas fa-sticky-note"></i> Notes
+                                </a>
+                                <a href="{% url 'remove_shortlist' application.id %}" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-star-half-alt"></i> Remove
+                                </a>
+                                <div style="display: inline-flex; gap: 5px;">
+                                    <a href="{% url 'update_shortlist_rank' application.id 'up' %}" class="btn btn-sm btn-outline" {% if application.shortlist_rank == 1 %}disabled{% endif %}>
+                                        <i class="fas fa-arrow-up"></i>
+                                    </a>
+                                    <a href="{% url 'update_shortlist_rank' application.id 'down' %}" class="btn btn-sm btn-outline" {% if application.shortlist_rank == shortlisted_count %}disabled{% endif %}>
+                                        <i class="fas fa-arrow-down"></i>
+                                    </a>
+                                </div>
+                            
+                            {% elif application.status == 'on_hold' %}
+                                <span class="badge" style="background: #f1f5f9; color: #475569;">
+                                    <i class="fas fa-pause-circle"></i> On Hold
+                                </span>
+                                {% if application.hold_reason %}
+                                <span class="badge" style="background: #e2e8f0;">{{ application.hold_reason|truncatechars:20 }}</span>
                                 {% endif %}
+                            
+                            {% elif application.status == 'frozen' %}
+                                <span class="badge" style="background: #e0f2fe; color: #0369a1;">
+                                    <i class="fas fa-snowflake"></i> Frozen
+                                </span>
+                            
+                            {% elif application.status == 'offer_sent' %}
+                                <span class="badge" style="background: #ede9fe; color: #6d28d9;">
+                                    <i class="fas fa-envelope"></i> Offer Sent
+                                </span>
+                                {% if application.is_offer_expired %}
+                                <span class="badge" style="background: #fee2e2; color: #991b1b;">Expired</span>
+                                {% else %}
+                                <span class="badge" style="background: #dcfce7; color: #166534;">Valid until {{ application.offer_expires_at|date:"M d, H:i" }}</span>
+                                {% endif %}
+                            
+                            {% elif application.status == 'offer_accepted' %}
+                                <span class="badge" style="background: #dcfce7; color: #166534;">
+                                    <i class="fas fa-check-circle"></i> Offer Accepted
+                                </span>
+                            
+                            {% elif application.status == 'offer_declined' %}
+                                <span class="badge" style="background: #fee2e2; color: #991b1b;">
+                                    <i class="fas fa-times-circle"></i> Offer Declined
+                                </span>
+                            
+                            {% elif application.status == 'accepted' %}
+                                <span class="badge" style="background: #10b981; color: white;">
+                                    <i class="fas fa-check-double"></i> Accepted
+                                </span>
+                            
+                            {% elif application.status == 'rejected' %}
+                                <span class="badge" style="background: #ef4444; color: white;">
+                                    <i class="fas fa-ban"></i> Rejected
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <!-- Position filled - no actions available -->
+                            <span class="badge" style="background: #64748b; color: white;">
+                                <i class="fas fa-lock"></i> Position Filled
                             </span>
-                            <a href="{% url 'send_offer' application.id %}" class="btn btn-success btn-sm">
-                                <i class="fas fa-envelope"></i> Send Offer
-                            </a>
-                            <a href="{% url 'remove_shortlist' application.id %}" class="btn btn-outline-danger btn-sm">
-                                <i class="fas fa-star-half-alt"></i> Remove
-                            </a>
                         {% endif %}
                     </div>
                 </div>
@@ -1154,6 +1554,74 @@
         </div>
     </div>
 
+    <!-- Direct Accept Confirmation Modal -->
+    <div id="directAcceptModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-check-circle" style="color: #10b981;"></i> Direct Accept Application</h3>
+                <button class="close-btn" onclick="closeDirectAcceptModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 15px; background: #f8fafc; border-radius: 10px;">
+                    <div class="candidate-avatar-small">
+                        <i class="fas fa-user-nurse"></i>
+                    </div>
+                    <div>
+                        <h4 id="directAcceptCandidateName" style="margin: 0; color: #0f3460;"></h4>
+                        <p style="margin: 5px 0 0; color: #64748b; font-size: 0.9rem;">You are about to directly accept this application</p>
+                    </div>
+                </div>
+                
+                {% if has_active_shortlist %}
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px; color: #92400e;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem;"></i>
+                        <strong>Warning: Active Shortlist Found</strong>
+                    </div>
+                    <p style="margin: 10px 0 0; color: #475569;">
+                        This request has {{ shortlisted_count }} shortlisted candidate(s). 
+                        Directly accepting this application will:
+                    </p>
+                    <ul style="margin: 10px 0 0; padding-left: 20px; color: #475569;">
+                        <li>Freeze all shortlisted applications (they will be marked as 'frozen')</li>
+                        <li>Automatically send an offer letter to this candidate</li>
+                        <li>The shortlisted candidates will no longer be available</li>
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <form id="directAcceptForm" method="POST" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="application_id" id="directAcceptApplicationId">
+                    
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-check"></i> Confirm Direct Acceptance
+                        </label>
+                        <p style="color: #475569; background: #f8fafc; padding: 12px; border-radius: 8px;">
+                            Are you sure you want to directly accept this application? 
+                            {% if has_active_shortlist %}
+                            <strong>This will freeze the existing shortlist and send an automatic offer.</strong>
+                            {% else %}
+                            This will assign this caretaker immediately and reject all other applications.
+                            {% endif %}
+                        </p>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDirectAcceptModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn btn-success" onclick="submitDirectAccept()">
+                    <i class="fas fa-check"></i> Confirm Direct Accept
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Rejection Modal Functions
         let currentApplicationId = null;
@@ -1187,11 +1655,35 @@
             }
         }
         
+        // Direct Accept Modal Functions
+        function openDirectAcceptModal(applicationId, candidateName) {
+            document.getElementById('directAcceptCandidateName').textContent = candidateName;
+            document.getElementById('directAcceptApplicationId').value = applicationId;
+            
+            // Set the form action URL
+            document.getElementById('directAcceptForm').action = `/applications/accept/${applicationId}/`;
+            
+            document.getElementById('directAcceptModal').style.display = 'flex';
+        }
+        
+        function closeDirectAcceptModal() {
+            document.getElementById('directAcceptModal').style.display = 'none';
+        }
+        
+        function submitDirectAccept() {
+            document.getElementById('directAcceptForm').submit();
+        }
+        
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('rejectionModal');
-            if (event.target === modal) {
+            const rejectionModal = document.getElementById('rejectionModal');
+            const directAcceptModal = document.getElementById('directAcceptModal');
+            
+            if (event.target === rejectionModal) {
                 closeRejectionModal();
+            }
+            if (event.target === directAcceptModal) {
+                closeDirectAcceptModal();
             }
         }
     </script>

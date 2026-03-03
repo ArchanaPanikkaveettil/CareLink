@@ -204,7 +204,10 @@ def view_offer(request, application_id):
 # -------------------------------------------------------------------------
 @login_required
 def accept_application(request, application_id):
-    """Accept an application and assign caretaker"""
+    """
+    DIRECT ACCEPT FLOW: Accept an application immediately
+    If a shortlist exists for this post, freeze it and send offer automatically
+    """
     if request.user.role != 'family':
         messages.error(request, 'Access denied.')
         return redirect('index')
@@ -219,27 +222,73 @@ def accept_application(request, application_id):
         messages.error(request, 'Only pending applications can be accepted directly.')
         return redirect('request_applications', request_id=application.request.id)
     
-    # Update application status
-    application.status = 'accepted'
-    application.save()
-    
-    # Update the care request with assigned caretaker
     care_request = application.request
-    care_request.assigned_caretaker = application.caretaker
-    care_request.assigned_date = timezone.now()
-    care_request.status = 'assigned'
-    care_request.save()
     
-    # Reject all other applications for this request
-    CareApplication.objects.filter(
-        request=care_request
-    ).exclude(
-        id=application.id
-    ).update(status='rejected')
+    # Check if there's an existing shortlist for this request
+    existing_shortlist = CareApplication.objects.filter(
+        request=care_request,
+        status='shortlisted'
+    ).exists()
     
-    messages.success(request, f'Application accepted. {application.caretaker.get_full_name()} has been assigned.')
+    if existing_shortlist:
+        # FREEZE THE SHORTLIST - Mark all shortlisted as frozen (not available)
+        CareApplication.objects.filter(
+            request=care_request,
+            status='shortlisted'
+        ).update(
+            status='frozen',  # You need to add this status to your model
+            frozen_at=timezone.now(),
+            frozen_reason='Position filled through direct acceptance'
+        )
+        
+        # Send offer automatically to the directly accepted applicant
+        offer_details = {
+            'start_date': care_request.start_date.strftime('%Y-%m-%d') if care_request.start_date else None,
+            'start_time': care_request.start_time.strftime('%H:%M') if care_request.start_time else '09:00',
+            'reporting_address': care_request.address,
+            'daily_duties': care_request.care_details,
+            'special_instructions': 'Direct acceptance - position filled immediately',
+            'emergency_contact': request.user.phone,
+            'emergency_phone': request.user.phone,
+            'final_rate': application.proposed_rate,
+            'payment_frequency': 'daily',
+            'offer_expiry_hours': 24,  # Shorter expiry for direct acceptance
+        }
+        
+        # Send the offer
+        application.send_offer(offer_details)
+        
+        messages.success(
+            request, 
+            f'Application accepted directly. Shortlist has been frozen. '
+            f'Offer letter sent to {application.caretaker.get_full_name()}.'
+        )
+        
+    else:
+        # No shortlist exists - simple direct assignment
+        application.status = 'accepted'
+        application.accepted_at = timezone.now()
+        application.save()
+        
+        # Update the care request with assigned caretaker
+        care_request.assigned_caretaker = application.caretaker
+        care_request.assigned_date = timezone.now()
+        care_request.status = 'assigned'
+        care_request.save()
+        
+        # Reject all other applications
+        CareApplication.objects.filter(
+            request=care_request
+        ).exclude(
+            id=application.id
+        ).update(status='rejected')
+        
+        messages.success(
+            request, 
+            f'Application accepted. {application.caretaker.get_full_name()} has been assigned.'
+        )
+    
     return redirect('request_applications', request_id=care_request.id)
-
 
 # -------------------------------------------------------------------------
 # Reject application
@@ -511,9 +560,11 @@ def remove_shortlist(request, application_id):
 # -------------------------------------------------------------------------
 @login_required
 def send_offer(request, application_id):
-    """Send an offer to a shortlisted candidate"""
+    """
+    SHORTLIST FLOW: Manually send offer to a chosen shortlisted candidate
+    """
     if request.user.role != 'family':
-        messages.error(request, 'Access denied.')
+        messages.error(request, '❌ Access denied.')
         return redirect('index')
     
     application = get_object_or_404(
@@ -524,35 +575,89 @@ def send_offer(request, application_id):
     )
     
     if request.method == 'POST':
-        # Collect offer details from form
+        care_request = application.request
+        
+        # Check if this request already has an accepted/assigned caretaker
+        if care_request.status == 'assigned' and care_request.assigned_caretaker:
+            messages.error(request, '❌ This position already has an assigned caretaker.')
+            return redirect('shortlisted_candidates', request_id=care_request.id)
+        
+        # Collect offer details from form - using correct field names
         offer_details = {
-            'start_date': request.POST.get('start_date'),
-            'start_time': request.POST.get('start_time'),
-            'reporting_address': request.POST.get('reporting_address'),
-            'daily_duties': request.POST.get('daily_duties'),
-            'special_instructions': request.POST.get('special_instructions'),
-            'emergency_contact': request.POST.get('emergency_contact'),
-            'emergency_phone': request.POST.get('emergency_phone'),
-            'final_rate': request.POST.get('final_rate', application.proposed_rate),
-            'payment_frequency': request.POST.get('payment_frequency', 'daily'),
-            'accommodation_details': request.POST.get('accommodation_details', ''),
+            'start_date': request.POST.get('start_date', care_request.start_date.strftime('%Y-%m-%d') if care_request.start_date else ''),
+            # Use shift_timing instead of start_time
+            'shift_timing': request.POST.get('shift_timing', getattr(care_request, 'shift_timing', 'Not specified')),
+            'reporting_address': request.POST.get('reporting_address', care_request.address),
+            # Use care_details or special_requirements for daily duties
+            'daily_duties': request.POST.get('daily_duties', 
+                            getattr(care_request, 'care_details', None) or 
+                            getattr(care_request, 'special_requirements', 'Not specified')),
+            'special_instructions': request.POST.get('special_instructions', ''),
+            # Emergency contact info
+            'emergency_contact': request.POST.get('emergency_contact', 
+                                  getattr(care_request, 'emergency_contact_name', None) or 
+                                  request.user.get_full_name() or request.user.username),
+            'emergency_phone': request.POST.get('emergency_phone', 
+                               getattr(care_request, 'emergency_contact_phone', None) or 
+                               request.user.phone or 'Not provided'),
+            # Financial details
+            'final_rate': request.POST.get('final_rate', str(application.proposed_rate)),
+            'payment_frequency': request.POST.get('payment_frequency', 
+                                 getattr(care_request, 'payment_frequency', 'daily')),
+            # Accommodation details
+            'accommodation_details': request.POST.get('accommodation_details', 
+                                     getattr(care_request, 'accommodation_details', '')),
             'meals_provided': request.POST.get('meals_provided') == 'on',
+            # Offer expiry
             'offer_expiry_hours': int(request.POST.get('offer_expiry_hours', 48)),
+            # Additional info
+            'care_type': getattr(care_request, 'care_type', 'Not specified'),
+            'duration_days': str(care_request.duration_days) if care_request.duration_days else 'Not specified',
+            'required_skills': getattr(care_request, 'required_skills', 'Not specified'),
         }
         
-        # Send the offer
-        application.send_offer(offer_details)
+        # Send the offer to this specific candidate
+        application.send_offer(offer_details, expiry_hours=offer_details['offer_expiry_hours'])
         
-        # TODO: Send email notification
-        # send_offer_email(application)
+        # Put other shortlisted candidates on hold
+        updated_count = CareApplication.objects.filter(
+            request=care_request,
+            status='shortlisted'
+        ).exclude(
+            id=application.id
+        ).update(
+            status='on_hold',
+            hold_reason=f'Offer sent to another candidate on {timezone.now().strftime("%Y-%m-%d")}',
+            hold_placed_at=timezone.now()
+        )
         
-        messages.success(request, f'Offer sent to {application.caretaker.get_full_name()}. They have 48 hours to respond.')
-        return redirect('shortlisted_candidates', request_id=application.request.id)
+        messages.success(
+            request, 
+            f'✅ Offer sent to {application.caretaker.get_full_name() or application.caretaker.username}. '
+            f'{updated_count} other shortlisted candidate(s) have been put on hold.'
+        )
+        return redirect('shortlisted_candidates', request_id=care_request.id)
     
     # GET request - show offer form
-    return render(request, 'applications/send_offer.html', {
-        'application': application
-    })
+    # Get the care request for additional context
+    care_request = application.request
+    
+    # Prepare default values for the form
+    default_start_date = care_request.start_date.strftime('%Y-%m-%d') if care_request.start_date else ''
+    default_shift_timing = getattr(care_request, 'shift_timing', '')
+    default_payment_frequency = getattr(care_request, 'payment_frequency', 'daily')
+    default_accommodation = getattr(care_request, 'accommodation_details', '')
+    
+    context = {
+        'application': application,
+        'care_request': care_request,
+        'default_start_date': default_start_date,
+        'default_shift_timing': default_shift_timing,
+        'default_payment_frequency': default_payment_frequency,
+        'default_accommodation': default_accommodation,
+    }
+    
+    return render(request, 'applications/send_offer.html', context)
 
 
 # ============================================================================
