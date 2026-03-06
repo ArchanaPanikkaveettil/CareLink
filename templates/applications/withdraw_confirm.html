@@ -1,0 +1,369 @@
+{% extends 'users/nurse_base.html' %}
+{% load static %}
+
+{% block title %}Withdraw Application - CareLink{% endblock %}
+
+{% block page_icon %}<i class="fas fa-hand-peace"></i>{% endblock %}
+{% block page_title %}Withdraw Application{% endblock %}
+
+{% block extra_css %}
+<style>
+    .withdraw-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .warning-card {
+        background: white;
+        border-radius: 20px;
+        padding: 35px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        text-align: center;
+    }
+
+    .warning-icon {
+        width: 80px;
+        height: 80px;
+        background: #fee2e2;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        color: #dc3545;
+        font-size: 2.5rem;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .warning-title {
+        color: #0f3460;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .warning-subtitle {
+        color: #64748b;
+        margin-bottom: 25px;
+        font-size: 1rem;
+    }
+
+    .application-detail-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        padding: 25px;
+        margin: 25px 0;
+        text-align: left;
+        border-left: 4px solid #0f3460;
+    }
+
+    .patient-name {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #0f3460;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .patient-name i {
+        color: #0f3460;
+        font-size: 1.8rem;
+    }
+
+    .detail-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px dashed #cbd5e1;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-icon {
+        width: 35px;
+        height: 35px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0f3460;
+        font-size: 1rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .detail-content {
+        flex: 1;
+    }
+
+    .detail-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .detail-value {
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .warning-note {
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 25px 0;
+        display: flex;
+        gap: 15px;
+        text-align: left;
+    }
+
+    .warning-note i {
+        color: #f59e0b;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .warning-note-content {
+        color: #7b341e;
+    }
+
+    .warning-note-content strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1rem;
+    }
+
+    .warning-note-content p {
+        margin: 0;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 14px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-cancel:hover {
+        background: #e2e8f0;
+        transform: translateY(-2px);
+    }
+
+    .btn-withdraw {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-withdraw:hover {
+        background: #b91c1c;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .safety-info {
+        margin-top: 20px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .safety-info i {
+        color: #0f3460;
+    }
+
+    @media (max-width: 576px) {
+        .warning-card {
+            padding: 25px 20px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .warning-note {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="withdraw-container">
+    <div class="warning-card">
+        <div class="warning-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+
+        <h2 class="warning-title">Withdraw Application?</h2>
+        <p class="warning-subtitle">Please review the details before proceeding</p>
+
+        <div class="application-detail-card">
+            <div class="patient-name">
+                <i class="fas fa-user-circle"></i>
+                {{ application.request.patient_name }}
+            </div>
+
+            <div class="detail-row">
+                <!-- <div class="detail-icon">
+                    <i class="fas fa-calendar"></i>
+                </div> -->
+                <!-- <div class="detail-content">
+                    <div class="detail-label">Applied On</div>
+                    <div class="detail-value">
+                        {{ application.created_at|date:"d M Y" }}
+                    </div>
+                </div> -->
+            </div>
+
+
+
+            <div class="detail-row">
+                <div class="detail-icon">
+                    <i class="fas fa-tag"></i>
+                </div>
+                <div class="detail-content">
+                    <div class="detail-label">Current Status</div>
+                    <div class="detail-value">
+                        <span class="status-badge">
+                            <i class="fas fa-clock me-1"></i>{{ application.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="detail-content">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value">{{ application.request.city }}, {{ application.request.state }}</div>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="detail-content">
+                    <div class="detail-label">Care Type</div>
+                    <div class="detail-value">{{ application.request.get_care_type_display }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="warning-note">
+            <i class="fas fa-info-circle"></i>
+            <div class="warning-note-content">
+                <strong>⚠️ Important</strong>
+                <p>Once withdrawn, this application cannot be restored. You may reapply later if the request is still
+                    open.</p>
+            </div>
+        </div>
+
+        <form method="POST" id="withdrawForm">
+            {% csrf_token %}
+            <div class="action-buttons">
+                <a href="{% url 'my_applications' %}" class="btn btn-cancel">
+                    <i class="fas fa-arrow-left"></i>
+                    Keep Application
+                </a>
+                <button type="submit" class="btn btn-withdraw" id="withdrawBtn">
+                    <!-- <i class="fas fa-hand-peace"></i> -->
+                    Yes, Withdraw
+                </button>
+            </div>
+        </form>
+
+        <div class="safety-info">
+            <i class="fas fa-shield-alt"></i>
+            <span>This action is irreversible and will be logged for security</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add confirmation on button click
+    document.getElementById('withdrawBtn')?.addEventListener('click', function (e) {
+        if (!confirm('This action cannot be undone. Are you absolutely sure you want to withdraw this application?')) {
+            e.preventDefault();
+        }
+    });
+</script>
+{% endblock %}
+
+
+
+
+<!-- DEBUG INFO - Remove after fixing -->
+<!-- <div style="background: #c51919; padding: 10px; margin: 10px 0; border-radius: 5px;">
+    <strong>Debug Info:</strong><br>
+    Application ID: {{ application.id }}<br>
+    Has created_at: {{ application.created_at|yesno:"Yes,No" }}<br>
+    Has applied_date: {{ application.applied_date|yesno:"Yes,No" }}<br>
+    Has date_applied: {{ application.date_applied|yesno:"Yes,No" }}<br>
+    Has submitted_at: {{ application.submitted_at|yesno:"Yes,No" }}<br>
+    <hr>
+    <strong>Raw value attempts:</strong><br>
+    created_at: "{{ application.created_at }}"<br>
+    applied_date: "{{ application.applied_date }}"<br>
+</div> -->

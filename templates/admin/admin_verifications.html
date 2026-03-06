@@ -1,0 +1,398 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Verifications - CareLink Admin{% endblock %}
+
+{% block page_title %}Caretaker Verifications{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-warning bg-opacity-10 p-3 rounded-circle">
+                        <i class="fas fa-clock text-warning fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Pending Verifications</h6>
+                        <h3 class="mb-0">{{ pending_caretakers.paginator.count|default:'0' }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-success bg-opacity-10 p-3 rounded-circle">
+                        <i class="fas fa-check-circle text-success fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Verified Today</h6>
+                        <h3 class="mb-0">{{ verified_today|default:'0' }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-info bg-opacity-10 p-3 rounded-circle">
+                        <i class="fas fa-user-check text-info fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Total Verified</h6>
+                        <h3 class="mb-0">{{ total_verified|default:'0' }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-card">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input type="text" class="form-control" name="q" placeholder="Name, email, qualification..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Date Range</label>
+                <select class="form-select" name="date_range">
+                    <option value="">All Time</option>
+                    <option value="today" {% if date_range == 'today' %}selected{% endif %}>Today</option>
+                    <option value="week" {% if date_range == 'week' %}selected{% endif %}>This Week</option>
+                    <option value="month" {% if date_range == 'month' %}selected{% endif %}>This Month</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                    <i class="fas fa-search me-2"></i>Search
+                </button>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <a href="{% url 'admin_verifications' %}" class="btn btn-secondary d-block w-100">
+                    <i class="fas fa-undo me-2"></i>Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Pending Verifications List -->
+    <div class="table-container">
+        <h5 class="mb-4">Pending Verifications ({{ pending_caretakers.paginator.count }})</h5>
+        
+        {% if pending_caretakers %}
+            {% for caretaker in pending_caretakers %}
+            <div class="card border-0 bg-light mb-3 verification-card">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- User Info -->
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar me-3" style="width: 60px; height: 60px; background: #0f3460; color: white; font-size: 1.5rem;">
+                                    {{ caretaker.user.first_name|first|upper }}{{ caretaker.user.last_name|first|upper }}
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">{{ caretaker.user.get_full_name }}</h5>
+                                    <p class="text-muted mb-1">
+                                        <i class="fas fa-envelope me-1"></i>{{ caretaker.user.email }}
+                                    </p>
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-phone me-1"></i>{{ caretaker.user.phone|default:'No phone' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Details -->
+                        <div class="col-md-3">
+                            <p class="mb-1"><strong>Experience:</strong> {{ caretaker.experience_years }} years</p>
+                            <p class="mb-1"><strong>Qualification:</strong> {{ caretaker.qualification }}</p>
+                            <p class="mb-0"><strong>Location:</strong> {{ caretaker.city }}, {{ caretaker.state }}</p>
+                        </div>
+                        
+                        <!-- Documents -->
+                        <div class="col-md-3">
+                            <p class="mb-2"><strong>Documents Submitted:</strong></p>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% if caretaker.certificate %}
+                                <a href="{{ caretaker.certificate.url }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Certificate">
+                                    <i class="fas fa-certificate"></i>
+                                </a>
+                                {% endif %}
+                                {% if caretaker.identity_proof %}
+                                <a href="{{ caretaker.identity_proof.url }}" target="_blank" class="btn btn-sm btn-outline-info" title="Identity Proof">
+                                    <i class="fas fa-id-card"></i>
+                                </a>
+                                {% endif %}
+                                {% if caretaker.resume %}
+                                <a href="{{ caretaker.resume.url }}" target="_blank" class="btn btn-sm btn-outline-success" title="Resume">
+                                    <i class="fas fa-file-alt"></i>
+                                </a>
+                                {% endif %}
+                                {% if caretaker.background_check %}
+                                <a href="{{ caretaker.background_check.url }}" target="_blank" class="btn btn-sm btn-outline-warning" title="Background Check">
+                                    <i class="fas fa-shield-alt"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                            <p class="text-muted small mt-2">
+                                <i class="fas fa-calendar me-1"></i>Registered: {{ caretaker.user.date_joined|date:'d M Y' }}
+                            </p>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="col-md-3">
+                            <div class="d-flex flex-column gap-2">
+                                <a href="{% url 'admin_verify_caretaker' caretaker.id %}" class="btn btn-success">
+                                    <i class="fas fa-check-circle me-2"></i>Review & Verify
+                                </a>
+                                <button type="button" class="btn btn-outline-primary" onclick="viewDetails({{ caretaker.id }})">
+                                    <i class="fas fa-eye me-2"></i>Quick View
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" onclick="rejectQuick({{ caretaker.id }})">
+                                    <i class="fas fa-times me-2"></i>Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                <h5>No Pending Verifications</h5>
+                <p class="text-muted">All caretaker verifications have been processed.</p>
+            </div>
+        {% endif %}
+
+        <!-- Pagination -->
+        {% if pending_caretakers.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if pending_caretakers.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ pending_caretakers.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_range %}&date_range={{ date_range }}{% endif %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in pending_caretakers.paginator.page_range %}
+                    {% if pending_caretakers.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > pending_caretakers.number|add:'-3' and num < pending_caretakers.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_range %}&date_range={{ date_range }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if pending_caretakers.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ pending_caretakers.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if date_range %}&date_range={{ date_range }}{% endif %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+
+    <!-- Recently Verified -->
+    <div class="table-container mt-4">
+        <h5 class="mb-4">Recently Verified</h5>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Caretaker</th>
+                        <th>Verified By</th>
+                        <th>Verified Date</th>
+                        <th>Remarks</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for verified in recently_verified|default:'' %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar me-2" style="width: 35px; height: 35px; background: #0f3460; color: white;">
+                                    {{ verified.user.first_name|first|upper }}{{ verified.user.last_name|first|upper }}
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ verified.user.get_full_name }}</h6>
+                                    <small class="text-muted">{{ verified.user.email }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ verified.verified_by.get_full_name|default:'Admin' }}</td>
+                        <td>{{ verified.verified_date|date:'d M Y H:i' }}</td>
+                        <td>{{ verified.verification_remarks|default:'-'|truncatechars:30 }}</td>
+                        <td>
+                            <a href="{% url 'admin_user_detail' verified.user.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            No recently verified caretakers
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Caretaker Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="quickViewContent">
+                Loading...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="quickViewVerifyBtn" class="btn btn-success">Verify</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function viewDetails(caretakerId) {
+        // Show loading
+        document.getElementById('quickViewContent').innerHTML = 'Loading...';
+        
+        // Fetch caretaker details via AJAX
+        fetch(`/admin-panel/verify-caretaker/${caretakerId}/quick-view/`)
+            .then(response => response.json())
+            .then(data => {
+                let html = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Personal Information</h6>
+                            <p><strong>Name:</strong> ${data.full_name}</p>
+                            <p><strong>Email:</strong> ${data.email}</p>
+                            <p><strong>Phone:</strong> ${data.phone}</p>
+                            <p><strong>Date of Birth:</strong> ${data.dob}</p>
+                            <p><strong>Gender:</strong> ${data.gender}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Professional Information</h6>
+                            <p><strong>Experience:</strong> ${data.experience} years</p>
+                            <p><strong>Qualification:</strong> ${data.qualification}</p>
+                            <p><strong>Skills:</strong> ${data.skills}</p>
+                            <p><strong>Languages:</strong> ${data.languages}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Address</h6>
+                            <p>${data.address}, ${data.city}, ${data.state} - ${data.pincode}</p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('quickViewContent').innerHTML = html;
+                document.getElementById('quickViewVerifyBtn').href = `/admin-panel/verify-caretaker/${caretakerId}/`;
+                
+                // Show modal
+                new bootstrap.Modal(document.getElementById('quickViewModal')).show();
+            })
+            .catch(error => {
+                document.getElementById('quickViewContent').innerHTML = 'Error loading details.';
+            });
+    }
+
+    function rejectQuick(caretakerId) {
+        if(confirm('Are you sure you want to reject this caretaker?')) {
+            const remarks = prompt('Please provide rejection remarks (optional):');
+            
+            fetch(`/admin-panel/verify-caretaker/${caretakerId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=reject&remarks=${encodeURIComponent(remarks || '')}`
+            }).then(response => {
+                if(response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error rejecting caretaker. Please try again.');
+                }
+            });
+        }
+    }
+
+    // Batch actions
+    function batchApprove() {
+        const selected = document.querySelectorAll('.verification-checkbox:checked');
+        if(selected.length === 0) {
+            alert('Please select at least one caretaker.');
+            return;
+        }
+        
+        if(confirm(`Approve ${selected.length} selected caretakers?`)) {
+            // Implement batch approval
+        }
+    }
+
+    function batchReject() {
+        const selected = document.querySelectorAll('.verification-checkbox:checked');
+        if(selected.length === 0) {
+            alert('Please select at least one caretaker.');
+            return;
+        }
+        
+        if(confirm(`Reject ${selected.length} selected caretakers?`)) {
+            // Implement batch rejection
+        }
+    }
+</script>
+
+<style>
+    .verification-card {
+        transition: all 0.3s;
+        border-left: 4px solid #ffc107 !important;
+    }
+    
+    .verification-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .document-badge {
+        background: #e2e8f0;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.8rem;
+    }
+    
+    .document-badge i {
+        margin-right: 5px;
+    }
+    
+    .btn-outline-primary, .btn-outline-info, .btn-outline-success, .btn-outline-warning {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}

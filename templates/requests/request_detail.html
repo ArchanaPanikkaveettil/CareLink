@@ -1195,18 +1195,18 @@
                 </a>
                 {% endif %}
 
-                {% if request.status == "open" or request.status == "draft" %}
+                {% if request.status == "draft" %}
                 <a href="{% url 'edit_request' request.id %}" class="btn btn-edit">
                     <i class="fas fa-edit"></i> Edit Request
                 </a>
                 {% endif %}
 
-                {% if request.status == "open" %}
+                <!-- {% if request.status == "open" %}
                 <a href="{% url 'close_request' request.id %}" class="btn btn-warning"
                     onclick="return confirm('Are you sure you want to close this request? It will no longer be visible to caretakers.')">
                     <i class="fas fa-ban"></i> Close Request
                 </a>
-                {% endif %}
+                {% endif %} -->
 
                 {% if request.status == "draft" or request.status == "open" %}
                 <a href="{% url 'delete_request' request.id %}" class="btn btn-danger"

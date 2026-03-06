@@ -1,0 +1,208 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Reports - CareLink Admin{% endblock %}
+
+{% block page_title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Report Filters -->
+    <div class="filters-card">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Report Type</label>
+                <select class="form-select" name="type">
+                    <option value="users" {% if report_type == 'users' %}selected{% endif %}>User Report</option>
+                    <option value="caretakers" {% if report_type == 'caretakers' %}selected{% endif %}>Caretaker Report</option>
+                    <option value="families" {% if report_type == 'families' %}selected{% endif %}>Family Report</option>
+                    <option value="requests" {% if report_type == 'requests' %}selected{% endif %}>Care Requests</option>
+                    <option value="applications" {% if report_type == 'applications' %}selected{% endif %}>Applications</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Start Date</label>
+                <input type="date" class="form-control" name="start_date" value="{{ start_date }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">End Date</label>
+                <input type="date" class="form-control" name="end_date" value="{{ end_date }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                    <i class="fas fa-chart-bar me-2"></i>Generate Report
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Report Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h6 class="text-muted mb-2">Total Users</h6>
+                <h2 class="mb-0">{{ total_users|default:'0' }}</h2>
+                <small class="text-success"><i class="fas fa-arrow-up"></i> 12% vs last period</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h6 class="text-muted mb-2">Active Caretakers</h6>
+                <h2 class="mb-0">{{ total_caretakers|default:'0' }}</h2>
+                <small class="text-success"><i class="fas fa-arrow-up"></i> 8% vs last period</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h6 class="text-muted mb-2">Active Families</h6>
+                <h2 class="mb-0">{{ total_families|default:'0' }}</h2>
+                <small class="text-success"><i class="fas fa-arrow-up"></i> 15% vs last period</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h6 class="text-muted mb-2">Open Requests</h6>
+                <h2 class="mb-0">{{ open_requests|default:'0' }}</h2>
+                <small class="text-warning"><i class="fas fa-minus"></i> 0% change</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="table-container">
+                <h5 class="mb-4">User Growth Trends</h5>
+                <canvas id="userGrowthChart" height="300"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="table-container">
+                <h5 class="mb-4">User Distribution</h5>
+                <canvas id="userDistributionChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Table -->
+    <div class="table-container">
+        <h5 class="mb-4">Summary Report</h5>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Count</th>
+                        <th>Percentage</th>
+                        <th>Change</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Total Registered Users</td>
+                        <td>{{ total_users|default:'0' }}</td>
+                        <td>100%</td>
+                        <td class="text-success">+12%</td>
+                    </tr>
+                    <tr>
+                        <td>Verified Caretakers</td>
+                        <td>{{ verified_caretakers|default:'0' }}</td>
+                        <td>{% widthratio verified_caretakers|default:0 total_users|default:1 100 %}%</td>
+                        <td class="text-success">+8%</td>
+                    </tr>
+                    <tr>
+                        <td>Pending Verifications</td>
+                        <td>{{ pending_verifications|default:'0' }}</td>
+                        <td>{% widthratio pending_verifications|default:0 total_users|default:1 100 %}%</td>
+                        <td class="text-danger">+5%</td>
+                    </tr>
+                    <tr>
+                        <td>Active Families</td>
+                        <td>{{ active_families|default:'0' }}</td>
+                        <td>{% widthratio active_families|default:0 total_users|default:1 100 %}%</td>
+                        <td class="text-success">+15%</td>
+                    </tr>
+                    <tr>
+                        <td>Care Requests (This Month)</td>
+                        <td>{{ monthly_requests|default:'0' }}</td>
+                        <td>-</td>
+                        <td class="text-success">+25%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-4">
+            <button class="btn btn-success" onclick="downloadReport()">
+                <i class="fas fa-download me-2"></i>Download Report (PDF)
+            </button>
+            <button class="btn btn-primary" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i>Export to Excel
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // User Growth Chart
+    const ctx1 = document.getElementById('userGrowthChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'New Users',
+                data: [65, 59, 80, 81, 56, 55, 40, 45, 60, 75, 85, 95],
+                borderColor: '#0f3460',
+                backgroundColor: 'rgba(15, 52, 96, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // User Distribution Chart
+    const ctx2 = document.getElementById('userDistributionChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: ['Caretakers', 'Families'],
+            datasets: [{
+                data: [{{ total_caretakers|default:0 }}, {{ total_families|default:0 }}],
+                backgroundColor: ['#28a745', '#17a2b8'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    function downloadReport() {
+        alert('PDF download functionality will be implemented here.');
+    }
+
+    function exportToExcel() {
+        alert('Excel export functionality will be implemented here.');
+    }
+</script>
+{% endblock %}

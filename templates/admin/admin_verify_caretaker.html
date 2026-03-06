@@ -1,0 +1,241 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Verify Caretaker - CareLink Admin{% endblock %}
+
+{% block page_title %}Verify Caretaker{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="table-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">Caretaker Verification</h5>
+                    <a href="{% url 'admin_verifications' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Verifications
+                    </a>
+                </div>
+
+                <!-- Caretaker Info Card -->
+                <div class="card border-0 bg-light mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h4>{{ caretaker.user.get_full_name }}</h4>
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-envelope me-2"></i>{{ caretaker.user.email }}
+                                </p>
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-phone me-2"></i>{{ caretaker.user.phone|default:"Not provided" }}
+                                </p>
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-calendar me-2"></i>Registered: {{ caretaker.user.date_joined|date:"F d, Y" }}
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <span class="badge bg-warning fs-6 p-3">
+                                    <i class="fas fa-clock me-2"></i>Pending Verification
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="card border-0 bg-light mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="mb-0"><i class="fas fa-user me-2"></i>Personal Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Date of Birth:</strong><br>
+                                {{ caretaker.date_of_birth|date:"F d, Y"|default:"Not provided" }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Gender:</strong><br>
+                                {{ caretaker.gender|title|default:"Not provided" }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Experience:</strong><br>
+                                {{ caretaker.experience_years }} years
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Qualification:</strong><br>
+                                {{ caretaker.qualification|default:"Not provided" }}
+                            </div>
+                            <div class="col-12 mb-3">
+                                <strong>Address:</strong><br>
+                                {{ caretaker.address|default:"Not provided" }}, 
+                                {{ caretaker.city|default:"" }} {{ caretaker.state|default:"" }} - {{ caretaker.pincode|default:"" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills & Languages -->
+                <div class="card border-0 bg-light mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="mb-0"><i class="fas fa-tools me-2"></i>Skills & Languages</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Skills:</strong><br>
+                                {{ caretaker.skills|default:"Not provided" }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Languages:</strong><br>
+                                {{ caretaker.languages|default:"Not provided" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents Section -->
+                <div class="card border-0 bg-light mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="mb-0"><i class="fas fa-file-alt me-2"></i>Submitted Documents</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Certificate:</strong><br>
+                                {% if documents.certificate %}
+                                    <a href="{{ documents.certificate }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-2"></i>View Certificate
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Not uploaded</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Identity Proof:</strong><br>
+                                {% if documents.identity_proof %}
+                                    <a href="{{ documents.identity_proof }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-2"></i>View Identity Proof
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Not uploaded</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Resume:</strong><br>
+                                {% if documents.resume %}
+                                    <a href="{{ documents.resume }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-2"></i>View Resume
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Not uploaded</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Background Check:</strong><br>
+                                {% if documents.background_check %}
+                                    <a href="{{ documents.background_check }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-2"></i>View Background Check
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Not uploaded</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification Form -->
+                <div class="card border-0 bg-light">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="mb-0"><i class="fas fa-check-circle me-2"></i>Verification Decision</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" id="verificationForm">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Remarks (Optional)</label>
+                                <textarea class="form-control" name="remarks" rows="3" placeholder="Add any notes or feedback about this verification..."></textarea>
+                            </div>
+
+                            <div class="alert alert-warning" id="warningMessage" style="display: none;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <span id="warningText"></span>
+                            </div>
+
+                            <div class="d-flex gap-3 justify-content-center">
+                                <button type="button" class="btn btn-danger btn-lg px-5" onclick="confirmReject()">
+                                    <i class="fas fa-times me-2"></i>Reject
+                                </button>
+                                <button type="button" class="btn btn-success btn-lg px-5" onclick="confirmApprove()">
+                                    <i class="fas fa-check me-2"></i>Approve
+                                </button>
+                            </div>
+
+                            <!-- Hidden inputs for action -->
+                            <input type="hidden" name="action" id="actionInput" value="">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" id="modalHeader">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn" id="confirmBtn" onclick="submitVerification()">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentAction = '';
+
+    function confirmApprove() {
+        currentAction = 'approve';
+        document.getElementById('modalHeader').className = 'modal-header bg-success text-white';
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-check-circle me-2"></i>Confirm Approval';
+        document.getElementById('modalBody').innerHTML = `
+            <p>Are you sure you want to <strong>approve</strong> this caretaker?</p>
+            <p class="text-muted">This will verify their account and make them visible to families.</p>
+        `;
+        document.getElementById('confirmBtn').className = 'btn btn-success';
+        document.getElementById('confirmBtn').innerHTML = '<i class="fas fa-check me-2"></i>Approve';
+        
+        let modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        modal.show();
+    }
+
+    function confirmReject() {
+        currentAction = 'reject';
+        document.getElementById('modalHeader').className = 'modal-header bg-danger text-white';
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-times-circle me-2"></i>Confirm Rejection';
+        document.getElementById('modalBody').innerHTML = `
+            <p>Are you sure you want to <strong>reject</strong> this caretaker?</p>
+            <p class="text-warning">This will mark their verification as rejected. They will be notified.</p>
+        `;
+        document.getElementById('confirmBtn').className = 'btn btn-danger';
+        document.getElementById('confirmBtn').innerHTML = '<i class="fas fa-times me-2"></i>Reject';
+        
+        let modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        modal.show();
+    }
+
+    function submitVerification() {
+        document.getElementById('actionInput').value = currentAction;
+        document.getElementById('verificationForm').submit();
+    }
+</script>
+{% endblock %}

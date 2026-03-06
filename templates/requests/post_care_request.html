@@ -1,727 +1,568 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Post Care Request - CareLink</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            background: #f4f6f8;
-        }
+{% extends 'users/family_base.html' %}
 
-        .navbar {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            padding: 20px 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
+{% load static %}
 
-        .navbar h2 {
-            margin: 0;
-            font-weight: 600;
-        }
+{% block title %}Post Care Request - CareLink{% endblock %}
 
-        .container {
-            padding: 30px;
-        }
+{% block page_icon %}<i class="fas fa-plus-circle"></i>{% endblock %}
+{% block page_title %}Post Care Request{% endblock %}
 
-        .form-card {
-            background: white;
-            padding: 35px;
-            border-radius: 15px;
-            max-width: 900px;
-            margin: auto;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
-        }
+{% block extra_css %}
+<style>
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 25px;
+    }
 
-        .section-title {
-            color: #28a745;
-            font-size: 18px;
-            font-weight: 600;
-            margin: 25px 0 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e9ecef;
-        }
+    .section-title {
+        color: #0f3460;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 25px 0 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e2e8f0;
+    }
 
-        .section-title:first-of-type {
-            margin-top: 0;
-        }
+    .section-title:first-of-type {
+        margin-top: 0;
+    }
 
+    .form-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .form-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .form-group.full-width {
+        flex: 100%;
+    }
+
+    label {
+        display: block;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        background: white;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: #0f3460;
+        box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
+    }
+
+    select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475669' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+
+    .help-text {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: 5px;
+    }
+
+    .info-note {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .info-note i {
+        font-size: 1.5rem;
+        color: #0f3460;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+        flex: 1;
+    }
+
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(15, 52, 96, 0.2);
+    }
+
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #475569;
+    }
+
+    .alert {
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .alert-success {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .error-field {
+        border-color: #dc3545 !important;
+        background-color: #fff8f8;
+    }
+
+    .error-hint {
+        color: #dc3545;
+        font-size: 0.8rem;
+        margin-top: 5px;
+        display: block;
+    }
+
+    @media (max-width: 768px) {
         .form-row {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 5px;
-        }
-
-        .form-group {
-            flex: 1;
-        }
-
-        label {
-            font-weight: 600;
-            font-size: 14px;
-            color: #495057;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .required-field::after {
-            content: " *";
-            color: #dc3545;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 12px 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border: 1.5px solid #e1e5e9;
-            font-size: 14px;
-            transition: all 0.3s;
-            box-sizing: border-box;
-        }
-
-        input:focus, textarea:focus, select:focus {
-            border-color: #28a745;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 10px;
-            margin-bottom: 15px;
         }
 
-        .checkbox-group input[type="checkbox"] {
-            width: auto;
-            margin-bottom: 0;
+        .action-buttons {
+            flex-direction: column;
         }
+    }
+</style>
+{% endblock %}
 
-        .checkbox-group label {
-            margin-bottom: 0;
-            font-weight: normal;
-        }
-
-        .help-text {
-            font-size: 12px;
-            color: #6c757d;
-            margin-top: -10px;
-            margin-bottom: 15px;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 8px;
-            width: 100%;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 20px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            margin-top: 10px;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .info-note {
-            background: #e8f5e9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            color: #2e7d32;
-            font-size: 14px;
-            border-left: 4px solid #28a745;
-        }
-
-        .alert {
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .alert-warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
-
-        small {
-            color: #6c757d;
-            font-size: 12px;
-        }
-
-        .error-field {
-            border-color: #dc3545 !important;
-            background-color: #fff8f8;
-        }
-
-        .error-hint {
-            color: #dc3545;
-            font-size: 12px;
-            margin-top: -10px;
-            margin-bottom: 10px;
-            display: block;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="navbar">
-        <h2><i class="fas fa-plus-circle" style="margin-right: 10px;"></i>Post Care Request</h2>
-    </div>
-
-    <div class="container">
-        <div class="form-card">
-            <div class="info-note">
-                <i class="fas fa-info-circle"></i>
-                Fill in the details below to post a new care request. Fields marked with * are required.
-            </div>
-
-            <!-- Messages Section -->
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-warning{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-
-            <!-- Form Errors Summary -->
-            {% if form.errors %}
-                <div class="alert alert-error">
-                    <strong><i class="fas fa-exclamation-circle"></i> Please correct the following errors:</strong>
-                    <ul style="margin-top: 10px; margin-bottom: 0;">
-                        {% for field, errors in form.errors.items %}
-                            {% for error in errors %}
-                                <li>{{ field|title }}: {{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-
-            <!-- Main Form -->
-            <form method="POST" novalidate>
-                {% csrf_token %}
-
-                <!-- Patient Information Section -->
-                <div class="section-title">
-                    <i class="fas fa-user" style="margin-right: 8px;"></i> Patient Information
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required-field">Patient Name</label>
-                        <input type="text" 
-                               name="patient_name" 
-                               placeholder="Full name of patient" 
-                               required
-                               value="{{ form.patient_name.value|default:'' }}"
-                               class="{% if form.patient_name.errors %}error-field{% endif %}">
-                        {% if form.patient_name.errors %}
-                            <span class="error-hint">{{ form.patient_name.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="form-group">
-                        <label class="required-field">Patient Age</label>
-                        <input type="number" 
-                               name="patient_age" 
-                               min="0" 
-                               max="120" 
-                               placeholder="Age in years" 
-                               required
-                               value="{{ form.patient_age.value|default:'' }}"
-                               class="{% if form.patient_age.errors %}error-field{% endif %}">
-                        {% if form.patient_age.errors %}
-                            <span class="error-hint">{{ form.patient_age.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required-field">Patient Gender</label>
-                        <select name="patient_gender" required class="{% if form.patient_gender.errors %}error-field{% endif %}">
-                            <option value="">Select Gender</option>
-                            <option value="male" {% if form.patient_gender.value == 'male' %}selected{% endif %}>Male</option>
-                            <option value="female" {% if form.patient_gender.value == 'female' %}selected{% endif %}>Female</option>
-                            <option value="other" {% if form.patient_gender.value == 'other' %}selected{% endif %}>Other</option>
-                        </select>
-                        {% if form.patient_gender.errors %}
-                            <span class="error-hint">{{ form.patient_gender.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="form-group">
-                        <label class="required-field">Medical Condition</label>
-                        <input type="text" 
-                               name="medical_condition" 
-                               placeholder="Primary diagnosis/condition" 
-                               required
-                               value="{{ form.medical_condition.value|default:'' }}"
-                               class="{% if form.medical_condition.errors %}error-field{% endif %}">
-                        {% if form.medical_condition.errors %}
-                            <span class="error-hint">{{ form.medical_condition.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Mobility Status</label>
-                        <select name="mobility_status">
-                            <option value="independent" {% if form.mobility_status.value == 'independent' %}selected{% endif %}>Independent</option>
-                            <option value="walker" {% if form.mobility_status.value == 'walker' %}selected{% endif %}>Walker/Cane</option>
-                            <option value="wheelchair" {% if form.mobility_status.value == 'wheelchair' %}selected{% endif %}>Wheelchair</option>
-                            <option value="bedridden" {% if form.mobility_status.value == 'bedridden' %}selected{% endif %}>Bedridden</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Cognitive Status</label>
-                        <select name="cognitive_status">
-                            <option value="normal" {% if form.cognitive_status.value == 'normal' %}selected{% endif %}>Normal</option>
-                            <option value="mild_impairment" {% if form.cognitive_status.value == 'mild_impairment' %}selected{% endif %}>Mild Cognitive Impairment</option>
-                            <option value="dementia" {% if form.cognitive_status.value == 'dementia' %}selected{% endif %}>Dementia</option>
-                            <option value="alzheimers" {% if form.cognitive_status.value == 'alzheimers' %}selected{% endif %}>Alzheimer's</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Care Requirements Section -->
-                <div class="section-title">
-                    <i class="fas fa-heartbeat" style="margin-right: 8px;"></i> Care Requirements
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required-field">Care Type</label>
-                        <select name="care_type" required class="{% if form.care_type.errors %}error-field{% endif %}">
-                            <option value="">Select Care Type</option>
-                            <option value="full_time" {% if form.care_type.value == 'full_time' %}selected{% endif %}>Full Time</option>
-                            <option value="part_time" {% if form.care_type.value == 'part_time' %}selected{% endif %}>Part Time</option>
-                            <option value="night_care" {% if form.care_type.value == 'night_care' %}selected{% endif %}>Night Care</option>
-                            <option value="home_visit" {% if form.care_type.value == 'home_visit' %}selected{% endif %}>Home Visit</option>
-                            <option value="emergency" {% if form.care_type.value == 'emergency' %}selected{% endif %}>Emergency Care</option>
-                            <option value="respite" {% if form.care_type.value == 'respite' %}selected{% endif %}>Respite Care</option>
-                            <option value="palliative" {% if form.care_type.value == 'palliative' %}selected{% endif %}>Palliative Care</option>
-                            <option value="post_surgery" {% if form.care_type.value == 'post_surgery' %}selected{% endif %}>Post-Surgery Care</option>
-                        </select>
-                        {% if form.care_type.errors %}
-                            <span class="error-hint">{{ form.care_type.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="form-group">
-                        <label>Urgency Level</label>
-                        <select name="urgency_level">
-                            <option value="low" {% if form.urgency_level.value == 'low' %}selected{% endif %}>Low - Can wait</option>
-                            <option value="medium" {% if form.urgency_level.value == 'medium' or not form.urgency_level.value %}selected{% endif %}>Medium - Within a week</option>
-                            <option value="high" {% if form.urgency_level.value == 'high' %}selected{% endif %}>High - Within 2-3 days</option>
-                            <option value="urgent" {% if form.urgency_level.value == 'urgent' %}selected{% endif %}>Urgent - Immediately</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="required-field">Required Skills</label>
-                    <input type="text" 
-                           name="required_skills"
-                           placeholder="e.g., Patient care, Medication management, First aid (comma separated)"
-                           required 
-                           value="{{ form.required_skills.value|default:'' }}"
-                           class="{% if form.required_skills.errors %}error-field{% endif %}">
-                    <div class="help-text">List skills required, separated by commas</div>
-                    {% if form.required_skills.errors %}
-                        <span class="error-hint">{{ form.required_skills.errors.0 }}</span>
-                    {% endif %}
-                </div>
-
-                <div class="form-group">
-                    <label>Preferred Qualifications</label>
-                    <input type="text" 
-                           name="preferred_qualifications"
-                           placeholder="e.g., GNM, BSc Nursing, ICU experience"
-                           value="{{ form.preferred_qualifications.value|default:'' }}">
-                </div>
-
-                <!-- Compensation Section -->
-                <div class="section-title">
-                    <i class="fas fa-rupee-sign" style="margin-right: 8px;"></i> Compensation
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required-field">Salary Offered (₹)</label>
-                        <input type="number" 
-                               name="salary_offered" 
-                               min="0" 
-                               step="100" 
-                               placeholder="Amount" 
-                               required
-                               value="{{ form.salary_offered.value|default:'' }}"
-                               class="{% if form.salary_offered.errors %}error-field{% endif %}">
-                        {% if form.salary_offered.errors %}
-                            <span class="error-hint">{{ form.salary_offered.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="form-group">
-                        <label>Payment Frequency</label>
-                        <select name="payment_frequency">
-                            <option value="hourly" {% if form.payment_frequency.value == 'hourly' %}selected{% endif %}>Per Hour</option>
-                            <option value="daily" {% if form.payment_frequency.value == 'daily' %}selected{% endif %}>Per Day</option>
-                            <option value="weekly" {% if form.payment_frequency.value == 'weekly' %}selected{% endif %}>Per Week</option>
-                            <option value="monthly" {% if form.payment_frequency.value == 'monthly' or not form.payment_frequency.value %}selected{% endif %}>Per Month</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" name="negotiable" id="negotiable" {% if form.negotiable.value %}checked{% endif %}>
-                    <label for="negotiable">Salary is negotiable</label>
-                </div>
-
-                <!-- Schedule Section -->
-                <div class="section-title">
-                    <i class="fas fa-clock" style="margin-right: 8px;"></i> Schedule
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required-field">Shift Timing</label>
-                        <input type="text" 
-                               name="shift_timing"
-                               placeholder="e.g., 9 AM - 6 PM, Night shift, Flexible" 
-                               required
-                               value="{{ form.shift_timing.value|default:'' }}"
-                               class="{% if form.shift_timing.errors %}error-field{% endif %}">
-                        {% if form.shift_timing.errors %}
-                            <span class="error-hint">{{ form.shift_timing.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="form-group">
-                        <label class="required-field">Start Date</label>
-                        <input type="date" 
-                               name="start_date" 
-                               required 
-                               value="{{ form.start_date.value|date:'Y-m-d'|default:'' }}"
-                               class="{% if form.start_date.errors %}error-field{% endif %}">
-                        {% if form.start_date.errors %}
-                            <span class="error-hint">{{ form.start_date.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required-field">Duration (Days)</label>
-                        <input type="number" 
-                               name="duration_days" 
-                               min="1" 
-                               placeholder="Number of days" 
-                               required
-                               value="{{ form.duration_days.value|default:'' }}"
-                               class="{% if form.duration_days.errors %}error-field{% endif %}">
-                        {% if form.duration_days.errors %}
-                            <span class="error-hint">{{ form.duration_days.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="form-group">
-                        <label>Hours per Day</label>
-                        <input type="number" 
-                               name="hours_per_day" 
-                               min="1" 
-                               max="24" 
-                               step="0.5"
-                               placeholder="e.g., 8, 12" 
-                               value="{{ form.hours_per_day.value|default:'' }}">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Days per Week</label>
-                        <input type="number" 
-                               name="days_per_week" 
-                               min="1" 
-                               max="7" 
-                               value="{{ form.days_per_week.value|default:'7' }}">
-                    </div>
-                </div>
-
-                <!-- Preferences Section -->
-                <div class="section-title">
-                    <i class="fas fa-user-tie" style="margin-right: 8px;"></i> Caretaker Preferences
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Gender Preference</label>
-                        <select name="gender_preference">
-                            <option value="any" {% if form.gender_preference.value == 'any' or not form.gender_preference.value %}selected{% endif %}>Any</option>
-                            <option value="female" {% if form.gender_preference.value == 'female' %}selected{% endif %}>Female</option>
-                            <option value="male" {% if form.gender_preference.value == 'male' %}selected{% endif %}>Male</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Language Preference</label>
-                        <input type="text" 
-                               name="language_preference" 
-                               placeholder="e.g., English, Hindi, Tamil"
-                               value="{{ form.language_preference.value|default:'' }}">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Preferred Age (Min)</label>
-                        <input type="number" 
-                               name="age_preference_min" 
-                               min="18" 
-                               max="100" 
-                               placeholder="Min age"
-                               value="{{ form.age_preference_min.value|default:'' }}">
-                    </div>
-                    <div class="form-group">
-                        <label>Preferred Age (Max)</label>
-                        <input type="number" 
-                               name="age_preference_max" 
-                               min="18" 
-                               max="100" 
-                               placeholder="Max age"
-                               value="{{ form.age_preference_max.value|default:'' }}">
-                    </div>
-                </div>
-
-                <!-- Location Section -->
-                <div class="section-title">
-                    <i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i> Location Details
-                </div>
-
-                <div class="form-group">
-                    <label class="required-field">Complete Address</label>
-                    <textarea name="address" 
-                              placeholder="House/Flat No., Building Name, Street" 
-                              required
-                              class="{% if form.address.errors %}error-field{% endif %}">{{ form.address.value|default:'' }}</textarea>
-                    {% if form.address.errors %}
-                        <span class="error-hint">{{ form.address.errors.0 }}</span>
-                    {% endif %}
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required-field">City</label>
-                        <input type="text" 
-                               name="city" 
-                               placeholder="City" 
-                               required 
-                               value="{{ form.city.value|default:'' }}"
-                               class="{% if form.city.errors %}error-field{% endif %}">
-                        {% if form.city.errors %}
-                            <span class="error-hint">{{ form.city.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="form-group">
-                        <label class="required-field">State</label>
-                        <input type="text" 
-                               name="state" 
-                               placeholder="State" 
-                               required 
-                               value="{{ form.state.value|default:'' }}"
-                               class="{% if form.state.errors %}error-field{% endif %}">
-                        {% if form.state.errors %}
-                            <span class="error-hint">{{ form.state.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="required-field">Pincode</label>
-                        <input type="text" 
-                               name="pincode" 
-                               placeholder="Pincode" 
-                               required 
-                               value="{{ form.pincode.value|default:'' }}"
-                               class="{% if form.pincode.errors %}error-field{% endif %}">
-                        {% if form.pincode.errors %}
-                            <span class="error-hint">{{ form.pincode.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="form-group">
-                        <label>Landmark</label>
-                        <input type="text" 
-                               name="landmark" 
-                               placeholder="Nearby landmark" 
-                               value="{{ form.landmark.value|default:'' }}">
-                    </div>
-                </div>
-
-                <!-- Additional Requirements -->
-                <div class="section-title">
-                    <i class="fas fa-clipboard-list" style="margin-right: 8px;"></i> Additional Information
-                </div>
-
-                <div class="form-group">
-                    <label>Special Requirements</label>
-                    <textarea name="special_requirements"
-                              placeholder="Bedridden handling, dementia care, special dietary needs, etc.">{{ form.special_requirements.value|default:'' }}</textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Equipment Provided</label>
-                    <input type="text" 
-                           name="equipment_provided"
-                           placeholder="e.g., Hospital bed, Oxygen concentrator, Wheelchair"
-                           value="{{ form.equipment_provided.value|default:'' }}">
-                    <div class="help-text">Medical equipment that will be provided by family</div>
-                </div>
-
-                <!-- Accommodation -->
-                <div class="checkbox-group">
-                    <input type="checkbox" name="accommodation_provided" id="accommodation_provided" {% if form.accommodation_provided.value %}checked{% endif %}>
-                    <label for="accommodation_provided">Accommodation provided for caretaker</label>
-                </div>
-
-                <div class="form-group">
-                    <label>Accommodation Details</label>
-                    <textarea name="accommodation_details"
-                              placeholder="Describe accommodation if provided (separate room, meals, etc.)"
-                              {% if not form.accommodation_provided.value %}disabled{% endif %}>{{ form.accommodation_details.value|default:'' }}</textarea>
-                </div>
-
-                <!-- Interview Process -->
-                <div class="section-title">
-                    <i class="fas fa-handshake" style="margin-right: 8px;"></i> Interview Process
-                </div>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" name="interview_required" id="interview_required" {% if form.interview_required.value %}checked{% endif %}>
-                    <label for="interview_required">Interview required before hiring</label>
-                </div>
-
-                <div class="form-group">
-                    <label>Interview Type</label>
-                    <select name="interview_type" {% if not form.interview_required.value %}disabled{% endif %}>
-                        <option value="video" {% if form.interview_type.value == 'video' or not form.interview_type.value %}selected{% endif %}>Video Call</option>
-                        <option value="in_person" {% if form.interview_type.value == 'in_person' %}selected{% endif %}>In Person</option>
-                        <option value="phone" {% if form.interview_type.value == 'phone' %}selected{% endif %}>Phone Call</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn">
-                    <i class="fas fa-paper-plane" style="margin-right: 8px;"></i> Post Care Request
-                </button>
-
-                <a href="{% url 'my_requests' %}" class="btn btn-secondary"
-                   style="display: block; text-align: center; text-decoration: none;">
-                    <i class="fas fa-times" style="margin-right: 8px;"></i> Cancel
-                </a>
-            </form>
+{% block content %}
+<div class="form-card">
+    <div class="info-note">
+        <i class="fas fa-info-circle"></i>
+        <div>
+            <strong>Fill in the details below</strong> to post a new care request. Fields marked with * are required.
         </div>
     </div>
 
-    <!-- Font Awesome for icons -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <!-- Messages -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% else %}warning{% endif %}">
+        <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
 
-    <script>
-        // Enable/disable accommodation details based on checkbox
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Patient Information Section -->
+        <h4 class="section-title"><i class="fas fa-user me-2"></i>Patient Information</h4>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="required-field">Patient Name</label>
+                <input type="text" name="patient_name" placeholder="Full name of patient" required
+                    value="{{ request.POST.patient_name|default:'' }}"
+                    class="{% if errors.patient_name %}error-field{% endif %}">
+                {% if errors.patient_name %}
+                <span class="error-hint">{{ errors.patient_name }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label class="required-field">Patient Age</label>
+                <input type="number" name="patient_age" min="0" max="120" placeholder="Age in years" required
+                    value="{{ request.POST.patient_age|default:'' }}"
+                    class="{% if errors.patient_age %}error-field{% endif %}">
+                {% if errors.patient_age %}
+                <span class="error-hint">{{ errors.patient_age }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="required-field">Patient Gender</label>
+                <select name="patient_gender" required class="{% if errors.patient_gender %}error-field{% endif %}">
+                    <option value="">Select Gender</option>
+                    {% for value, label in gender_choices %}
+                    <option value="{{ value }}" {% if request.POST.patient_gender == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if errors.patient_gender %}
+                <span class="error-hint">{{ errors.patient_gender }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label class="required-field">Medical Condition</label>
+                <input type="text" name="medical_condition" placeholder="Primary diagnosis/condition" required
+                    value="{{ request.POST.medical_condition|default:'' }}"
+                    class="{% if errors.medical_condition %}error-field{% endif %}">
+                {% if errors.medical_condition %}
+                <span class="error-hint">{{ errors.medical_condition }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Mobility Status</label>
+                <select name="mobility_status">
+                    <option value="">Select Mobility Status</option>
+                    {% for value, label in mobility_choices %}
+                    <option value="{{ value }}" {% if request.POST.mobility_status == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Cognitive Status</label>
+                <select name="cognitive_status">
+                    <option value="">Select Cognitive Status</option>
+                    {% for value, label in cognitive_choices %}
+                    <option value="{{ value }}" {% if request.POST.cognitive_status == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Care Requirements Section -->
+        <h4 class="section-title"><i class="fas fa-heartbeat me-2"></i>Care Requirements</h4>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="required-field">Care Type</label>
+                <select name="care_type" required class="{% if errors.care_type %}error-field{% endif %}">
+                    <option value="">Select Care Type</option>
+                    {% for value, label in care_type_choices %}
+                    <option value="{{ value }}" {% if request.POST.care_type == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if errors.care_type %}
+                <span class="error-hint">{{ errors.care_type }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label>Urgency Level</label>
+                <select name="urgency_level">
+                    <option value="">Select Urgency Level</option>
+                    {% for value, label in urgency_choices %}
+                    <option value="{{ value }}" {% if request.POST.urgency_level == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group full-width">
+            <label class="required-field">Required Skills</label>
+            <input type="text" name="required_skills"
+                placeholder="e.g., Patient care, Medication management, First aid (comma separated)" required
+                value="{{ request.POST.required_skills|default:'' }}"
+                class="{% if errors.required_skills %}error-field{% endif %}">
+            <div class="help-text">List skills required, separated by commas</div>
+            {% if errors.required_skills %}
+            <span class="error-hint">{{ errors.required_skills }}</span>
+            {% endif %}
+        </div>
+
+        <!-- Compensation Section -->
+        <h4 class="section-title">
+            <i class="fas fa-rupee-sign me-2"></i> Compensation
+        </h4>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="required-field">Salary Offered (₹)</label>
+                <input type="number" name="salary_offered" min="0" step="100" placeholder="Amount" required
+                    value="{{ request.POST.salary_offered|default:'' }}"
+                    class="{% if errors.salary_offered %}error-field{% endif %}">
+                {% if errors.salary_offered %}
+                <span class="error-hint">{{ errors.salary_offered }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label>Payment Frequency</label>
+                <select name="payment_frequency">
+                    <option value="">Select Payment Frequency</option>
+                    {% for value, label in payment_choices %}
+                    <option value="{{ value }}" {% if request.POST.payment_frequency == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" name="negotiable" id="negotiable" {% if request.POST.negotiable %}checked{% endif %}>
+            <label for="negotiable">Salary is negotiable</label>
+        </div>
+
+        <!-- Schedule Section -->
+        <h4 class="section-title"><i class="fas fa-clock me-2"></i>Schedule</h4>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="required-field">Shift Timing</label>
+                <input type="text" name="shift_timing" placeholder="e.g., 9 AM - 6 PM, Night shift, Flexible" required
+                    value="{{ request.POST.shift_timing|default:'' }}"
+                    class="{% if errors.shift_timing %}error-field{% endif %}">
+                {% if errors.shift_timing %}
+                <span class="error-hint">{{ errors.shift_timing }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label class="required-field">Start Date</label>
+                <input type="date" name="start_date" required value="{{ request.POST.start_date|default:'' }}"
+                    class="{% if errors.start_date %}error-field{% endif %}">
+                {% if errors.start_date %}
+                <span class="error-hint">{{ errors.start_date }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="required-field">Duration (Days)</label>
+                <input type="number" name="duration_days" min="1" placeholder="Number of days" required
+                    value="{{ request.POST.duration_days|default:'' }}"
+                    class="{% if errors.duration_days %}error-field{% endif %}">
+                {% if errors.duration_days %}
+                <span class="error-hint">{{ errors.duration_days }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label>Hours per Day</label>
+                <input type="number" name="hours_per_day" min="1" max="24" step="0.5" placeholder="e.g., 8, 12"
+                    value="{{ request.POST.hours_per_day|default:'' }}">
+            </div>
+        </div>
+
+        <!-- Location Section -->
+        <h4 class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Location Details</h4>
+
+        <div class="form-group full-width">
+            <label class="required-field">Complete Address</label>
+            <textarea name="address" placeholder="House/Flat No., Building Name, Street" required
+                class="{% if errors.address %}error-field{% endif %}">{{ request.POST.address|default:'' }}</textarea>
+            {% if errors.address %}
+            <span class="error-hint">{{ errors.address }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="required-field">City</label>
+                <input type="text" name="city" placeholder="City" required value="{{ request.POST.city|default:'' }}"
+                    class="{% if errors.city %}error-field{% endif %}">
+                {% if errors.city %}
+                <span class="error-hint">{{ errors.city }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label class="required-field">State</label>
+                <input type="text" name="state" placeholder="State" required value="{{ request.POST.state|default:'' }}"
+                    class="{% if errors.state %}error-field{% endif %}">
+                {% if errors.state %}
+                <span class="error-hint">{{ errors.state }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="required-field">Pincode</label>
+                <input type="text" name="pincode" placeholder="Pincode" required
+                    value="{{ request.POST.pincode|default:'' }}" class="{% if errors.pincode %}error-field{% endif %}">
+                {% if errors.pincode %}
+                <span class="error-hint">{{ errors.pincode }}</span>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label>Landmark</label>
+                <input type="text" name="landmark" placeholder="Nearby landmark"
+                    value="{{ request.POST.landmark|default:'' }}">
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <h4 class="section-title"><i class="fas fa-clipboard-list me-2"></i>Additional Information</h4>
+
+        <div class="form-group full-width">
+            <label>Special Requirements</label>
+            <textarea name="special_requirements"
+                placeholder="Bedridden handling, dementia care, special dietary needs, etc.">{{ request.POST.special_requirements|default:'' }}</textarea>
+        </div>
+
+        <!-- Accommodation -->
+        <div class="checkbox-group">
+            <input type="checkbox" name="accommodation_provided" id="accommodation_provided" {% if request.POST.accommodation_provided %}checked{% endif %}>
+            <label for="accommodation_provided">Accommodation provided for caretaker</label>
+        </div>
+
+        <div class="form-group full-width" id="accommodation_details_group" {% if not request.POST.accommodation_provided %}style="display:none;"{% endif %}>
+            <label>Accommodation Details</label>
+            <textarea name="accommodation_details"
+                placeholder="Describe accommodation if provided (separate room, meals, etc.)">{{ request.POST.accommodation_details|default:'' }}</textarea>
+        </div>
+
+        <!-- Interview Process -->
+        <div class="checkbox-group">
+            <input type="checkbox" name="interview_required" id="interview_required" {% if request.POST.interview_required %}checked{% endif %}>
+            <label for="interview_required">Interview required before hiring</label>
+        </div>
+
+        <div class="form-group" id="interview_type_group" {% if not request.POST.interview_required %}style="display:none;"{% endif %}>
+            <label>Interview Type</label>
+            <select name="interview_type">
+                <option value="">Select Interview Type</option>
+                {% for value, label in interview_choices %}
+                <option value="{{ value }}" {% if request.POST.interview_type == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="action-buttons">
+            <a href="{% url 'my_requests' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Post Care Request
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Show/hide accommodation details
+    document.getElementById('accommodation_provided').addEventListener('change', function () {
+        document.getElementById('accommodation_details_group').style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Show/hide interview type
+    document.getElementById('interview_required').addEventListener('change', function () {
+        document.getElementById('interview_type_group').style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Initialize visibility on page load based on checkbox state
+    document.addEventListener('DOMContentLoaded', function () {
+        // Accommodation
         const accommodationCheckbox = document.getElementById('accommodation_provided');
-        const accommodationDetails = document.querySelector('textarea[name="accommodation_details"]');
-        
         if (accommodationCheckbox) {
-            accommodationCheckbox.addEventListener('change', function() {
-                accommodationDetails.disabled = !this.checked;
-                if (!this.checked) {
-                    accommodationDetails.value = '';
-                }
-            });
+            document.getElementById('accommodation_details_group').style.display = accommodationCheckbox.checked ? 'block' : 'none';
         }
 
-        // Enable/disable interview type based on interview required checkbox
+        // Interview
         const interviewCheckbox = document.getElementById('interview_required');
-        const interviewType = document.querySelector('select[name="interview_type"]');
-        
         if (interviewCheckbox) {
-            interviewCheckbox.addEventListener('change', function() {
-                interviewType.disabled = !this.checked;
-            });
+            document.getElementById('interview_type_group').style.display = interviewCheckbox.checked ? 'block' : 'none';
         }
+    });
 
-        // Auto-hide alerts after 5 seconds
-        setTimeout(function() {
-            let alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                alert.style.transition = 'opacity 1s';
-                alert.style.opacity = '0';
-                setTimeout(() => alert.style.display = 'none', 1000);
-            });
-        }, 5000);
-
-        // Form validation before submit
-        document.querySelector('form').addEventListener('submit', function(e) {
-            let requiredFields = document.querySelectorAll('[required]');
-            let isValid = true;
-            
-            requiredFields.forEach(function(field) {
-                if (!field.value.trim()) {
-                    field.classList.add('error-field');
-                    isValid = false;
-                    
-                    // Add error hint if not exists
-                    let parent = field.parentElement;
-                    if (!parent.querySelector('.error-hint')) {
-                        let error = document.createElement('span');
-                        error.className = 'error-hint';
-                        error.textContent = 'This field is required';
-                        parent.appendChild(error);
-                    }
-                } else {
-                    field.classList.remove('error-field');
-                    let error = field.parentElement.querySelector('.error-hint');
-                    if (error) error.remove();
-                }
-            });
-            
-            if (!isValid) {
-                e.preventDefault();
-                alert('Please fill in all required fields');
-            }
+    // Auto-hide alerts after 5 seconds
+    setTimeout(function () {
+        document.querySelectorAll('.alert').forEach(function (alert) {
+            alert.style.transition = 'opacity 0.5s';
+            alert.style.opacity = '0';
+            setTimeout(() => alert.style.display = 'none', 500);
         });
-    </script>
-
-</body>
-</html>
+    }, 5000);
+</script>
+{% endblock %}

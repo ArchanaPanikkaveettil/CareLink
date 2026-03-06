@@ -1,0 +1,184 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Audit Logs - CareLink Admin{% endblock %}
+
+{% block page_title %}System Audit Logs{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Filters -->
+    <div class="filters-card">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">User</label>
+                <input type="text" class="form-control" name="user" placeholder="Username or email">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Action</label>
+                <select class="form-select" name="action">
+                    <option value="">All Actions</option>
+                    <option value="login">Login</option>
+                    <option value="logout">Logout</option>
+                    <option value="create">Create</option>
+                    <option value="update">Update</option>
+                    <option value="delete">Delete</option>
+                    <option value="verify">Verify</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">From Date</label>
+                <input type="date" class="form-control" name="from_date">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">To Date</label>
+                <input type="date" class="form-control" name="to_date">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                    <i class="fas fa-filter me-2"></i>Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Logs Table -->
+    <div class="table-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="mb-0">Audit Logs ({{ total_logs|default:'0' }})</h5>
+            <div>
+                <button class="btn btn-success" onclick="exportLogs()">
+                    <i class="fas fa-download me-2"></i>Export Logs
+                </button>
+                <button class="btn btn-danger" onclick="clearLogs()">
+                    <i class="fas fa-trash me-2"></i>Clear Old Logs
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Resource</th>
+                        <th>Details</th>
+                        <th>IP Address</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Sample log entries - Replace with actual data -->
+                    <tr>
+                        <td>2024-03-03 10:30:25</td>
+                        <td>admin@carelink.com</td>
+                        <td><span class="badge bg-primary">LOGIN</span></td>
+                        <td>Authentication</td>
+                        <td>Successful login from Chrome on Windows</td>
+                        <td>192.168.1.100</td>
+                        <td><span class="badge bg-success">Success</span></td>
+                    </tr>
+                    <tr>
+                        <td>2024-03-03 09:15:10</td>
+                        <td>john@example.com</td>
+                        <td><span class="badge bg-success">CREATE</span></td>
+                        <td>Caretaker Profile</td>
+                        <td>Created new caretaker profile</td>
+                        <td>192.168.1.101</td>
+                        <td><span class="badge bg-success">Success</span></td>
+                    </tr>
+                    <tr>
+                        <td>2024-03-03 08:45:30</td>
+                        <td>sarah@example.com</td>
+                        <td><span class="badge bg-warning">UPDATE</span></td>
+                        <td>Family Profile</td>
+                        <td>Updated contact information</td>
+                        <td>192.168.1.102</td>
+                        <td><span class="badge bg-success">Success</span></td>
+                    </tr>
+                    <tr>
+                        <td>2024-03-02 23:20:15</td>
+                        <td>unknown</td>
+                        <td><span class="badge bg-danger">FAILED_LOGIN</span></td>
+                        <td>Authentication</td>
+                        <td>Failed login attempt - invalid password</td>
+                        <td>203.0.113.45</td>
+                        <td><span class="badge bg-danger">Failed</span></td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <i class="fas fa-history fa-3x mb-3"></i>
+                            <p>Full audit log functionality requires an AuditLog model.</p>
+                            <p class="small">This is a placeholder with sample data.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">4</a></li>
+                <li class="page-item"><a class="page-link" href="#">5</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Log Summary -->
+    <div class="row g-4 mt-2">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h6 class="text-muted mb-2">Today's Logs</h6>
+                <h3 class="mb-0">24</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h6 class="text-muted mb-2">This Week</h6>
+                <h3 class="mb-0">156</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h6 class="text-muted mb-2">Failed Attempts</h6>
+                <h3 class="mb-0">12</h3>
+                <small class="text-danger">Last 7 days</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h6 class="text-muted mb-2">Unique Users</h6>
+                <h3 class="mb-0">45</h3>
+                <small class="text-success">Active today</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function exportLogs() {
+        alert('Exporting logs... This will download a CSV file with all audit logs.');
+    }
+    
+    function clearLogs() {
+        if(confirm('Are you sure you want to clear logs older than 30 days? This action cannot be undone.')) {
+            alert('Clearing old logs...');
+        }
+    }
+</script>
+{% endblock %}

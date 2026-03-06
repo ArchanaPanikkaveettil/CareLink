@@ -1,452 +1,482 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Profile - Care Connect</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body {
-            background: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .update-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px 0;
-            margin-bottom: 30px;
-        }
-        
-        .form-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .section-title {
-            color: #495057;
-            font-size: 20px;
-            font-weight: 600;
-            margin: 25px 0 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        .section-title:first-child {
-            margin-top: 0;
-        }
-        
-        .form-label {
-            font-weight: 500;
-            color: #495057;
-            margin-bottom: 5px;
-        }
-        
-        .form-control, .form-select {
-            border-radius: 8px;
-            border: 1px solid #ced4da;
-            padding: 10px 15px;
-            transition: all 0.3s;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.1);
-        }
-        
-        .btn-save {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        
-        .btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(40,167,69,0.3);
-            color: white;
-        }
-        
-        .btn-cancel {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-        
-        .btn-cancel:hover {
-            background: #5a6268;
-            color: white;
-        }
-        
-        .pet-details-section {
-            display: none;
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .file-upload-info {
-            font-size: 0.85rem;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-        
-        .current-file {
-            background: #e9ecef;
-            padding: 8px 12px;
-            border-radius: 5px;
-            margin-top: 5px;
-            font-size: 0.9rem;
-        }
-        
-        .current-file a {
-            color: #667eea;
-            text-decoration: none;
-        }
-        
-        .current-file a:hover {
-            text-decoration: underline;
-        }
-        
-        .help-text {
-            font-size: 0.85rem;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div class="update-header">
-        <div class="container">
-            <h2 class="text-center"><i class="fas fa-user-edit me-2"></i>Update Profile</h2>
-            <p class="text-center mb-0">Complete your profile to find the best caretaker matches</p>
-        </div>
-    </div>
+{% extends 'users/family_base.html' %}
+{% load static %}
 
-    <div class="container mb-5">
-        <!-- Messages -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
+{% block title %}Update Profile - CareLink{% endblock %}
 
-        <div class="form-container">
-            <form method="POST" enctype="multipart/form-data" id="profileForm">
-                {% csrf_token %}
+{% block page_icon %}<i class="fas fa-user-edit"></i>{% endblock %}
+{% block page_title %}Update Profile{% endblock %}
 
-                <!-- Contact Information -->
-                <h4 class="section-title"><i class="fas fa-address-card me-2 text-primary"></i>Contact Information</h4>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Phone Number</label>
-                        <input type="tel" class="form-control" name="phone" value="{{ profile.phone }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Alternate Phone</label>
-                        <input type="tel" class="form-control" name="alternate_phone" value="{{ profile.alternate_phone }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Emergency Contact</label>
-                        <input type="tel" class="form-control" name="emergency_contact" value="{{ profile.emergency_contact }}">
-                        <div class="help-text">In case of emergency</div>
-                    </div>
-                </div>
+{% block extra_css %}
+<style>
+    .form-container {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 25px;
+    }
 
-                <!-- Address Details -->
-                <h4 class="section-title"><i class="fas fa-map-marker-alt me-2 text-primary"></i>Address Details</h4>
-                <div class="row">
-                    <div class="col-12 mb-3">
-                        <label class="form-label">Full Address</label>
-                        <textarea class="form-control" name="address" rows="2">{{ profile.address }}</textarea>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">City</label>
-                        <input type="text" class="form-control" name="city" value="{{ profile.city }}">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">State</label>
-                        <input type="text" class="form-control" name="state" value="{{ profile.state }}">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Pincode</label>
-                        <input type="text" class="form-control" name="pincode" value="{{ profile.pincode }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Country</label>
-                        <input type="text" class="form-control" name="country" value="{{ profile.country|default:'India' }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Landmark</label>
-                        <input type="text" class="form-control" name="landmark" value="{{ profile.landmark }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Residence Type</label>
-                        <select class="form-select" name="residence_type">
-                            <option value="apartment" {% if profile.residence_type == 'apartment' %}selected{% endif %}>Apartment</option>
-                            <option value="independent" {% if profile.residence_type == 'independent' %}selected{% endif %}>Independent House</option>
-                            <option value="villa" {% if profile.residence_type == 'villa' %}selected{% endif %}>Villa</option>
-                            <option value="others" {% if profile.residence_type == 'others' %}selected{% endif %}>Others</option>
-                        </select>
-                    </div>
-                </div>
+    .section-title {
+        color: #0f3460;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 25px 0 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e2e8f0;
+    }
 
-                <!-- Family Information -->
-                <h4 class="section-title"><i class="fas fa-users me-2 text-primary"></i>Family Information</h4>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Family Type</label>
-                        <select class="form-select" name="family_type">
-                            <option value="nuclear" {% if profile.family_type == 'nuclear' %}selected{% endif %}>Nuclear Family</option>
-                            <option value="joint" {% if profile.family_type == 'joint' %}selected{% endif %}>Joint Family</option>
-                            <option value="single" {% if profile.family_type == 'single' %}selected{% endif %}>Single Parent</option>
-                            <option value="elderly" {% if profile.family_type == 'elderly' %}selected{% endif %}>Elderly Couple</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Family Size</label>
-                        <input type="number" class="form-control" name="family_size" min="1" value="{{ profile.family_size|default:'1' }}">
-                    </div>
-                </div>
+    .section-title:first-of-type {
+        margin-top: 0;
+    }
 
-                <!-- Patient Information -->
-                <h4 class="section-title"><i class="fas fa-user me-2 text-primary"></i>Patient Information</h4>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Patient Name</label>
-                        <input type="text" class="form-control" name="patient_name" value="{{ profile.patient_name }}">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">Age</label>
-                        <input type="number" class="form-control" name="patient_age" min="0" max="120" value="{{ profile.patient_age }}">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">Gender</label>
-                        <select class="form-select" name="patient_gender">
-                            <option value="">Select</option>
-                            <option value="male" {% if profile.patient_gender == 'male' %}selected{% endif %}>Male</option>
-                            <option value="female" {% if profile.patient_gender == 'female' %}selected{% endif %}>Female</option>
-                            <option value="other" {% if profile.patient_gender == 'other' %}selected{% endif %}>Other</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Blood Group</label>
-                        <select class="form-select" name="patient_blood_group">
-                            <option value="">Select</option>
-                            <option value="A+" {% if profile.patient_blood_group == 'A+' %}selected{% endif %}>A+</option>
-                            <option value="A-" {% if profile.patient_blood_group == 'A-' %}selected{% endif %}>A-</option>
-                            <option value="B+" {% if profile.patient_blood_group == 'B+' %}selected{% endif %}>B+</option>
-                            <option value="B-" {% if profile.patient_blood_group == 'B-' %}selected{% endif %}>B-</option>
-                            <option value="O+" {% if profile.patient_blood_group == 'O+' %}selected{% endif %}>O+</option>
-                            <option value="O-" {% if profile.patient_blood_group == 'O-' %}selected{% endif %}>O-</option>
-                            <option value="AB+" {% if profile.patient_blood_group == 'AB+' %}selected{% endif %}>AB+</option>
-                            <option value="AB-" {% if profile.patient_blood_group == 'AB-' %}selected{% endif %}>AB-</option>
-                            <option value="unknown" {% if profile.patient_blood_group == 'unknown' %}selected{% endif %}>Unknown</option>
-                        </select>
-                    </div>
-                </div>
+    .form-label {
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+        /* margin-top: 50px !important; */
+        font-size: 0.95rem;
+    }
 
-                <!-- Medical Information -->
-                <h4 class="section-title"><i class="fas fa-notes-medical me-2 text-primary"></i>Medical Information</h4>
-                <div class="row">
-                    <div class="col-12 mb-3">
-                        <label class="form-label">Primary Medical Condition</label>
-                        <input type="text" class="form-control" name="primary_medical_condition" value="{{ profile.primary_medical_condition }}">
-                        <div class="help-text">e.g., Diabetes, Paralysis, Alzheimer's, etc.</div>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label class="form-label">Secondary Conditions</label>
-                        <textarea class="form-control" name="secondary_conditions" rows="2">{{ profile.secondary_conditions }}</textarea>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Allergies</label>
-                        <input type="text" class="form-control" name="allergies" value="{{ profile.allergies }}">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Current Medications</label>
-                        <input type="text" class="form-control" name="medications" value="{{ profile.medications }}">
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label class="form-label">Dietary Restrictions</label>
-                        <input type="text" class="form-control" name="dietary_restrictions" value="{{ profile.dietary_restrictions }}">
-                    </div>
-                </div>
-
-                <!-- Care Requirements -->
-                <h4 class="section-title"><i class="fas fa-heartbeat me-2 text-primary"></i>Care Requirements</h4>
-                <div class="row">
-                    <div class="col-12 mb-3">
-                        <label class="form-label">Care Needed</label>
-                        <textarea class="form-control" name="care_required" rows="3">{{ profile.care_required }}</textarea>
-                        <div class="help-text">Describe the type of care needed (bathing, feeding, medication reminders, etc.)</div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Care Frequency</label>
-                        <select class="form-select" name="care_frequency">
-                            <option value="24x7" {% if profile.care_frequency == '24x7' %}selected{% endif %}>24/7 Care</option>
-                            <option value="daily" {% if profile.care_frequency == 'daily' %}selected{% endif %}>Daily</option>
-                            <option value="weekly" {% if profile.care_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
-                            <option value="occasional" {% if profile.care_frequency == 'occasional' %}selected{% endif %}>Occasional</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Home Environment -->
-                <h4 class="section-title"><i class="fas fa-home me-2 text-primary"></i>Home Environment</h4>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="pets_at_home" id="petsAtHome" {% if profile.pets_at_home %}checked{% endif %}>
-                            <label class="form-check-label" for="petsAtHome">Pets at Home</label>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="smokers_in_home" id="smokersInHome" {% if profile.smokers_in_home %}checked{% endif %}>
-                            <label class="form-check-label" for="smokersInHome">Smokers in Home</label>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="previous_caretaker" id="previousCaretaker" {% if profile.previous_caretaker %}checked{% endif %}>
-                            <label class="form-check-label" for="previousCaretaker">Previous Caretaker Experience</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pet Details (conditional) -->
-                <div class="pet-details-section" id="petDetailsSection" {% if profile.pets_at_home %}style="display:block;"{% endif %}>
-                    <div class="mb-3">
-                        <label class="form-label">Pet Details</label>
-                        <input type="text" class="form-control" name="pet_details" value="{{ profile.pet_details }}" placeholder="Type of pets, temperament, etc.">
-                    </div>
-                </div>
-
-                <!-- Previous Caretaker Feedback (conditional) -->
-                <div class="mb-3" id="previousCaretakerSection" {% if profile.previous_caretaker %}style="display:block;"{% else %}style="display:none;"{% endif %}>
-                    <label class="form-label">Previous Caretaker Feedback</label>
-                    <textarea class="form-control" name="previous_caretaker_feedback" rows="2">{{ profile.previous_caretaker_feedback }}</textarea>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Accessibility Requirements</label>
-                    <input type="text" class="form-control" name="accessibility_requirements" value="{{ profile.accessibility_requirements }}" placeholder="e.g., Wheelchair ramp, Ground floor needed">
-                </div>
-
-                <!-- Preferences -->
-                <h4 class="section-title"><i class="fas fa-sliders-h me-2 text-primary"></i>Preferences</h4>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Preferred Caretaker Gender</label>
-                        <select class="form-select" name="preferred_caretaker_gender">
-                            <option value="any" {% if profile.preferred_caretaker_gender == 'any' %}selected{% endif %}>Any</option>
-                            <option value="male" {% if profile.preferred_caretaker_gender == 'male' %}selected{% endif %}>Male</option>
-                            <option value="female" {% if profile.preferred_caretaker_gender == 'female' %}selected{% endif %}>Female</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Preferred Language</label>
-                        <input type="text" class="form-control" name="preferred_language" value="{{ profile.preferred_language }}" placeholder="e.g., Hindi, English, Tamil">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Monthly Budget (₹)</label>
-                        <input type="number" class="form-control" name="monthly_budget" value="{{ profile.monthly_budget }}" step="1000" placeholder="Optional">
-                    </div>
-                </div>
-
-                <!-- Documents -->
-                <h4 class="section-title"><i class="fas fa-file-alt me-2 text-primary"></i>Documents</h4>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Identity Proof</label>
-                        <input type="file" class="form-control" name="identity_proof" accept=".pdf,.jpg,.jpeg,.png">
-                        <div class="file-upload-info">Upload Aadhar Card, Passport, or Driver's License</div>
-                        {% if profile.identity_proof %}
-                            <div class="current-file">
-                                Current: <a href="{{ profile.identity_proof.url }}" target="_blank">View File</a>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Address Proof</label>
-                        <input type="file" class="form-control" name="address_proof" accept=".pdf,.jpg,.jpeg,.png">
-                        <div class="file-upload-info">Upload utility bill or rental agreement (optional)</div>
-                        {% if profile.address_proof %}
-                            <div class="current-file">
-                                Current: <a href="{{ profile.address_proof.url }}" target="_blank">View File</a>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Medical Reports</label>
-                        <input type="file" class="form-control" name="medical_reports" accept=".pdf">
-                        <div class="file-upload-info">Upload patient's medical reports (optional)</div>
-                        {% if profile.medical_reports %}
-                            <div class="current-file">
-                                Current: <a href="{{ profile.medical_reports.url }}" target="_blank">View File</a>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Form Actions -->
-                <div class="text-center mt-4">
-                    <a href="{% url 'family_profile' %}" class="btn-cancel me-2">
-                        <i class="fas fa-times me-2"></i>Cancel
-                    </a>
-                    <button type="submit" class="btn-save">
-                        <i class="fas fa-save me-2"></i>Save Changes
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <script>
-        // Show/hide pet details section
-        document.getElementById('petsAtHome').addEventListener('change', function() {
-            const petDetails = document.getElementById('petDetailsSection');
-            petDetails.style.display = this.checked ? 'block' : 'none';
+    .form-control, .form-select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        background: white;
+    }
+
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: #0f3460;
+        box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
+    }
+
+    .help-text {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: 5px;
+    }
+
+    .file-upload-info {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: 5px;
+    }
+
+    .current-file {
+        background: #f8fafc;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin-top: 8px;
+        font-size: 0.9rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .current-file a {
+        color: #0f3460;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .current-file a:hover {
+        text-decoration: underline;
+    }
+
+    .btn-save {
+        background: #0f3460;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-save:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(15, 52, 96, 0.2);
+        color: white;
+    }
+
+    .btn-cancel {
+        background: #64748b;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-cancel:hover {
+        background: #475569;
+        color: white;
+    }
+
+    .pet-details-section {
+        display: none;
+        margin-top: 15px;
+        padding: 15px;
+        background-color: #f8fafc;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .form-check-input {
+        width: 18px;
+        height: 18px;
+        margin-right: 8px;
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        color: #475569;
+        cursor: pointer;
+    }
+
+    .info-note {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .info-note i {
+        font-size: 1.5rem;
+        color: #0f3460;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="info-note">
+        <i class="fas fa-info-circle"></i>
+        <div>
+            <strong>Complete your profile</strong> to help us find the best caretaker matches for your needs.
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" id="profileForm">
+        {% csrf_token %}
+
+        <!-- Contact Information -->
+        <h4 class="section-title"><i class="fas fa-address-card me-2"></i>Contact Information</h4>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" name="phone" value="{{ profile.phone|default:'' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Alternate Phone</label>
+                <input type="tel" class="form-control" name="alternate_phone" value="{{ profile.alternate_phone|default:'' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Emergency Contact</label>
+                <input type="tel" class="form-control" name="emergency_contact" value="{{ profile.emergency_contact|default:'' }}">
+                <div class="help-text">In case of emergency</div>
+            </div>
+        </div>
+
+        <!-- Address Details -->
+        <h4 class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Address Details</h4>
+        <div class="row">
+            <div class="col-12 mb-3">
+                <label class="form-label">Full Address</label>
+                <textarea class="form-control" name="address" rows="2">{{ profile.address|default:'' }}</textarea>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">City</label>
+                <input type="text" class="form-control" name="city" value="{{ profile.city|default:'' }}">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">State</label>
+                <input type="text" class="form-control" name="state" value="{{ profile.state|default:'' }}">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Pincode</label>
+                <input type="text" class="form-control" name="pincode" value="{{ profile.pincode|default:'' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Country</label>
+                <input type="text" class="form-control" name="country" value="{{ profile.country|default:'India' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Landmark</label>
+                <input type="text" class="form-control" name="landmark" value="{{ profile.landmark|default:'' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Residence Type</label>
+                <select class="form-select" name="residence_type">
+                    <option value="apartment" {% if profile.residence_type == 'apartment' %}selected{% endif %}>Apartment</option>
+                    <option value="independent" {% if profile.residence_type == 'independent' %}selected{% endif %}>Independent House</option>
+                    <option value="villa" {% if profile.residence_type == 'villa' %}selected{% endif %}>Villa</option>
+                    <option value="others" {% if profile.residence_type == 'others' %}selected{% endif %}>Others</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Family Information -->
+        <h4 class="section-title"><i class="fas fa-users me-2"></i>Family Information</h4>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Family Type</label>
+                <select class="form-select" name="family_type">
+                    <option value="nuclear" {% if profile.family_type == 'nuclear' %}selected{% endif %}>Nuclear Family</option>
+                    <option value="joint" {% if profile.family_type == 'joint' %}selected{% endif %}>Joint Family</option>
+                    <option value="single" {% if profile.family_type == 'single' %}selected{% endif %}>Single Parent</option>
+                    <option value="elderly" {% if profile.family_type == 'elderly' %}selected{% endif %}>Elderly Couple</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Family Size</label>
+                <input type="number" class="form-control" name="family_size" min="1" value="{{ profile.family_size|default:'1' }}">
+            </div>
+        </div>
+
+        <!-- Patient Information -->
+        <h4 class="section-title"><i class="fas fa-user me-2"></i>Patient Information</h4>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Patient Name</label>
+                <input type="text" class="form-control" name="patient_name" value="{{ profile.patient_name|default:'' }}">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Age</label>
+                <input type="number" class="form-control" name="patient_age" min="0" max="120" value="{{ profile.patient_age|default:'' }}">
+            </div>
+            <div class="col-md-3 mb-3">
+                <label class="form-label">Gender</label>
+                <select class="form-select" name="patient_gender">
+                    <option value="">Select</option>
+                    <option value="male" {% if profile.patient_gender == 'male' %}selected{% endif %}>Male</option>
+                    <option value="female" {% if profile.patient_gender == 'female' %}selected{% endif %}>Female</option>
+                    <option value="other" {% if profile.patient_gender == 'other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Blood Group</label>
+                <select class="form-select" name="patient_blood_group">
+                    <option value="">Select</option>
+                    <option value="A+" {% if profile.patient_blood_group == 'A+' %}selected{% endif %}>A+</option>
+                    <option value="A-" {% if profile.patient_blood_group == 'A-' %}selected{% endif %}>A-</option>
+                    <option value="B+" {% if profile.patient_blood_group == 'B+' %}selected{% endif %}>B+</option>
+                    <option value="B-" {% if profile.patient_blood_group == 'B-' %}selected{% endif %}>B-</option>
+                    <option value="O+" {% if profile.patient_blood_group == 'O+' %}selected{% endif %}>O+</option>
+                    <option value="O-" {% if profile.patient_blood_group == 'O-' %}selected{% endif %}>O-</option>
+                    <option value="AB+" {% if profile.patient_blood_group == 'AB+' %}selected{% endif %}>AB+</option>
+                    <option value="AB-" {% if profile.patient_blood_group == 'AB-' %}selected{% endif %}>AB-</option>
+                    <option value="unknown" {% if profile.patient_blood_group == 'unknown' %}selected{% endif %}>Unknown</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Medical Information -->
+        <h4 class="section-title"><i class="fas fa-notes-medical me-2"></i>Medical Information</h4>
+        <div class="row">
+            <div class="col-12 mb-3">
+                <label class="form-label">Primary Medical Condition</label>
+                <input type="text" class="form-control" name="primary_medical_condition" value="{{ profile.primary_medical_condition|default:'' }}">
+                <div class="help-text">e.g., Diabetes, Paralysis, Alzheimer's, etc.</div>
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label">Secondary Conditions</label>
+                <textarea class="form-control" name="secondary_conditions" rows="2">{{ profile.secondary_conditions|default:'' }}</textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Allergies</label>
+                <input type="text" class="form-control" name="allergies" value="{{ profile.allergies|default:'' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Current Medications</label>
+                <input type="text" class="form-control" name="medications" value="{{ profile.medications|default:'' }}">
+            </div>
+            <div class="col-12 mb-3">
+                <label class="form-label">Dietary Restrictions</label>
+                <input type="text" class="form-control" name="dietary_restrictions" value="{{ profile.dietary_restrictions|default:'' }}">
+            </div>
+        </div>
+
+        <!-- Care Requirements -->
+        <h4 class="section-title"><i class="fas fa-heartbeat me-2"></i>Care Requirements</h4>
+        <div class="row">
+            <div class="col-12 mb-3">
+                <label class="form-label">Care Needed</label>
+                <textarea class="form-control" name="care_required" rows="3">{{ profile.care_required|default:'' }}</textarea>
+                <div class="help-text">Describe the type of care needed (bathing, feeding, medication reminders, etc.)</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Care Frequency</label>
+                <select class="form-select" name="care_frequency">
+                    <option value="24x7" {% if profile.care_frequency == '24x7' %}selected{% endif %}>24/7 Care</option>
+                    <option value="daily" {% if profile.care_frequency == 'daily' %}selected{% endif %}>Daily</option>
+                    <option value="weekly" {% if profile.care_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
+                    <option value="occasional" {% if profile.care_frequency == 'occasional' %}selected{% endif %}>Occasional</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Home Environment -->
+        <h4 class="section-title"><i class="fas fa-home me-2"></i>Home Environment</h4>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="pets_at_home" id="petsAtHome" {% if profile.pets_at_home %}checked{% endif %}>
+                    <label class="form-check-label" for="petsAtHome">Pets at Home</label>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="smokers_in_home" id="smokersInHome" {% if profile.smokers_in_home %}checked{% endif %}>
+                    <label class="form-check-label" for="smokersInHome">Smokers in Home</label>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="previous_caretaker" id="previousCaretaker" {% if profile.previous_caretaker %}checked{% endif %}>
+                    <label class="form-check-label" for="previousCaretaker">Previous Caretaker Experience</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pet Details (conditional) -->
+        <div class="pet-details-section" id="petDetailsSection" {% if profile.pets_at_home %}style="display:block;"{% endif %}>
+            <div class="mb-3">
+                <label class="form-label">Pet Details</label>
+                <input type="text" class="form-control" name="pet_details" value="{{ profile.pet_details|default:'' }}" placeholder="Type of pets, temperament, etc.">
+            </div>
+        </div>
+
+        <!-- Previous Caretaker Feedback (conditional) -->
+        <div class="mb-3" id="previousCaretakerSection" {% if profile.previous_caretaker %}style="display:block;"{% else %}style="display:none;"{% endif %}>
+            <label class="form-label">Previous Caretaker Feedback</label>
+            <textarea class="form-control" name="previous_caretaker_feedback" rows="2">{{ profile.previous_caretaker_feedback|default:'' }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Accessibility Requirements</label>
+            <input type="text" class="form-control" name="accessibility_requirements" value="{{ profile.accessibility_requirements|default:'' }}" placeholder="e.g., Wheelchair ramp, Ground floor needed">
+        </div>
+
+        <!-- Preferences -->
+        <h4 class="section-title"><i class="fas fa-sliders-h me-2"></i>Preferences</h4>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Preferred Caretaker Gender</label>
+                <select class="form-select" name="preferred_caretaker_gender">
+                    <option value="any" {% if profile.preferred_caretaker_gender == 'any' %}selected{% endif %}>Any</option>
+                    <option value="male" {% if profile.preferred_caretaker_gender == 'male' %}selected{% endif %}>Male</option>
+                    <option value="female" {% if profile.preferred_caretaker_gender == 'female' %}selected{% endif %}>Female</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Preferred Language</label>
+                <input type="text" class="form-control" name="preferred_language" value="{{ profile.preferred_language|default:'' }}" placeholder="e.g., Hindi, English, Tamil">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Monthly Budget (₹)</label>
+                <input type="number" class="form-control" name="monthly_budget" value="{{ profile.monthly_budget|default:'' }}" step="1000" placeholder="Optional">
+            </div>
+        </div>
+
+        <!-- Documents -->
+        <h4 class="section-title"><i class="fas fa-file-alt me-2"></i>Documents</h4>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Identity Proof</label>
+                <input type="file" class="form-control" name="identity_proof" accept=".pdf,.jpg,.jpeg,.png">
+                <div class="file-upload-info">Upload Aadhar Card, Passport, or Driver's License</div>
+                {% if profile.identity_proof %}
+                    <div class="current-file">
+                        Current: <a href="{{ profile.identity_proof.url }}" target="_blank">View File</a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Address Proof</label>
+                <input type="file" class="form-control" name="address_proof" accept=".pdf,.jpg,.jpeg,.png">
+                <div class="file-upload-info">Upload utility bill or rental agreement (optional)</div>
+                {% if profile.address_proof %}
+                    <div class="current-file">
+                        Current: <a href="{{ profile.address_proof.url }}" target="_blank">View File</a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Medical Reports</label>
+                <input type="file" class="form-control" name="medical_reports" accept=".pdf">
+                <div class="file-upload-info">Upload patient's medical reports (optional)</div>
+                {% if profile.medical_reports %}
+                    <div class="current-file">
+                        Current: <a href="{{ profile.medical_reports.url }}" target="_blank">View File</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="text-center mt-4">
+            <a href="{% url 'family_profile' %}" class="btn-cancel me-2">
+                <i class="fas fa-times me-2"></i>Cancel
+            </a>
+            <button type="submit" class="btn-save">
+                <i class="fas fa-save me-2"></i>Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Show/hide pet details section
+    document.getElementById('petsAtHome').addEventListener('change', function() {
+        const petDetails = document.getElementById('petDetailsSection');
+        petDetails.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    // Show/hide previous caretaker feedback
+    document.getElementById('previousCaretaker').addEventListener('change', function() {
+        const prevCaretakerSection = document.getElementById('previousCaretakerSection');
+        prevCaretakerSection.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    // Auto-hide alerts after 5 seconds
+    setTimeout(function() {
+        let alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            alert.style.transition = 'opacity 0.5s';
+            alert.style.opacity = '0';
+            setTimeout(() => alert.style.display = 'none', 500);
         });
-        
-        // Show/hide previous caretaker feedback
-        document.getElementById('previousCaretaker').addEventListener('change', function() {
-            const prevCaretakerSection = document.getElementById('previousCaretakerSection');
-            prevCaretakerSection.style.display = this.checked ? 'block' : 'none';
-        });
-        
-        // Auto-hide alerts after 5 seconds
-        setTimeout(function() {
-            let alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                let bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            });
-        }, 5000);
-    </script>
-</body>
-</html>
+    }, 5000);
+</script>
+{% endblock %}

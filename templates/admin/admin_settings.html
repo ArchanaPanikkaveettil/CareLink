@@ -1,0 +1,333 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Settings - CareLink Admin{% endblock %}
+
+{% block page_title %}System Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <!-- Settings Navigation -->
+            <div class="table-container">
+                <div class="list-group">
+                    <a href="#general" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                        <i class="fas fa-cog me-2"></i>General Settings
+                    </a>
+                    <a href="#email" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-envelope me-2"></i>Email Configuration
+                    </a>
+                    <a href="#verification" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-check-circle me-2"></i>Verification Settings
+                    </a>
+                    <a href="#security" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-shield-alt me-2"></i>Security
+                    </a>
+                    <a href="#notifications" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-bell me-2"></i>Notifications
+                    </a>
+                    <a href="#payment" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-credit-card me-2"></i>Payment Settings
+                    </a>
+                    <a href="#backup" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-database me-2"></i>Backup & Restore
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <!-- Settings Content -->
+            <div class="tab-content">
+                <!-- General Settings -->
+                <div class="tab-pane active" id="general">
+                    <div class="table-container">
+                        <h5 class="mb-4">General Settings</h5>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Site Name</label>
+                                <input type="text" class="form-control" name="site_name" value="CareLink">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Site URL</label>
+                                <input type="url" class="form-control" name="site_url" value="http://127.0.0.1:8000">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Admin Email</label>
+                                <input type="email" class="form-control" name="admin_email" value="admin@carelink.com">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Default Language</label>
+                                <select class="form-select" name="language">
+                                    <option value="en" selected>English</option>
+                                    <option value="hi">Hindi</option>
+                                    <option value="ml">Malayalam</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Timezone</label>
+                                <select class="form-select" name="timezone">
+                                    <option value="Asia/Kolkata" selected>Asia/Kolkata (IST)</option>
+                                    <option value="UTC">UTC</option>
+                                </select>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="maintenanceMode" name="maintenance_mode">
+                                <label class="form-check-label" for="maintenanceMode">Maintenance Mode</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Email Settings -->
+                <div class="tab-pane" id="email">
+                    <div class="table-container">
+                        <h5 class="mb-4">Email Configuration</h5>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Email Host</label>
+                                <input type="text" class="form-control" name="email_host" value="smtp.gmail.com">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email Port</label>
+                                <input type="number" class="form-control" name="email_port" value="587">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email Username</label>
+                                <input type="email" class="form-control" name="email_username" value="noreply@carelink.com">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email Password</label>
+                                <input type="password" class="form-control" name="email_password" value="********">
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="useTLS" name="use_tls" checked>
+                                <label class="form-check-label" for="useTLS">Use TLS</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <button type="button" class="btn btn-success" onclick="testEmail()">Test Connection</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Verification Settings -->
+                <div class="tab-pane" id="verification">
+                    <div class="table-container">
+                        <h5 class="mb-4">Verification Settings</h5>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Required Documents</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="docCertificate" checked>
+                                    <label class="form-check-label" for="docCertificate">Certificate</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="docIdentity" checked>
+                                    <label class="form-check-label" for="docIdentity">Identity Proof</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="docResume">
+                                    <label class="form-check-label" for="docResume">Resume/CV</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="docBackground" checked>
+                                    <label class="form-check-label" for="docBackground">Background Check</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Auto-approve after verification</label>
+                                <select class="form-select" name="auto_approve">
+                                    <option value="yes">Yes</option>
+                                    <option value="no" selected>No (Manual approval required)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Security Settings -->
+                <div class="tab-pane" id="security">
+                    <div class="table-container">
+                        <h5 class="mb-4">Security Settings</h5>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Session Timeout (minutes)</label>
+                                <input type="number" class="form-control" name="session_timeout" value="30">
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="twoFactor" name="two_factor">
+                                <label class="form-check-label" for="twoFactor">Enable Two-Factor Authentication</label>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="recaptcha" name="recaptcha" checked>
+                                <label class="form-check-label" for="recaptcha">Enable reCAPTCHA on registration</label>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password Complexity</label>
+                                <select class="form-select" name="password_complexity">
+                                    <option value="low">Low (min 6 chars)</option>
+                                    <option value="medium" selected>Medium (min 8 chars, 1 number)</option>
+                                    <option value="high">High (min 10 chars, mixed case, numbers, special)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Notifications Settings -->
+                <div class="tab-pane" id="notifications">
+                    <div class="table-container">
+                        <h5 class="mb-4">Notification Settings</h5>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <h6 class="mb-3">Email Notifications</h6>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="emailNewUser" checked>
+                                <label class="form-check-label" for="emailNewUser">New User Registration</label>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="emailVerification" checked>
+                                <label class="form-check-label" for="emailVerification">Verification Requests</label>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="emailApplications" checked>
+                                <label class="form-check-label" for="emailApplications">New Applications</label>
+                            </div>
+                            
+                            <h6 class="mb-3 mt-4">SMS Notifications</h6>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="smsVerification">
+                                <label class="form-check-label" for="smsVerification">Verification Updates</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Payment Settings -->
+                <div class="tab-pane" id="payment">
+                    <div class="table-container">
+                        <h5 class="mb-4">Payment Settings</h5>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Currency</label>
+                                <select class="form-select" name="currency">
+                                    <option value="INR" selected>INR (₹)</option>
+                                    <option value="USD">USD ($)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Payment Gateway</label>
+                                <select class="form-select" name="gateway">
+                                    <option value="razorpay" selected>Razorpay</option>
+                                    <option value="stripe">Stripe</option>
+                                    <option value="paypal">PayPal</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">API Key</label>
+                                <input type="text" class="form-control" name="api_key" value="********">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">API Secret</label>
+                                <input type="password" class="form-control" name="api_secret" value="********">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <button type="button" class="btn btn-success" onclick="testPayment()">Test Connection</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Backup Settings -->
+                <div class="tab-pane" id="backup">
+                    <div class="table-container">
+                        <h5 class="mb-4">Backup & Restore</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card border-0 bg-light mb-3">
+                                    <div class="card-body">
+                                        <h6>Database Backup</h6>
+                                        <p class="text-muted small">Last backup: Never</p>
+                                        <button class="btn btn-primary" onclick="createBackup()">
+                                            <i class="fas fa-database me-2"></i>Create Backup Now
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-0 bg-light mb-3">
+                                    <div class="card-body">
+                                        <h6>Restore Database</h6>
+                                        <p class="text-muted small">Upload a backup file to restore</p>
+                                        <input type="file" class="form-control mb-2" accept=".sql,.json">
+                                        <button class="btn btn-warning" onclick="restoreBackup()">
+                                            <i class="fas fa-undo me-2"></i>Restore
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h6 class="mt-4">Automatic Backup Schedule</h6>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <select class="form-select" name="backup_frequency">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly" selected>Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select" name="backup_time">
+                                        <option value="00:00">12:00 AM</option>
+                                        <option value="02:00" selected>2:00 AM</option>
+                                        <option value="04:00">4:00 AM</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">Update Schedule</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function testEmail() {
+        alert('Testing email configuration...');
+        // Add AJAX call to test email
+    }
+    
+    function testPayment() {
+        alert('Testing payment gateway connection...');
+        // Add AJAX call to test payment
+    }
+    
+    function createBackup() {
+        alert('Creating database backup...');
+        // Add AJAX call to create backup
+    }
+    
+    function restoreBackup() {
+        alert('Restoring from backup...');
+        // Add AJAX call to restore
+    }
+</script>
+{% endblock %}

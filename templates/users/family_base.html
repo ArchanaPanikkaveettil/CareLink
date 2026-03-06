@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}CareLink - Family Dashboard{% endblock %}</title>
-    
+
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <style>
         /* ... (keep all your existing styles) ... */
         * {
@@ -287,6 +289,7 @@
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -335,8 +338,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         /* responsive */
@@ -366,6 +374,7 @@
     </style>
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
@@ -381,23 +390,28 @@
         <div class="nav-menu">
             {% block sidebar_links %}
             <!-- FIXED: Added dashboard: namespace -->
-            <a href="{% url 'dashboard:family_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'family_dashboard' %}active{% endif %}">
+            <a href="{% url 'dashboard:family_dashboard' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'family_dashboard' %}active{% endif %}">
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{% url 'post_request' %}" class="nav-item {% if request.resolver_match.url_name == 'post_request' %}active{% endif %}">
+            <a href="{% url 'post_request' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'post_request' %}active{% endif %}">
                 <i class="fas fa-plus-circle"></i>
                 <span>Post Care Request</span>
             </a>
-            <a href="{% url 'my_requests' %}" class="nav-item {% if request.resolver_match.url_name == 'my_requests' %}active{% endif %}">
+            <a href="{% url 'my_requests' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'my_requests' %}active{% endif %}">
                 <i class="fas fa-clipboard-list"></i>
                 <span>My Requests</span>
             </a>
-            <a href="{% url 'search_caretakers' %}" class="nav-item {% if request.resolver_match.url_name == 'search_caretakers' %}active{% endif %}">
+            <a href="{% url 'search_caretakers' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'search_caretakers' %}active{% endif %}">
                 <i class="fas fa-search"></i>
                 <span>Find Caretakers</span>
             </a>
-            <a href="{% url 'family_profile' %}" class="nav-item {% if request.resolver_match.url_name == 'family_profile' %}active{% endif %}">
+            <a href="{% url 'family_profile' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'family_profile' %}active{% endif %}">
                 <i class="fas fa-id-badge"></i>
                 <span>My Profile</span>
             </a>
@@ -420,7 +434,7 @@
                 {% block page_icon %}<i class="fas fa-home"></i>{% endblock %}
                 {% block page_title %}Family Dashboard{% endblock %}
             </div>
-            
+
             <div style="display: flex; align-items: center; gap: 15px;">
                 <!-- Notification Bell -->
                 <div class="notifications-wrapper">
@@ -432,7 +446,7 @@
                         <div class="loading-spinner">Loading notifications...</div>
                     </div>
                 </div>
-                
+
                 <div class="date-badge">
                     <i class="far fa-calendar-alt"></i> {% now "l, d M Y" %}
                 </div>
@@ -441,12 +455,13 @@
 
         <!-- Messages -->
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
-                    {{ message }}
-                </div>
-            {% endfor %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            <i
+                class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
         {% endif %}
 
         <!-- Page Content -->
@@ -458,27 +473,27 @@
     <!-- JavaScript -->
     <script>
         // Auto-hide alerts after 5 seconds
-        setTimeout(function() {
+        setTimeout(function () {
             let alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
+            alerts.forEach(function (alert) {
                 alert.style.opacity = '0';
-                setTimeout(function() {
+                setTimeout(function () {
                     alert.style.display = 'none';
                 }, 300);
             });
         }, 5000);
 
         // Highlight active sidebar link based on URL
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const currentPath = window.location.pathname;
             const navItems = document.querySelectorAll('.nav-item');
-            
+
             navItems.forEach(item => {
                 if (item.getAttribute('href') === currentPath) {
                     item.classList.add('active');
                 }
             });
-            
+
             // Update notification count on page load
             updateNotificationCount();
         });
@@ -502,16 +517,16 @@
                     document.getElementById('notifications-panel').innerHTML = html;
                 })
                 .catch(error => {
-                    document.getElementById('notifications-panel').innerHTML = 
+                    document.getElementById('notifications-panel').innerHTML =
                         '<div class="notification-empty">Error loading notifications</div>';
                 });
         }
 
         // Close notifications when clicking outside
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const panel = document.getElementById('notifications-panel');
             const bell = document.querySelector('.notification-bell');
-            
+
             if (panel && bell && !bell.contains(event.target) && !panel.contains(event.target)) {
                 panel.style.display = 'none';
             }
@@ -534,7 +549,8 @@
         // Auto-refresh notifications every 60 seconds
         setInterval(updateNotificationCount, 60000);
     </script>
-    
+
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

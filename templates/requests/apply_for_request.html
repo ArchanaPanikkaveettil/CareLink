@@ -533,6 +533,16 @@
             color: #991b1b;
         }
 
+        .job-type-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: #e2e8f0;
+            color: #0f3460;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -654,13 +664,27 @@
                 </div>
             </div>
 
+            <!-- Job Type Display (Read-only) -->
+            <div class="form-group">
+                <label class="required-field">
+                    <i class="fas fa-clock"></i> Job Type
+                </label>
+                <div class="job-type-badge">
+                    {{ care_request.get_care_type_display }}
+                </div>
+                <input type="hidden" name="job_type" value="{{ care_request.care_type }}">
+                <div class="help-text">
+                    <i class="fas fa-info-circle"></i> This job type is fixed based on the care request.
+                </div>
+            </div>
+
             <!-- Availability Info Box -->
             <div class="info-box">
                 <i class="fas fa-clock"></i>
                 <div class="info-box-content">
                     <div class="info-box-title">Availability Check</div>
                     <div class="info-box-text">
-                        {% if care_request.care_type in 'part_time,night_care,home_visit' %}
+                        {% if care_request.care_type == 'part_time' or care_request.care_type == 'night_care' or care_request.care_type == 'home_visit' %}
                             This is a part-time position. Please specify your available days and times below.
                         {% else %}
                             This is a full-time position. You can only apply if you don't have any active assignments.
@@ -683,20 +707,8 @@
             <form method="POST">
                 {% csrf_token %}
 
-                <!-- Job Type Section (only show for non-full-time positions) -->
-                {% if care_request.care_type in 'part_time,night_care,home_visit' %}
-                <div class="form-group">
-                    <label class="required-field">
-                        <i class="fas fa-clock"></i> Job Type
-                    </label>
-                    <select name="job_type" id="jobType" required>
-                        <option value="">Select job type...</option>
-                        <option value="part_time" {% if job_type == 'part_time' %}selected{% endif %}>Part Time</option>
-                        <option value="night_care" {% if job_type == 'night_care' %}selected{% endif %}>Night Care</option>
-                        <option value="home_visit" {% if job_type == 'home_visit' %}selected{% endif %}>Home Visit</option>
-                    </select>
-                </div>
-
+                <!-- Part-time specific fields -->
+                {% if care_request.care_type == 'part_time' or care_request.care_type == 'night_care' or care_request.care_type == 'home_visit' %}
                 <div class="form-group" id="workDaysGroup">
                     <label class="required-field">
                         <i class="fas fa-calendar-week"></i> Available Days
@@ -732,21 +744,18 @@
                                value="{{ work_end_time|default:'' }}" required>
                     </div>
                 </div>
-                {% else %}
-                <!-- Hidden field for full-time jobs -->
-                <input type="hidden" name="job_type" value="full_time">
                 {% endif %}
 
                 <div class="form-group">
                     <label class="required-field">
-                        <i class="fas fa-tag"></i> Proposed Rate (₹ per day)
+                        <i class="fas fa-tag"></i> Proposed Rate (₹ per {{ care_request.get_payment_frequency_display|lower }})
                     </label>
                     <input type="number" name="proposed_rate" step="0.01" min="0" 
-                           value="{{ proposed_rate|default:'' }}"
+                           value="{{ proposed_rate|default:care_request.salary_offered }}"
                            placeholder="e.g., 500"
                            class="{% if messages and 'rate' in messages.0.message|lower %}error-field{% endif %}" required>
                     <div class="help-text">
-                        <i class="fas fa-info-circle"></i> Suggested: ₹{{ care_request.salary_offered }}/{{ care_request.get_payment_frequency_display }}
+                        <i class="fas fa-info-circle"></i> Advertised rate: ₹{{ care_request.salary_offered }}/{{ care_request.get_payment_frequency_display|lower }}
                     </div>
                     {% if messages %}
                         {% for message in messages %}
@@ -788,7 +797,6 @@
     <script>
         // Form validation for part-time jobs
         document.addEventListener('DOMContentLoaded', function() {
-            const jobTypeSelect = document.getElementById('jobType');
             const workDaysGroup = document.getElementById('workDaysGroup');
             const workStartTime = document.getElementById('workStartTime');
             const workEndTime = document.getElementById('workEndTime');
@@ -814,9 +822,9 @@
 
             // Form submission validation
             document.querySelector('form').addEventListener('submit', function(e) {
-                const jobType = jobTypeSelect ? jobTypeSelect.value : 'full_time';
+                const careType = "{{ care_request.care_type }}";
                 
-                if (jobType !== 'full_time') {
+                if (careType === 'part_time' || careType === 'night_care' || careType === 'home_visit') {
                     const workDays = document.getElementById('workDays');
                     const startTime = document.getElementById('workStartTime');
                     const endTime = document.getElementById('workEndTime');
