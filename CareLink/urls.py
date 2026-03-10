@@ -10,7 +10,9 @@ urlpatterns = [
     path('dashboard/', include('apps.Dashboard.urls')),
     path('requests/', include('apps.Requests.urls')),
     path('applications/', include('apps.Applications.urls')),
-    path('notifications/', include('apps.Notifications.urls')),  
+    path('notifications/', include('apps.Notifications.urls')), 
+     path('caretaker/<int:pk>/', include('apps.Users.urls')), 
+    
     
     # Add logout URL
     path('logout/', auth_views.LogoutView.as_view(next_page='index'), name='logout'),

@@ -1,0 +1,851 @@
+<!-- templates/applications/family_applications.html -->
+{% extends 'users/family_base.html' %}
+
+{% load static %}
+
+{% block title %}Applications - CareLink{% endblock %}
+
+{% block page_icon %}<i class="fas fa-exchange-alt"></i>{% endblock %}
+{% block page_title %}Applications{% endblock %}
+
+{% block extra_css %}
+<style>
+    .applications-header {
+        background: linear-gradient(135deg, #0f3460, #1a4a8a);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(15, 52, 96, 0.2);
+    }
+
+    .applications-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .applications-header p {
+        font-size: 1rem;
+        opacity: 0.95;
+    }
+
+    /* Main Tabs - Received vs Sent */
+    .main-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        background: white;
+        padding: 0.5rem;
+        border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        max-width: 400px;
+    }
+
+    .main-tab {
+        flex: 1;
+        padding: 0.8rem 1.5rem;
+        text-align: center;
+        border-radius: 40px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .main-tab i {
+        font-size: 1rem;
+    }
+
+    .main-tab.active {
+        background: #0f3460;
+        color: white;
+    }
+
+    .main-tab:not(.active) {
+        background: #f8fafc;
+        color: #64748b;
+    }
+
+    .main-tab:not(.active):hover {
+        background: #e2e8f0;
+        color: #0f3460;
+    }
+
+    .main-tab .count {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+    }
+
+    /* Filters Section */
+    .filters-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .filter-tabs {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 1rem;
+    }
+
+    .filter-tab {
+        padding: 0.6rem 1.2rem;
+        background: #f8fafc;
+        border-radius: 8px;
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s;
+    }
+
+    .filter-tab:hover {
+        background: #e2e8f0;
+        color: #0f3460;
+    }
+
+    .filter-tab.active {
+        background: #0f3460;
+        color: white;
+    }
+
+    .filter-tab .count {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+    }
+
+    .filter-search {
+        position: relative;
+        max-width: 300px;
+    }
+
+    .filter-search input {
+        width: 100%;
+        padding: 0.8rem 1rem 0.8rem 2.5rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: border-color 0.3s;
+    }
+
+    .filter-search input:focus {
+        outline: none;
+        border-color: #0f3460;
+    }
+
+    .filter-search i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+    }
+
+    /* Table Styles */
+    .applications-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 2rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+        color: #0f3460;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .applications-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .applications-table th {
+        background: #f8fafc;
+        color: #0f3460;
+        font-weight: 600;
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .applications-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: middle;
+    }
+
+    .applications-table tr:hover {
+        background: #f8fafc;
+    }
+
+    .caretaker-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .caretaker-info i {
+        font-size: 2rem;
+        color: #0f3460;
+    }
+
+    .caretaker-info div {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .caretaker-info strong {
+        color: #0f3460;
+        font-size: 0.95rem;
+    }
+
+    .caretaker-info small {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+    .request-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    .request-info strong {
+        color: #0f3460;
+        font-size: 0.95rem;
+    }
+
+    .request-info small {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+    .location {
+        color: #0f3460;
+    }
+
+    .date-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .date-info strong {
+        color: #0f3460;
+        font-size: 0.9rem;
+    }
+
+    .date-info small {
+        color: #64748b;
+        font-size: 0.75rem;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-accepted {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-rejected {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-withdrawn {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .status-offer_sent {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-offer_accepted {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-view {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        background: #0f3460;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        transition: background 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-view:hover {
+        background: #1a4a8a;
+    }
+
+    .btn-outline {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        background: white;
+        color: #0f3460;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        transition: all 0.3s;
+        border: 1px solid #0f3460;
+        cursor: pointer;
+    }
+
+    .btn-outline:hover {
+        background: #f8fafc;
+        border-color: #1a4a8a;
+        color: #1a4a8a;
+    }
+
+    .decision-buttons {
+        display: flex;
+        gap: 0.3rem;
+    }
+
+    .btn-accept,
+    .btn-reject {
+        padding: 0.4rem 0.8rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: all 0.3s;
+    }
+
+    .btn-accept {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .btn-accept:hover {
+        background: #86efac;
+    }
+
+    .btn-reject {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .btn-reject:hover {
+        background: #fecaca;
+    }
+
+    /* Mobile Card View */
+    .mobile-view {
+        display: none;
+    }
+
+    .application-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: #f8fafc;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .request-detail {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: #334155;
+    }
+
+    .request-detail i {
+        width: 20px;
+        color: #0f3460;
+    }
+
+    .card-actions {
+        padding: 1rem;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .page-link {
+        padding: 0.5rem 1rem;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        color: #0f3460;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .page-link:hover {
+        background: #f8fafc;
+        border-color: #0f3460;
+    }
+
+    .page-link.active {
+        background: #0f3460;
+        color: white;
+        border-color: #0f3460;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #94a3b8;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        color: #0f3460;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        margin-bottom: 2rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        padding: 0.8rem 2rem;
+        background: #0f3460;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: background 0.3s;
+    }
+
+    .btn-primary:hover {
+        background: #1a4a8a;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .desktop-view {
+            display: none;
+        }
+
+        .mobile-view {
+            display: block;
+        }
+
+        .main-tabs {
+            max-width: 100%;
+        }
+
+        .filter-tabs {
+            flex-direction: column;
+        }
+
+        .filter-tab {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .filter-search {
+            max-width: 100%;
+        }
+
+        .applications-header {
+            padding: 1.5rem;
+        }
+
+        .applications-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .applications-section {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="applications-header">
+    <!-- <h1>
+        <i class="fas fa-exchange-alt"></i>
+        Applications
+    </h1> -->
+    <p>Manage applications received from caretakers and track offers you've sent.</p>
+</div>
+
+
+<!-- RECEIVED APPLICATIONS SECTION -->
+{% if application_type == 'received' or not application_type %}
+<!-- Filters for Received Applications -->
+<div class="filters-section">
+    <div class="filter-tabs">
+        <a href="?type=received&status=all" class="filter-tab {% if current_status == 'all' %}active{% endif %}">
+            All Applications
+            <span class="count">{{ total_count }}</span>
+        </a>
+        <a href="?type=received&status=pending" class="filter-tab {% if current_status == 'pending' %}active{% endif %}">
+            Pending
+            <span class="count">{{ pending_count }}</span>
+        </a>
+        <a href="?type=received&status=accepted" class="filter-tab {% if current_status == 'accepted' %}active{% endif %}">
+            Accepted
+            <span class="count">{{ accepted_count }}</span>
+        </a>
+        <a href="?type=received&status=rejected" class="filter-tab {% if current_status == 'rejected' %}active{% endif %}">
+            Rejected
+            <span class="count">{{ rejected_count }}</span>
+        </a>
+        <a href="?type=received&status=offer_sent" class="filter-tab {% if current_status == 'offer_sent' %}active{% endif %}">
+            Offer Sent
+            <span class="count">{{ offer_sent_count }}</span>
+        </a>
+    </div>
+
+    <div class="filter-search">
+        <input type="text" id="searchInput" placeholder="Search by caretaker or patient name...">
+        <i class="fas fa-search"></i>
+    </div>
+</div>
+
+<!-- Received Applications -->
+<div class="applications-section">
+    <h3 class="section-subtitle">
+        <i class="fas fa-inbox"></i> Applications Received from Caretakers
+    </h3>
+    
+    {% if applications %}
+    <!-- Desktop Table View -->
+    <div class="table-responsive desktop-view">
+        <table class="applications-table">
+            <thead>
+                <tr>
+                    <th>Caretaker</th>
+                    <th>Request Details</th>
+                    <th>Applied On</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for application in applications %}
+                <tr class="application-row"
+                    data-search="{{ application.caretaker.get_full_name }} {{ application.request.patient_name }}">
+                    <td>
+                        <div class="caretaker-info">
+                            <i class="fas fa-user-circle"></i>
+                            <div>
+                                <strong>{{ application.caretaker.get_full_name|default:application.caretaker.username }}</strong>
+                                <small>{{ application.caretaker.email }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="request-info">
+                            <strong>{{ application.request.patient_name }}</strong>
+                            <small>{{ application.request.get_care_type_display }} • {{ application.request.duration_days }} days</small>
+                            <small class="location"><i class="fas fa-map-marker-alt"></i> {{ application.request.location|default:"Location not specified" }}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="date-info">
+                            <strong>{{ application.applied_at|date:"M d, Y" }}</strong>
+                            <small>{{ application.applied_at|time:"g:i A" }}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ application.status }}">
+                            {% if application.status == 'pending' %}
+                                <i class="fas fa-hourglass-half"></i> Pending Review
+                            {% elif application.status == 'accepted' %}
+                                <i class="fas fa-check-circle"></i> Accepted
+                            {% elif application.status == 'rejected' %}
+                                <i class="fas fa-times-circle"></i> Rejected
+                            {% elif application.status == 'withdrawn' %}
+                                <i class="fas fa-arrow-left"></i> Withdrawn
+                            {% elif application.status == 'offer_sent' %}
+                                <i class="fas fa-paper-plane"></i> Offer Sent
+                            {% elif application.status == 'offer_accepted' %}
+                                <i class="fas fa-handshake"></i> Offer Accepted
+                            {% else %}
+                                {{ application.status|title }}
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'applications:application_detail' application.id %}" class="btn-view">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            {% if application.status == 'pending' %}
+                            <div class="decision-buttons">
+                                <form method="post" action="{% url 'applications:accept_application' application.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-accept" onclick="return confirm('Accept this application?')">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'applications:reject_application' application.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-reject" onclick="return confirm('Reject this application?')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+                            {% if application.status == 'offer_sent' %}
+                            <span class="status-badge status-offer_sent">Awaiting Response</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Mobile Card View for Received Applications -->
+    <div class="mobile-view">
+        {% for application in applications %}
+        <div class="application-card"
+            data-search="{{ application.caretaker.get_full_name }} {{ application.request.patient_name }}">
+            <div class="card-header">
+                <div class="caretaker-info">
+                    <i class="fas fa-user-circle"></i>
+                    <div>
+                        <strong>{{ application.caretaker.get_full_name|default:application.caretaker.username }}</strong>
+                        <small>{{ application.caretaker.email }}</small>
+                    </div>
+                </div>
+                <span class="status-badge status-{{ application.status }}">
+                    {{ application.get_status_display }}
+                </span>
+            </div>
+
+            <div class="card-body">
+                <div class="request-detail">
+                    <i class="fas fa-user"></i>
+                    <span><strong>Patient:</strong> {{ application.request.patient_name }}</span>
+                </div>
+                <div class="request-detail">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span><strong>Applied:</strong> {{ application.applied_at|date:"M d, Y" }}</span>
+                </div>
+                <div class="request-detail">
+                    <i class="fas fa-tag"></i>
+                    <span><strong>Care Type:</strong> {{ application.request.get_care_type_display }}</span>
+                </div>
+                <div class="request-detail">
+                    <i class="fas fa-clock"></i>
+                    <span><strong>Duration:</strong> {{ application.request.duration_days }} days</span>
+                </div>
+                {% if application.proposed_rate %}
+                <div class="request-detail">
+                    <i class="fas fa-rupee-sign"></i>
+                    <span><strong>Proposed Rate:</strong> ₹{{ application.proposed_rate }}/day</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="card-actions">
+                <a href="{% url 'applications:application_detail' application.id %}" class="btn-view" style="text-align: center;">
+                    <i class="fas fa-eye"></i> View Details
+                </a>
+                
+                {% if application.status == 'pending' %}
+                <div style="display: flex; gap: 0.5rem;">
+                    <form method="post" action="{% url 'applications:accept_application' application.id %}" style="flex: 1;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-accept" style="width: 100%;" onclick="return confirm('Accept this application?')">
+                            <i class="fas fa-check"></i> Accept
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'applications:reject_application' application.id %}" style="flex: 1;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-reject" style="width: 100%;" onclick="return confirm('Reject this application?')">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if applications.has_other_pages %}
+    <div class="pagination">
+        {% if applications.has_previous %}
+        <a href="?type=received&page={{ applications.previous_page_number }}&status={{ current_status }}" class="page-link">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        {% endif %}
+
+        {% for i in applications.paginator.page_range %}
+        {% if applications.number == i %}
+        <span class="page-link active">{{ i }}</span>
+        {% else %}
+        <a href="?type=received&page={{ i }}&status={{ current_status }}" class="page-link">{{ i }}</a>
+        {% endif %}
+        {% endfor %}
+
+        {% if applications.has_next %}
+        <a href="?type=received&page={{ applications.next_page_number }}&status={{ current_status }}" class="page-link">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State for Received Applications -->
+    <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <h3>No Applications Received</h3>
+        <p>You haven't received any applications yet. When caretakers apply to your care requests, they'll appear here.</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'post_request' %}" class="btn-primary">
+                <i class="fas fa-plus-circle"></i> Post a Public Request
+            </a>
+            <a href="{% url 'search_caretakers' %}" class="btn-outline">
+                <i class="fas fa-search"></i> Find Caretakers
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- SENT APPLICATIONS SECTION (Placeholder for future implementation) -->
+{% if application_type == 'sent' %}
+<div class="applications-section">
+    <h3 class="section-subtitle">
+        <i class="fas fa-paper-plane"></i> Offers Sent to Caretakers
+    </h3>
+    
+    <div class="empty-state">
+        <i class="fas fa-paper-plane"></i>
+        <h3>Sent Applications Coming Soon</h3>
+        <p>This section will show offers and direct requests you've sent to specific caretakers.</p>
+        <p>You'll be able to track:</p>
+        <ul style="list-style: none; padding: 0; margin: 1rem 0; color: #64748b;">
+            <li><i class="fas fa-check-circle" style="color: #166534;"></i> Direct requests to specific caretakers</li>
+            <li><i class="fas fa-clock" style="color: #92400e;"></i> Status of sent offers</li>
+            <li><i class="fas fa-comments" style="color: #0f3460;"></i> Responses from caretakers</li>
+        </ul>
+        <a href="{% url 'search_caretakers' %}" class="btn-primary">
+            <i class="fas fa-search"></i> Find Caretakers to Contact
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Footer -->
+<div class="footer">
+    <p>&copy; {% now "Y" %} CareLink. All rights reserved.</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function () {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('.application-row, .application-card');
+
+                rows.forEach(row => {
+                    const searchText = row.getAttribute('data-search')?.toLowerCase() || '';
+                    if (searchText.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

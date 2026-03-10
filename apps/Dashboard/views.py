@@ -111,6 +111,9 @@ def family_dashboard(request):
         "accepted_applications": accepted_applications,
         "rejected_applications": rejected_applications,
         
+        # ADD THIS: Pending applications count for the sidebar badge
+        "pending_applications_count": pending_applications,
+        
         # Recent items
         "recent_requests": recent_requests,
         "recent_applications": recent_applications,

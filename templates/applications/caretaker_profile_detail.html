@@ -1,66 +1,489 @@
-<!DOCTYPE html>
-<html>
+<!-- templates/applications/caretaker_profile_detail.html -->
+{% extends 'users/family_base.html' %}
 
-<head>
-    <title>Caretaker Profile</title>
+{% load static %}
 
-    <style>
-        body {
-            font-family: Arial;
-            background-color: #f4f6f8;
-            padding: 20px;
+{% block title %}Caretaker Profile - {{ caretaker.get_full_name|default:caretaker.username }}{% endblock %}
+
+{% block page_icon %}<i class="fas fa-user-nurse"></i>{% endblock %}
+{% block page_title %}Caretaker Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #0f3460, #1a4a8a);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(15, 52, 96, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        transform: rotate(30deg);
+    }
+
+    .profile-header-content {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        position: relative;
+        z-index: 1;
+        flex-wrap: wrap;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        color: white;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .profile-header-info h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-header-info p {
+        font-size: 1rem;
+        opacity: 0.95;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .verification-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .verification-badge.verified {
+        background: #10b981;
+    }
+
+    .verification-badge i {
+        font-size: 1rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        text-align: center;
+    }
+
+    .stat-card i {
+        font-size: 2rem;
+        color: #0f3460;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card .number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #0f3460;
+    }
+
+    .stat-card .label {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .profile-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        color: #0f3460;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #0f3460;
+    }
+
+    .section-title i {
+        color: #0f3460;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    .info-item .label {
+        font-size: 0.85rem;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .info-item .value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0f3460;
+    }
+
+
+
+    .certificate-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .certificate-item {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s;
+    }
+
+    .certificate-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .certificate-item i {
+        font-size: 2rem;
+        color: #0f3460;
+    }
+
+    .certificate-item .certificate-info {
+        flex: 1;
+    }
+
+    .certificate-item .certificate-info h4 {
+        font-size: 0.95rem;
+        color: #0f3460;
+        margin-bottom: 0.2rem;
+        font-weight: 600;
+    }
+
+    .certificate-item .certificate-info p {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .certificate-item a {
+        color: #0f3460;
+        font-size: 1.2rem;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: all 0.3s;
+    }
+
+    .certificate-item a:hover {
+        background: #e2e8f0;
+        color: #1a4a8a;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: #94a3b8;
+        margin-bottom: 1rem;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #0f3460;
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+    .back-link:hover {
+        background: #f8fafc;
+    }
+
+    .experience-badge {
+        display: inline-block;
+        background: #ffd700;
+        color: #0f3460;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .profile-header-content {
+            flex-direction: column;
+            text-align: center;
         }
 
-        .profile-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 500px;
-            margin: auto;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .profile-header-info p {
+            justify-content: center;
         }
 
-        .info {
-            margin: 10px 0;
+        .stats-grid {
+            grid-template-columns: 1fr;
         }
 
-        .label {
-            font-weight: bold;
+        .certificate-list {
+            grid-template-columns: 1fr;
         }
-    </style>
+    }
+</style>
+{% endblock %}
 
-</head>
+{% block content %}
+<!-- Back Link -->
+<a href="javascript:history.back()" class="back-link">
+    <i class="fas fa-arrow-left"></i> Back
+</a>
 
-<body>
-
-    <div class="profile-card">
-
-        <!-- caretaker is User object -->
-        <h2>{{ caretaker.username }}</h2>
-
-        <!-- profile contains caretaker profile -->
-        <div class="info">
-            <span class="label">Experience:</span>
-            {{ profile.experience }} years
+<!-- Profile Header -->
+<div class="profile-header">
+    <div class="profile-header-content">
+        <div class="profile-avatar">
+            <i class="fas fa-user-nurse"></i>
         </div>
-
-        <div class="info">
-            <span class="label">Location:</span>
-            {{ profile.location }}
+        <div class="profile-header-info">
+            <h1>
+                {{ caretaker.get_full_name|default:caretaker.username }}
+                {% if profile.experience_years and profile.experience_years > 0 %}
+                <span class="experience-badge">{{ profile.experience_years }}+ years</span>
+                {% endif %}
+            </h1>
+            <p><i class="fas fa-envelope"></i> {{ caretaker.email }}</p>
+            {% if caretaker.phone %}
+            <p><i class="fas fa-phone"></i> {{ caretaker.phone }}</p>
+            {% endif %}
+            <div class="verification-badge {% if caretaker.is_verified %}verified{% endif %}">
+                {% if caretaker.is_verified %}
+                <i class="fas fa-check-circle"></i> Verified Caretaker
+                {% else %}
+                <i class="fas fa-clock"></i> Verification Pending
+                {% endif %}
+            </div>
         </div>
-
-        <div class="info">
-            <span class="label">Expected Salary:</span>
-            ₹{{ profile.expected_salary }}
-        </div>
-
-        <div class="info">
-            <span class="label">Bio:</span>
-            {{ profile.bio }}
-        </div>
-
     </div>
+</div>
 
-</body>
+<!-- Stats Grid - Using model properties -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <i class="fas fa-star"></i>
+        <div class="number">{{ profile.display_experience }}</div>
+        <div class="label">Years Experience</div>
+    </div>
+    <div class="stat-card">
+        <i class="fas fa-briefcase"></i>
+        <div class="number">{{ profile.total_assignments }}</div>
+        <div class="label">Total Assignments</div>
+    </div>
+    <div class="stat-card">
+        <i class="fas fa-check-circle"></i>
+        <div class="number">{{ profile.display_completed_jobs }}</div>
+        <div class="label">Completed Jobs</div>
+    </div>
+</div>
 
-</html>
+<!-- Personal Information -->
+<div class="profile-section">
+    <h2 class="section-title">
+        <i class="fas fa-user"></i> Personal Information
+    </h2>
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="label"><i class="fas fa-venus-mars"></i> Gender</div>
+            <div class="value">{{ profile.get_gender_display|default:"Not specified" }}</div>
+        </div>
+        <div class="info-item">
+            <div class="label"><i class="fas fa-calendar-alt"></i> Date of Birth</div>
+            <div class="value">{{ profile.date_of_birth|date:"d M Y"|default:"Not specified" }}</div>
+        </div>
+        <div class="info-item">
+            <div class="label"><i class="fas fa-map-marker-alt"></i> Location</div>
+            <div class="value">{{ profile.location|default:"Not specified" }}</div>
+        </div>
+        <div class="info-item">
+            <div class="label"><i class="fas fa-language"></i> Languages</div>
+            <div class="value">{{ profile.languages|default:"Not specified" }}</div>
+        </div>
+        <div class="info-item">
+            <div class="label"><i class="fas fa-graduation-cap"></i> Qualification</div>
+            <div class="value">{{ profile.qualification|default:"Not specified" }}</div>
+        </div>
+        {% if profile.age %}
+        <div class="info-item">
+            <div class="label"><i class="fas fa-birthday-cake"></i> Age</div>
+            <div class="value">{{ profile.age }} years</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+
+<!-- Certificates -->
+<div class="profile-section">
+    <h2 class="section-title">
+        <i class="fas fa-certificate"></i> Certificates & Documents
+    </h2>
+
+    {% if profile.certificate %}
+    <div class="certificate-list">
+        <!-- Certificate -->
+        {% if profile.certificate %}
+        <div class="certificate-item">
+            <i class="fas fa-file-pdf"></i>
+            <div class="certificate-info">
+                <h4>Professional Certificate</h4>
+                <p>Uploaded document</p>
+            </div>
+            <a href="{{ profile.certificate.url }}" target="_blank" title="View Certificate">
+                <i class="fas fa-eye"></i>
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Identity Proof -->
+        {% if profile.identity_proof %}
+        <div class="certificate-item">
+            <i class="fas fa-id-card"></i>
+            <div class="certificate-info">
+                <h4>Identity Proof</h4>
+                <p>Government ID</p>
+            </div>
+            <a href="{{ profile.identity_proof.url }}" target="_blank" title="View ID">
+                <i class="fas fa-eye"></i>
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Background Check -->
+        {% if profile.background_check %}
+        <div class="certificate-item">
+            <i class="fas fa-shield-alt"></i>
+            <div class="certificate-info">
+                <h4>Background Check</h4>
+                <p>Verification document</p>
+            </div>
+            <a href="{{ profile.background_check.url }}" target="_blank" title="View Document">
+                <i class="fas fa-eye"></i>
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Resume -->
+        {% if profile.resume %}
+        <div class="certificate-item">
+            <i class="fas fa-file-alt"></i>
+            <div class="certificate-info">
+                <h4>Resume/CV</h4>
+                <p>Professional resume</p>
+            </div>
+            <a href="{{ profile.resume.url }}" target="_blank" title="View Resume">
+                <i class="fas fa-eye"></i>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-certificate"></i>
+        <p>No certificates uploaded</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- About Me -->
+{% if profile.bio %}
+<div class="profile-section">
+    <h2 class="section-title">
+        <i class="fas fa-info-circle"></i> About
+    </h2>
+    <p style="line-height: 1.6; color: #334155;">{{ profile.bio }}</p>
+</div>
+{% endif %}
+
+<!-- Achievements -->
+{% if profile.achievements %}
+<div class="profile-section">
+    <h2 class="section-title">
+        <i class="fas fa-trophy"></i> Achievements
+    </h2>
+    <p style="line-height: 1.6; color: #334155;">{{ profile.achievements }}</p>
+</div>
+{% endif %}
+
+<!-- Rating Display -->
+{% if profile.average_rating > 0 %}
+<div class="profile-section">
+    <h2 class="section-title">
+        <i class="fas fa-star"></i> Ratings & Reviews
+    </h2>
+    <div class="info-item">
+        <div class="label">Average Rating</div>
+        <div class="value">{{ profile.display_rating }}</div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

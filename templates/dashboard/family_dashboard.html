@@ -37,58 +37,6 @@
         opacity: 0.95;
     }
 
-    /* Stats Grid */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2.5rem;
-    }
-
-    .stat-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 16px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s, box-shadow 0.3s;
-        border-left: 5px solid #0f3460;
-        border: 1px solid #e2e8f0;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card h3 {
-        color: #64748b;
-        font-size: 0.9rem;
-        margin-bottom: 0.5rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .stat-card .number {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #0f3460;
-        margin-bottom: 0.5rem;
-    }
-
-    .stat-card .stat-link {
-        color: #0f3460;
-        text-decoration: none;
-        font-size: 0.85rem;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .stat-card .stat-link:hover {
-        text-decoration: underline;
-    }
-
     /* Section Title */
     .section-title {
         font-size: 1.5rem;
@@ -106,25 +54,27 @@
         font-size: 1.5rem;
     }
 
-    /* Action Grid */
+    /* Action Grid - 4 cards in a single row */
     .action-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
         gap: 1.5rem;
         margin-bottom: 2.5rem;
     }
 
     .action-card {
         background: white;
-        padding: 2rem 1.5rem;
+        padding: 1.5rem 1rem;
         border-radius: 16px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         text-align: center;
         transition: all 0.3s;
         text-decoration: none;
         color: inherit;
-        border: 2px solid transparent;
         border: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     .action-card:hover {
@@ -134,21 +84,34 @@
     }
 
     .action-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
+        font-size: 2rem;
+        margin-bottom: 0.8rem;
         color: #0f3460;
     }
 
     .action-card h3 {
         color: #0f3460;
         margin-bottom: 0.5rem;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
     }
 
     .action-card p {
         color: #64748b;
-        font-size: 0.9rem;
-        line-height: 1.5;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        margin-bottom: 0.5rem;
+    }
+
+    .pending-badge {
+        background: #fef3c7;
+        color: #92400e;
+        padding: 0.2rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 0.3rem;
     }
 
     /* Recent Section */
@@ -161,6 +124,38 @@
         border: 1px solid #e2e8f0;
     }
 
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-header .section-title {
+        margin-bottom: 0;
+    }
+
+    .view-all-link {
+        color: #0f3460;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+    }
+
+    .view-all-link:hover {
+        background: #f8fafc;
+        text-decoration: underline;
+    }
+
+    .view-all-link i {
+        margin-left: 5px;
+        font-size: 0.8rem;
+    }
+
+    /* Table Styles */
     .table-responsive {
         overflow-x: auto;
     }
@@ -177,12 +172,14 @@
         padding: 1rem;
         text-align: left;
         border-bottom: 2px solid #e2e8f0;
+        font-size: 0.9rem;
     }
 
     td {
         padding: 1rem;
         border-bottom: 1px solid #e2e8f0;
         color: #334155;
+        font-size: 0.9rem;
     }
 
     tr:hover {
@@ -194,8 +191,8 @@
         display: inline-block;
         padding: 0.3rem 0.8rem;
         border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 500;
+        font-size: 0.75rem;
+        font-weight: 600;
     }
 
     .status-open {
@@ -233,6 +230,16 @@
         color: #475569;
     }
 
+    .status-offer_sent {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-offer_accepted {
+        background: #dcfce7;
+        color: #166534;
+    }
+
     /* View Button */
     .view-btn {
         display: inline-block;
@@ -240,8 +247,8 @@
         background: #0f3460;
         color: white;
         text-decoration: none;
-        border-radius: 8px;
-        font-size: 0.85rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
         transition: background 0.3s;
         border: none;
         cursor: pointer;
@@ -255,6 +262,96 @@
         margin-right: 5px;
     }
 
+    /* Applications Grid */
+    .applications-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .application-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .application-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(15, 52, 96, 0.15);
+        border-color: #0f3460;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .caretaker-info {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .caretaker-info i {
+        font-size: 2rem;
+        color: #0f3460;
+    }
+
+    .caretaker-info div {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .caretaker-info strong {
+        color: #0f3460;
+        font-size: 0.95rem;
+    }
+
+    .caretaker-info small {
+        color: #64748b;
+        font-size: 0.7rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .request-detail {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 0.6rem;
+        color: #334155;
+        font-size: 0.85rem;
+    }
+
+    .request-detail i {
+        width: 18px;
+        color: #0f3460;
+        font-size: 0.9rem;
+    }
+
+    .card-footer {
+        padding: 1rem;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .application-id {
+        color: #94a3b8;
+        font-size: 0.7rem;
+    }
+
     /* Empty State */
     .empty-state {
         text-align: center;
@@ -266,6 +363,11 @@
         font-size: 3rem;
         color: #94a3b8;
         margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        font-size: 0.9rem;
     }
 
     .empty-state a {
@@ -285,27 +387,47 @@
         color: #64748b;
         border-top: 1px solid #e2e8f0;
         margin-top: 2rem;
+        font-size: 0.9rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .action-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
     @media (max-width: 768px) {
+        .welcome-section {
+            padding: 1.5rem;
+        }
+
         .welcome-section h1 {
             font-size: 1.5rem;
         }
-        
-        .stats-grid {
-            grid-template-columns: 1fr 1fr;
-        }
-        
+
         .action-grid {
             grid-template-columns: 1fr;
+            gap: 1rem;
         }
-        
+
         .recent-section {
-            padding: 1.5rem;
+            padding: 1rem;
         }
-        
+
+        .applications-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
         th, td {
             padding: 0.75rem;
+            font-size: 0.8rem;
         }
     }
 </style>
@@ -323,61 +445,7 @@
     </p>
 </div>
 
-<!-- Statistics Cards -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <h3><i class="fas fa-clipboard-list"></i> Total Requests</h3>
-        <div class="number">{{ total_requests|default:"0" }}</div>
-        <a href="{% url 'my_requests' %}" class="stat-link">
-            View all <i class="fas fa-arrow-right"></i>
-        </a>
-    </div>
-
-    <div class="stat-card">
-        <h3><i class="fas fa-clock"></i> Open</h3>
-        <div class="number">{{ open_requests|default:"0" }}</div>
-        <a href="{% url 'my_requests' %}?status=open" class="stat-link">
-            View open <i class="fas fa-arrow-right"></i>
-        </a>
-    </div>
-
-    <div class="stat-card">
-        <h3><i class="fas fa-check-circle"></i> Assigned</h3>
-        <div class="number">{{ assigned_requests|default:"0" }}</div>
-        <a href="{% url 'my_requests' %}?status=assigned" class="stat-link">
-            View assigned <i class="fas fa-arrow-right"></i>
-        </a>
-    </div>
-
-    <div class="stat-card">
-        <h3><i class="fas fa-times-circle"></i> Closed</h3>
-        <div class="number">{{ closed_requests|default:"0" }}</div>
-        <a href="{% url 'my_requests' %}?status=closed" class="stat-link">
-            View closed <i class="fas fa-arrow-right"></i>
-        </a>
-    </div>
-
-    <div class="stat-card">
-        <h3><i class="fas fa-file-alt"></i> Applications</h3>
-        <div class="number">{{ total_applications|default:"0" }}</div>
-        <a href="#" onclick="alert('Applications page coming soon!')" class="stat-link">
-            View all <i class="fas fa-arrow-right"></i>
-        </a>
-    </div>
-
-    <div class="stat-card">
-        <h3><i class="fas fa-hourglass-half"></i> Pending Apps</h3>
-        <div class="number">{{ pending_applications|default:"0" }}</div>
-        <a href="#" onclick="alert('Pending applications coming soon!')" class="stat-link">
-            View pending <i class="fas fa-arrow-right"></i>
-        </a>
-    </div>
-</div>
-
-<!-- Quick Actions -->
-<h2 class="section-title">
-    <i class="fas fa-bolt"></i> Quick Actions
-</h2>
+<!-- Quick Actions - 4 cards in a single row -->
 <div class="action-grid">
     <a href="{% url 'post_request' %}" class="action-card">
         <div class="action-icon">
@@ -402,13 +470,30 @@
         <h3>My Requests</h3>
         <p>View and manage all your care requests.</p>
     </a>
+
+    <a href="{% url 'applications:family_applications' %}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-file-alt"></i>
+        </div>
+        <h3>View All Applications</h3>
+        <p>Review all applications received for your care requests.</p>
+        {% if pending_applications %}
+        <span class="pending-badge">{{ pending_applications }} pending</span>
+        {% endif %}
+    </a>
 </div>
 
 <!-- Recent Care Requests -->
 <div class="recent-section">
-    <h2 class="section-title">
-        <i class="fas fa-history"></i> Recent Care Requests
-    </h2>
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-history"></i> Recent Care Requests
+        </h2>
+        <a href="{% url 'my_requests' %}" class="view-all-link">
+            View All <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    
     <div class="table-responsive">
         <table>
             <thead>
@@ -431,11 +516,11 @@
                     <td>
                         <span class="status-badge status-{{ request.status }}">
                             {% if request.status == 'open' %}
-                                <i class="fas fa-clock"></i> Open
+                                Open
                             {% elif request.status == 'assigned' %}
-                                <i class="fas fa-check-circle"></i> Assigned
+                                Assigned
                             {% elif request.status == 'closed' %}
-                                <i class="fas fa-times-circle"></i> Closed
+                                Closed
                             {% else %}
                                 {{ request.status|title }}
                             {% endif %}
@@ -462,63 +547,88 @@
     </div>
 </div>
 
-<!-- Recent Applications -->
+<!-- Recent Applications Received -->
 <div class="recent-section">
-    <h2 class="section-title">
-        <i class="fas fa-users"></i> Recent Applications Received
-    </h2>
-    <div class="table-responsive">
-        <table>
-            <thead>
-                <tr>
-                    <th>Caretaker</th>
-                    <th>Request</th>
-                    <th>Applied On</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for application in recent_applications %}
-                <tr>
-                    <td>
-                        <i class="fas fa-user-nurse"></i> 
-                        {{ application.caretaker.get_full_name|default:application.caretaker.username }}
-                    </td>
-                    <td>{{ application.request.patient_name }}</td>
-                    <td>{{ application.applied_at|date:"M d, Y" }}</td>
-                    <td>
-                        <span class="status-badge status-{{ application.status }}">
-                            {% if application.status == 'pending' %}
-                                <i class="fas fa-hourglass-half"></i> Pending
-                            {% elif application.status == 'accepted' %}
-                                <i class="fas fa-check-circle"></i> Accepted
-                            {% elif application.status == 'rejected' %}
-                                <i class="fas fa-times-circle"></i> Rejected
-                            {% elif application.status == 'withdrawn' %}
-                                <i class="fas fa-arrow-left"></i> Withdrawn
-                            {% else %}
-                                {{ application.status|title }}
-                            {% endif %}
-                        </span>
-                    </td>
-                    <td>
-                        <a href="#" onclick="alert('Application detail page coming soon!')" class="view-btn">
-                            <i class="fas fa-search"></i> Review
-                        </a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="empty-state">
-                        <i class="fas fa-inbox"></i>
-                        <p>No applications received yet.</p>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-users"></i> Recent Applications Received
+        </h2>
+        <a href="{% url 'applications:family_applications' %}" class="view-all-link">
+            View All <i class="fas fa-arrow-right"></i>
+        </a>
     </div>
+
+    {% if recent_applications %}
+    <div class="applications-grid">
+        {% for application in recent_applications %}
+        <div class="application-card">
+            <div class="card-header">
+                <div class="caretaker-info">
+                    <i class="fas fa-user-circle"></i>
+                    <div>
+                        <strong>{{ application.caretaker.get_full_name|default:application.caretaker.username }}</strong>
+                        <small>{{ application.caretaker.email }}</small>
+                    </div>
+                </div>
+                <span class="status-badge status-{{ application.status }}">
+                    {% if application.status == 'pending' %}
+                        Pending
+                    {% elif application.status == 'accepted' %}
+                        Accepted
+                    {% elif application.status == 'rejected' %}
+                        Rejected
+                    {% elif application.status == 'withdrawn' %}
+                        Withdrawn
+                    {% elif application.status == 'offer_sent' %}
+                        Offer Sent
+                    {% elif application.status == 'offer_accepted' %}
+                        Offer Accepted
+                    {% else %}
+                        {{ application.status|title }}
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="card-body">
+                <div class="request-detail">
+                    <i class="fas fa-user"></i>
+                    <span><strong>Patient:</strong> {{ application.request.patient_name }}</span>
+                </div>
+                <div class="request-detail">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span><strong>Applied:</strong> {{ application.applied_at|date:"M d, Y" }}</span>
+                </div>
+                <div class="request-detail">
+                    <i class="fas fa-tag"></i>
+                    <span><strong>Care Type:</strong> {{ application.request.get_care_type_display }}</span>
+                </div>
+                <div class="request-detail">
+                    <i class="fas fa-clock"></i>
+                    <span><strong>Duration:</strong> {{ application.request.duration_days }} days</span>
+                </div>
+                {% if application.proposed_rate %}
+                <div class="request-detail">
+                    <i class="fas fa-rupee-sign"></i>
+                    <span><strong>Proposed Rate:</strong> ₹{{ application.proposed_rate }}/day</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="card-footer">
+                <a href="{% url 'applications:application_detail' application.id %}" class="view-btn">
+                    <i class="fas fa-search"></i> Review
+                </a>
+                <span class="application-id">#{{ application.id }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <p>No applications received yet. When caretakers apply to your requests, they'll appear here.</p>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Footer -->

@@ -519,7 +519,7 @@ def request_detail(request, request_id):
     )
 
     context = {
-        "request": care_request,
+        'care_request': care_request,
         "user": request.user,
         "has_applied": has_applied,
         "application_stats": application_stats,

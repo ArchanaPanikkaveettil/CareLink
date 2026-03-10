@@ -6,6 +6,7 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* All your existing styles remain the same */
         * {
             margin: 0;
             padding: 0;
@@ -737,25 +738,6 @@
     </style>
 </head>
 
-
-<script>
-    // Handle logout link click
-    document.querySelector('.logout-item a')?.addEventListener('click', function (e) {
-        e.preventDefault();
-        document.getElementById('logout-form').submit();
-    });
-
-    // Also handle any other logout links if they exist
-    document.querySelectorAll("a[href=\"{% url 'logout' %}\"]").forEach(link => {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.getElementById('logout-form').submit();
-        });
-    });
-</script>
-
-
-
 <body>
 
     <!-- Sidebar -->
@@ -772,7 +754,6 @@
 
         <div class="nav-menu">
             {% if user.role == 'family' %}
-            <!-- FIXED: Added dashboard: namespace -->
             <a href="{% url 'dashboard:family_dashboard' %}" class="nav-item">
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
@@ -794,7 +775,6 @@
                 <span>My Profile</span>
             </a>
             {% else %}
-            <!-- FIXED: Added dashboard: namespace -->
             <a href="{% url 'dashboard:caretaker_dashboard' %}" class="nav-item">
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
@@ -823,10 +803,8 @@
                     <span>Logout</span>
                 </a>
             </div>
-
         </div>
     </div>
-
 
     <!-- Main Content -->
     <div class="main-content">
@@ -848,33 +826,25 @@
             <div class="request-header">
                 <div class="patient-title">
                     <h2>
-                        <i class="fas fa-user-circle"></i> {{ request.patient_name }}
+                        <i class="fas fa-user-circle"></i> {{ care_request.patient_name }}
                         <span style="font-size: 1rem; color: #64748b; font-weight: normal;">
-                            ({{ request.patient_age }} years, {{ request.get_patient_gender_display }})
+                            ({{ care_request.patient_age }} years, {{ care_request.get_patient_gender_display }})
                         </span>
                     </h2>
-                    <span class="request-id"><i class="fas fa-hashtag"></i> {{ request.request_id }}</span>
+                    <span class="request-id"><i class="fas fa-hashtag"></i> #{{ care_request.id }}</span>
                 </div>
 
                 <div>
-                    {% if request.status == "draft" %}
+                    {% if care_request.status == "draft" %}
                     <span class="status-badge status-draft"><i class="fas fa-pen"></i> Draft</span>
-                    {% elif request.status == "open" %}
+                    {% elif care_request.status == "open" %}
                     <span class="status-badge status-open"><i class="fas fa-lock-open"></i> Open</span>
-                    {% elif request.status == "under_review" %}
-                    <span class="status-badge status-under_review"><i class="fas fa-search"></i> Under Review</span>
-                    {% elif request.status == "interviewing" %}
-                    <span class="status-badge status-interviewing"><i class="fas fa-handshake"></i> Interviewing</span>
-                    {% elif request.status == "assigned" %}
+                    {% elif care_request.status == "assigned" %}
                     <span class="status-badge status-assigned"><i class="fas fa-check-circle"></i> Assigned</span>
-                    {% elif request.status == "in_progress" %}
-                    <span class="status-badge status-in_progress"><i class="fas fa-spinner"></i> In Progress</span>
-                    {% elif request.status == "completed" %}
-                    <span class="status-badge status-completed"><i class="fas fa-check-double"></i> Completed</span>
-                    {% elif request.status == "cancelled" %}
-                    <span class="status-badge status-cancelled"><i class="fas fa-times"></i> Cancelled</span>
-                    {% else %}
+                    {% elif care_request.status == "closed" %}
                     <span class="status-badge status-closed"><i class="fas fa-ban"></i> Closed</span>
+                    {% else %}
+                    <span class="status-badge status-closed">{{ care_request.get_status_display }}</span>
                     {% endif %}
                 </div>
             </div>
@@ -886,15 +856,15 @@
             <div class="info-grid">
                 <div class="info-item">
                     <div class="label"><i class="fas fa-calendar-alt"></i> Age</div>
-                    <div class="value">{{ request.patient_age }} years</div>
+                    <div class="value">{{ care_request.patient_age }} years</div>
                 </div>
                 <div class="info-item">
                     <div class="label"><i class="fas fa-venus-mars"></i> Gender</div>
-                    <div class="value">{{ request.get_patient_gender_display }}</div>
+                    <div class="value">{{ care_request.get_patient_gender_display }}</div>
                 </div>
                 <div class="info-item">
                     <div class="label"><i class="fas fa-heartbeat"></i> Medical Condition</div>
-                    <div class="value">{{ request.medical_condition }}</div>
+                    <div class="value">{{ care_request.medical_condition }}</div>
                 </div>
             </div>
 
@@ -908,21 +878,21 @@
                         <i class="fas fa-wheelchair"></i>
                         <div>
                             <strong>Mobility Status:</strong><br>
-                            {{ request.get_mobility_status_display }}
+                            {{ care_request.get_mobility_status_display }}
                         </div>
                     </div>
                     <div class="medical-item">
                         <i class="fas fa-brain"></i>
                         <div>
                             <strong>Cognitive Status:</strong><br>
-                            {{ request.get_cognitive_status_display }}
+                            {{ care_request.get_cognitive_status_display }}
                         </div>
                     </div>
                     <div class="medical-item">
                         <i class="fas fa-exclamation-triangle"></i>
                         <div>
                             <strong>Urgency Level:</strong><br>
-                            {{ request.get_urgency_level_display }}
+                            {{ care_request.get_urgency_level_display }}
                         </div>
                     </div>
                 </div>
@@ -935,41 +905,37 @@
             <div class="info-grid">
                 <div class="info-item">
                     <div class="label"><i class="fas fa-clock"></i> Care Type</div>
-                    <div class="value">{{ request.get_care_type_display }}</div>
+                    <div class="value">{{ care_request.get_care_type_display }}</div>
                 </div>
                 <div class="info-item">
                     <div class="label"><i class="fas fa-calendar-alt"></i> Start Date</div>
-                    <div class="value">{{ request.start_date|date:"l, d M Y" }}</div>
+                    <div class="value">{{ care_request.start_date|date:"l, d M Y" }}</div>
                 </div>
                 <div class="info-item">
                     <div class="label"><i class="fas fa-hourglass-half"></i> Duration</div>
-                    <div class="value">{{ request.duration_days }} days</div>
+                    <div class="value">{{ care_request.duration_days }} days</div>
                 </div>
                 <div class="info-item">
-                    <div class="label"><i class="fas fa-clock"></i> End Date</div>
-                    <div class="value">{{ request.end_date|date:"l, d M Y"|default:"Not calculated" }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="label"><i class="fas fa-hourglass-start"></i> Hours per Day</div>
-                    <div class="value">{{ request.hours_per_day|default:"Not specified" }} hours</div>
+                    <div class="label"><i class="fas fa-clock"></i> Hours per Day</div>
+                    <div class="value">{{ care_request.hours_per_day|default:"Not specified" }} hours</div>
                 </div>
                 <div class="info-item">
                     <div class="label"><i class="fas fa-calendar-week"></i> Days per Week</div>
-                    <div class="value">{{ request.days_per_week }} days</div>
+                    <div class="value">{{ care_request.days_per_week }} days</div>
                 </div>
             </div>
 
             <!-- Shift Timing -->
             <div class="info-item" style="margin-bottom: 20px;">
                 <div class="label"><i class="fas fa-clock"></i> Shift Timing</div>
-                <div class="value">{{ request.shift_timing|default:"Not specified" }}</div>
+                <div class="value">{{ care_request.shift_timing|default:"Not specified" }}</div>
             </div>
 
             <!-- Required Skills -->
             <div class="info-item">
                 <div class="label"><i class="fas fa-tools"></i> Required Skills</div>
                 <div class="skills-tags">
-                    {% for skill in request.required_skills.split %}
+                    {% for skill in care_request.required_skills.split %}
                     {% if skill|length > 0 %}
                     <span class="skill-tag">{{ skill|cut:"," }}</span>
                     {% endif %}
@@ -977,10 +943,10 @@
                 </div>
             </div>
 
-            {% if request.preferred_qualifications %}
+            {% if care_request.preferred_qualifications %}
             <div class="info-item" style="margin-top: 15px;">
                 <div class="label"><i class="fas fa-graduation-cap"></i> Preferred Qualifications</div>
-                <div class="value">{{ request.preferred_qualifications }}</div>
+                <div class="value">{{ care_request.preferred_qualifications }}</div>
             </div>
             {% endif %}
 
@@ -990,9 +956,9 @@
             </div>
             <div class="compensation-box">
                 <div>
-                    <span class="compensation-amount">₹{{ request.salary_offered }}</span>
-                    <span class="compensation-details">/{{ request.get_payment_frequency_display }}</span>
-                    {% if request.negotiable %}
+                    <span class="compensation-amount">₹{{ care_request.salary_offered }}</span>
+                    <span class="compensation-details">/{{ care_request.get_payment_frequency_display }}</span>
+                    {% if care_request.negotiable %}
                     <span style="margin-left: 15px; color: #0f3460;"><i class="fas fa-handshake"></i> Negotiable</span>
                     {% endif %}
                 </div>
@@ -1005,17 +971,17 @@
             <div class="info-grid">
                 <div class="info-item">
                     <div class="label"><i class="fas fa-venus-mars"></i> Gender Preference</div>
-                    <div class="value">{{ request.get_gender_preference_display }}</div>
+                    <div class="value">{{ care_request.get_gender_preference_display }}</div>
                 </div>
                 <div class="info-item">
                     <div class="label"><i class="fas fa-language"></i> Language Preference</div>
-                    <div class="value">{{ request.language_preference|default:"Not specified" }}</div>
+                    <div class="value">{{ care_request.language_preference|default:"Not specified" }}</div>
                 </div>
-                {% if request.age_preference_min or request.age_preference_max %}
+                {% if care_request.age_preference_min or care_request.age_preference_max %}
                 <div class="info-item">
                     <div class="label"><i class="fas fa-calendar"></i> Age Preference</div>
-                    <div class="value">{{ request.age_preference_min|default:"18" }} - {{
-                        request.age_preference_max|default:"100" }} years</div>
+                    <div class="value">{{ care_request.age_preference_min|default:"18" }} - {{
+                        care_request.age_preference_max|default:"100" }} years</div>
                 </div>
                 {% endif %}
             </div>
@@ -1027,190 +993,122 @@
             <div class="location-details">
                 <div class="location-row">
                     <i class="fas fa-home"></i>
-                    <span>{{ request.address }}</span>
+                    <span>{{ care_request.address }}</span>
                 </div>
                 <div class="location-row">
                     <i class="fas fa-city"></i>
-                    <span>{{ request.city }}, {{ request.state }} - {{ request.pincode }}</span>
+                    <span>{{ care_request.city }}, {{ care_request.state }} - {{ care_request.pincode }}</span>
                 </div>
-                {% if request.landmark %}
+                {% if care_request.landmark %}
                 <div class="location-row">
                     <i class="fas fa-landmark"></i>
-                    <span>Landmark: {{ request.landmark }}</span>
+                    <span>Landmark: {{ care_request.landmark }}</span>
                 </div>
                 {% endif %}
             </div>
 
-            <!-- Special Requirements -->
-            {% if request.special_requirements %}
-            <div class="section-title">
-                <i class="fas fa-exclamation-circle"></i> Special Requirements
-            </div>
-            <div class="info-item" style="background: #fef3c7; padding: 15px; border-radius: 8px;">
-                <div class="value">{{ request.special_requirements }}</div>
-            </div>
-            {% endif %}
+            <!-- Interview Process Section -->
+            <div class="detail-card" style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; margin-bottom: 2rem;">
+                <h2 class="section-title" style="font-size: 1.3rem; color: #0f3460; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; padding-bottom: 0.5rem; border-bottom: 2px solid #0f3460;">
+                    <i class="fas fa-handshake"></i> Interview Process
+                </h2>
 
-            <!-- Equipment Provided -->
-            {% if request.equipment_provided %}
-            <div class="section-title">
-                <i class="fas fa-tools"></i> Equipment Provided
-            </div>
-            <div class="info-item">
-                <div class="value">{{ request.equipment_provided }}</div>
-            </div>
-            {% endif %}
-
-            <!-- Accommodation -->
-            {% if request.accommodation_provided %}
-            <div class="section-title">
-                <i class="fas fa-bed"></i> Accommodation
-            </div>
-            <div class="info-item">
-                <div class="value">{{ request.accommodation_details|default:"Accommodation provided" }}</div>
-            </div>
-            {% endif %}
-
-            <!-- Interview Process -->
-            <div class="section-title">
-                <i class="fas fa-handshake"></i> Interview Process
-            </div>
-            <div class="info-item">
-                <div class="value">
-                    {% if request.interview_required %}
-                    <i class="fas fa-check-circle" style="color: #0f3460;"></i> Interview Required
-                    ({{ request.get_interview_type_display }})
-                    {% else %}
-                    <i class="fas fa-times-circle" style="color: #dc3545;"></i> No Interview Required
-                    {% endif %}
+                {% if care_request.interview_required %}
+                <div class="info-item" style="background: #f8fafc; padding: 1rem; border-radius: 10px;">
+                    <span style="display: flex; align-items: center; gap: 0.5rem; color: #166534;">
+                        <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                        <strong>Interview Required:</strong>
+                    </span>
+                    <span style="color: #0f3460; margin-left: 2rem;">{{ care_request.get_interview_type_display|default:"Video Call" }}</span>
                 </div>
+                {% else %}
+                <div class="info-item" style="background: #f8fafc; padding: 1rem; border-radius: 10px;">
+                    <span style="display: flex; align-items: center; gap: 0.5rem; color: #991b1b;">
+                        <i class="fas fa-times-circle" style="color: #ef4444;"></i>
+                        <strong>Interview:</strong>
+                    </span>
+                    <span style="color: #0f3460; margin-left: 2rem;">No Interview Required</span>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Assigned Caretaker Section -->
-            {% if request.assigned_caretaker %}
-            <div class="section-title">
-                <i class="fas fa-user-md"></i> Assigned Caretaker
-            </div>
-            <div class="assigned-caretaker-card">
-                <div class="caretaker-avatar">
-                    <i class="fas fa-user-nurse"></i>
-                </div>
-                <div class="caretaker-info">
-                    <h3>{{ request.assigned_caretaker.get_full_name|default:request.assigned_caretaker.username }}</h3>
-                    <p><i class="fas fa-envelope"></i> {{ request.assigned_caretaker.email }}</p>
-                    <p><i class="fas fa-phone"></i> {{ request.assigned_caretaker.phone|default:"Phone not available" }}
-                    </p>
-                    {% if request.assigned_date %}
-                    <p><i class="fas fa-calendar-check"></i> Assigned on: {{ request.assigned_date|date:"d M Y, h:i A"
-                        }}</p>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
+            {% if care_request.assigned_caretaker %}
+            <div class="detail-card" style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; margin-bottom: 2rem;">
+                <h2 class="section-title" style="font-size: 1.3rem; color: #0f3460; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; padding-bottom: 0.5rem; border-bottom: 2px solid #0f3460;">
+                    <i class="fas fa-user-check"></i> Assigned Caretaker
+                </h2>
 
-            <!-- Statistics Section (Only for Family)
-            {% if user.role == 'family' %}
-            Statistics Section (Only for Family) -->
-            <!-- <div class="section-title">
-                <i class="fas fa-chart-bar"></i> Statistics
-            </div>
-            <div class="statistics-row">
-                <div class="statistic">
-                    <i class="fas fa-eye"></i> {{ request.views_count|default:"0" }} Views
-                </div>
-                <div class="statistic">
-                    <i class="fas fa-users"></i> {{ applications_count|default:"0" }} Applications
-                </div>
-                <div class="statistic">
-                    <i class="fas fa-clock"></i> Posted {{ request.created_at|timesince }} ago
-                </div>
-                {% if request.published_at %}
-                <div class="statistic">
-                    <i class="fas fa-globe"></i> Published {{ request.published_at|timesince }} ago
-                </div>
-                {% endif %}
-            </div>
-            {% endif %} -->
+                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                    <div style="background: #f8fafc; padding: 1.5rem; border-radius: 16px; flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                            <i class="fas fa-user-circle" style="font-size: 3rem; color: #0f3460;"></i>
+                            <div>
+                                <h3 style="color: #0f3460; margin-bottom: 0.3rem;">{{ care_request.assigned_caretaker.get_full_name|default:care_request.assigned_caretaker.username }}</h3>
+                                <p style="color: #64748b; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-envelope"></i> {{ care_request.assigned_caretaker.email }}
+                                </p>
+                            </div>
+                        </div>
 
-            <!-- Caretaker Section -->
-            {% if user.role == 'caretaker' %}
-            {% if request.status != 'open' %}
-            <!-- Request is not open -->
-            <div class="already-applied">
-                <i class="fas fa-ban"></i>
-                <h3>Request Closed</h3>
-                <p>This care request is no longer accepting applications.</p>
-                <a href="{% url 'browse_requests' %}" class="btn btn-secondary">
-                    <i class="fas fa-search"></i> Browse Other Requests
-                </a>
-            </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            {% if care_request.assigned_caretaker.phone %}
+                            <div>
+                                <span style="color: #64748b; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem;">
+                                    <i class="fas fa-phone"></i> Phone
+                                </span>
+                                <span style="color: #0f3460; font-weight: 500;">{{ care_request.assigned_caretaker.phone }}</span>
+                            </div>
+                            {% endif %}
 
-            {% elif has_applied %}
-            <!-- Already applied -->
-            <div class="already-applied">
-                <i class="fas fa-check-circle"></i>
-                <h3>Already Applied</h3>
-                <p>You have already submitted an application for this care request.</p>
-                <a href="{% url 'my_applications' %}" class="btn btn-success">
-                    <i class="fas fa-eye"></i> View My Applications
-                </a>
-            </div>
+                            <div>
+                                <span style="color: #64748b; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem;">
+                                    <i class="fas fa-calendar-check"></i> Assigned on
+                                </span>
+                                <span style="color: #0f3460; font-weight: 500;">{{ care_request.assigned_date|date:"d M Y, h:i A" }}</span>
+                            </div>
+                        </div>
+                    </div>
 
-            {% else %}
-            <!-- Can apply -->
-            <div class="apply-section">
-                <i class="fas fa-hand-holding-heart"></i>
-                <h3>Interested in this position?</h3>
-                <p>Submit your application to let the family know you're interested in providing care.</p>
-                <a href="{% url 'apply_for_request' request.id %}" class="btn btn-success btn-large">
-                    <i class="fas fa-paper-plane"></i> Apply Now
-                </a>
+                    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                        <a href="{% url 'applications:caretaker_profile_detail' care_request.assigned_caretaker.id %}" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: transparent; border: 1.5px solid #0f3460; color: #0f3460; text-decoration: none; border-radius: 8px; font-weight: 500; transition: all 0.3s;">
+                            <i class="fas fa-user"></i> View Profile
+                        </a>
+                        <a href="tel:{{ care_request.assigned_caretaker.phone }}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #0f3460; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; transition: all 0.3s;">
+                            <i class="fas fa-phone-alt"></i> Contact
+                        </a>
+                    </div>
+                </div>
             </div>
-            {% endif %}
             {% endif %}
 
             <!-- Action Buttons (Only for Family who owns the request) -->
-            {% if request.family == user %}
+            {% if care_request.family == user %}
             <div class="action-buttons">
-                <!-- Back to List Button with Draft Warning -->
-                {% if request.status == "draft" %}
-                <button onclick="showDraftWarning()" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to List
-                </button>
-                {% else %}
                 <a href="{% url 'my_requests' %}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back to List
                 </a>
-                {% endif %}
 
-                {% if request.status == "open" %}
-                <a href="{% url 'request_applications' request.id %}" class="btn">
-                    <i class="fas fa-users"></i> View Applications ({{ applications_count|default:"0" }})
+                {% if care_request.status == "open" %}
+                <a href="{% url 'applications:request_applications' care_request.id %}" class="btn">
+                    <i class="fas fa-users"></i> View Applications
+                </a>
+                <a href="{% url 'close_request' care_request.id %}" class="btn btn-warning" onclick="return confirm('Are you sure you want to close this request?')">
+                    <i class="fas fa-ban"></i> Close Request
                 </a>
                 {% endif %}
 
-                {% if request.status == "draft" %}
-                <a href="{% url 'publish_request' request.id %}" class="btn btn-success">
+                {% if care_request.status == "draft" %}
+                <a href="{% url 'publish_request' care_request.id %}" class="btn btn-success">
                     <i class="fas fa-paper-plane"></i> Publish Request
                 </a>
-                {% endif %}
-
-                {% if request.status == "draft" %}
-                <a href="{% url 'edit_request' request.id %}" class="btn btn-edit">
+                <a href="{% url 'edit_request' care_request.id %}" class="btn btn-edit">
                     <i class="fas fa-edit"></i> Edit Request
                 </a>
                 {% endif %}
 
-                <!-- {% if request.status == "open" %}
-                <a href="{% url 'close_request' request.id %}" class="btn btn-warning"
-                    onclick="return confirm('Are you sure you want to close this request? It will no longer be visible to caretakers.')">
-                    <i class="fas fa-ban"></i> Close Request
-                </a>
-                {% endif %} -->
-
-                {% if request.status == "draft" or request.status == "open" %}
-                <a href="{% url 'delete_request' request.id %}" class="btn btn-danger"
-                    onclick="return confirm('Are you sure you want to delete this request? This action cannot be undone.')">
+                {% if care_request.status == "draft" or care_request.status == "open" %}
+                <a href="{% url 'delete_request' care_request.id %}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this request?')">
                     <i class="fas fa-trash"></i> Delete Request
                 </a>
                 {% endif %}
@@ -1219,122 +1117,13 @@
         </div>
     </div>
 
-    <!-- Draft Warning Modal -->
-    <div id="draftWarningModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header warning">
-                <h3 style="color: #92400e;">
-                    <i class="fas fa-exclamation-triangle"></i> Unsaved Draft
-                </h3>
-                <button class="close-btn" onclick="closeDraftWarning()">&times;</button>
-            </div>
-
-            <div class="modal-body">
-                <div class="draft-icon">
-                    <i class="fas fa-pen"></i>
-                </div>
-                <h4 style="color: #0f3460; margin-bottom: 15px;">You have an unsaved draft!</h4>
-                <p style="color: #64748b; margin-bottom: 25px;">
-                    This request is still in draft mode. If you leave now, your progress will be lost.
-                    What would you like to do?
-                </p>
-
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <a href="{% url 'edit_request' request.id %}" class="btn btn-warning" style="width: 100%;">
-                        <i class="fas fa-edit"></i> Continue Editing
-                    </a>
-
-                    <!-- Save Draft & Exit - POST to save_draft with current data -->
-                    <form method="POST" action="{% url 'save_draft' request.id %}" style="width: 100%;">
-                        {% csrf_token %}
-                        <!-- Include all form fields to save the current state -->
-                        <input type="hidden" name="patient_name" value="{{ request.patient_name }}">
-                        <input type="hidden" name="patient_age" value="{{ request.patient_age }}">
-                        <input type="hidden" name="medical_conditions" value="{{ request.medical_condition }}">
-                        <input type="hidden" name="care_type" value="{{ request.care_type }}">
-                        <input type="hidden" name="duration_days" value="{{ request.duration_days }}">
-                        <input type="hidden" name="start_date" value="{{ request.start_date|date:'Y-m-d' }}">
-                        <input type="hidden" name="start_time" value="{{ request.start_time|time:'H:i' }}">
-                        <input type="hidden" name="address" value="{{ request.address }}">
-                        <input type="hidden" name="city" value="{{ request.city }}">
-                        <input type="hidden" name="state" value="{{ request.state }}">
-                        <input type="hidden" name="pincode" value="{{ request.pincode }}">
-                        <input type="hidden" name="salary_offered" value="{{ request.salary_offered }}">
-                        <input type="hidden" name="payment_frequency" value="{{ request.payment_frequency }}">
-                        <input type="hidden" name="care_details" value="{{ request.care_details }}">
-                        <input type="hidden" name="experience_required" value="{{ request.experience_required }}">
-                        <input type="hidden" name="gender_preference" value="{{ request.gender_preference }}">
-                        <input type="hidden" name="required_skills" value="{{ request.required_skills }}">
-                        <input type="hidden" name="emergency_contact_name"
-                            value="{{ request.emergency_contact_name|default:'' }}">
-                        <input type="hidden" name="emergency_contact_phone"
-                            value="{{ request.emergency_contact_phone|default:'' }}">
-
-                        <button type="submit" class="btn btn-success" style="width: 100%;">
-                            <i class="fas fa-save"></i> Save Draft & Exit
-                        </button>
-                    </form>
-
-                    <a href="{% url 'my_requests' %}" class="btn btn-outline"
-                        style="width: 100%; background: transparent; border: 1.5px solid #0f3460; color: #0f3460;"
-                        onclick="return confirm('⚠️ Are you sure? All unsaved changes will be lost forever!');">
-                        <i class="fas fa-trash-alt"></i> Discard & Exit
-                    </a>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <small class="text-muted">
-                    <i class="fas fa-info-circle"></i> Drafts are saved only when you click "Save Draft"
-                </small>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Draft Warning Modal Functions
-        function showDraftWarning() {
-            document.getElementById('draftWarningModal').style.display = 'flex';
-        }
-
-        function closeDraftWarning() {
-            document.getElementById('draftWarningModal').style.display = 'none';
-        }
-
-        function confirmDiscard() {
-            closeDraftWarning();
-            return confirm('⚠️ Are you sure? All unsaved changes will be lost forever!');
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function (event) {
-            const modal = document.getElementById('draftWarningModal');
-            if (event.target === modal) {
-                closeDraftWarning();
-            }
-        }
-
-        // Prevent accidental navigation away from draft
-        let isDraft = "{{ request.status }}" === "draft";
-
-        if (isDraft) {
-            window.addEventListener('beforeunload', function (e) {
-                // Don't show warning when clicking on modal buttons
-                if (!document.getElementById('draftWarningModal').style.display === 'flex') {
-                    e.preventDefault();
-                    e.returnValue = 'You have an unsaved draft. Are you sure you want to leave?';
-                }
-            });
-        }
-
-
         document.querySelector('.logout-item a')?.addEventListener('click', function (e) {
             e.preventDefault();
             document.getElementById('logout-form').submit();
         });
-
-
     </script>
+
 </body>
 
 </html>

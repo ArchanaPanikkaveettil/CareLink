@@ -209,6 +209,147 @@ def view_offer(request, application_id):
 # FAMILY VIEWS
 # ============================================================================
 
+# -------------------------------------------------------------------------
+# Family Applications Dashboard - View all applications across all requests
+# -------------------------------------------------------------------------
+@login_required
+def family_applications(request):
+    """View all applications received across all care requests (for families)"""
+    if request.user.role != "family":
+        messages.error(request, "Access denied. Only family members can view applications.")
+        return redirect("index")
+
+    # Get all care requests posted by this family
+    care_requests = CareRequest.objects.filter(family=request.user)
+    
+    # Get applications for these requests
+    applications = CareApplication.objects.filter(
+        request__in=care_requests
+    ).select_related(
+        'request', 'caretaker', 'caretaker__caretaker_profile'
+    ).order_by('-applied_at')
+
+    # Filter by status
+    status = request.GET.get('status', 'all')
+    if status != 'all':
+        applications = applications.filter(status=status)
+
+    # Count by status for the filter tabs
+    total_count = applications.count()
+    pending_count = applications.filter(status='pending').count()
+    accepted_count = applications.filter(status='accepted').count()
+    rejected_count = applications.filter(status='rejected').count()
+    shortlisted_count = applications.filter(status='shortlisted').count()
+    offer_sent_count = applications.filter(status='offer_sent').count()
+
+    # Pagination
+    paginator = Paginator(applications, 10)  # Show 10 applications per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    #  Get counts for sidebar
+    received_count = applications.filter(status__in=['pending', 'accepted', 'rejected', 'offer_sent']).count()
+    sent_count = 0  # Will be implemented later for direct requests
+
+    context = {
+        'applications': page_obj,
+        'total_count': total_count,
+        'pending_count': pending_count,
+        'accepted_count': accepted_count,
+        'rejected_count': rejected_count,
+        'shortlisted_count': shortlisted_count,
+        'offer_sent_count': offer_sent_count,
+        'current_status': status,
+        'received_count': received_count,
+        'sent_count': sent_count,
+        'total_applications_count': total_count,
+    }
+    return render(request, 'applications/family_applications.html', context)
+
+
+# -------------------------------------------------------------------------
+# Family Applications - Quick accept from dashboard
+# -------------------------------------------------------------------------
+@login_required
+def family_quick_accept(request, application_id):
+    """Quick accept an application from the applications dashboard"""
+    if request.user.role != "family":
+        messages.error(request, "Access denied.")
+        return redirect("index")
+
+    application = get_object_or_404(
+        CareApplication, 
+        id=application_id, 
+        request__family=request.user,
+        status='pending'
+    )
+
+    if request.method == "POST":
+        # Simple accept flow for dashboard
+        application.status = 'accepted'
+        application.accepted_at = timezone.now()
+        application.save()
+
+        # Update the care request
+        care_request = application.request
+        care_request.assigned_caretaker = application.caretaker
+        care_request.assigned_date = timezone.now()
+        care_request.status = 'assigned'
+        care_request.save()
+
+        # Reject all other pending applications for this request
+        CareApplication.objects.filter(
+            request=care_request,
+            status='pending'
+        ).exclude(id=application.id).update(
+            status='rejected',
+            rejection_note='Another candidate was selected',
+            rejected_at=timezone.now()
+        )
+
+        messages.success(
+            request, 
+            f"✅ Application from {application.caretaker.get_full_name()} has been accepted and assigned."
+        )
+        return redirect('family_applications')
+
+    return redirect('family_applications')
+
+
+# -------------------------------------------------------------------------
+# Family Applications - Quick reject from dashboard
+# -------------------------------------------------------------------------
+@login_required
+def family_quick_reject(request, application_id):
+    """Quick reject an application from the applications dashboard"""
+    if request.user.role != "family":
+        messages.error(request, "Access denied.")
+        return redirect("index")
+
+    application = get_object_or_404(
+        CareApplication, 
+        id=application_id, 
+        request__family=request.user,
+        status='pending'
+    )
+
+    if request.method == "POST":
+        application.status = 'rejected'
+        application.rejection_note = request.POST.get('rejection_note', 'Rejected from dashboard')
+        application.rejected_at = timezone.now()
+        application.save()
+
+        messages.success(
+            request, 
+            f"✅ Application from {application.caretaker.get_full_name()} has been rejected."
+        )
+        return redirect('family_applications')
+
+    return redirect('family_applications')
+
+
+
+
 
 # -------------------------------------------------------------------------
 # Accept application (direct hire without shortlist)
@@ -702,8 +843,48 @@ def caretaker_profile_detail(request, user_id):
     """View caretaker profile details (for families)"""
     caretaker = get_object_or_404(User, id=user_id, role="caretaker")
     profile = get_object_or_404(CaretakerProfile, user=caretaker)
+    
+    # Import CareApplication instead of Application
+    from .models import CareApplication
+    
+    # Total assignments (all approved applications)
+    total_assignments = CareApplication.objects.filter(
+        caretaker=caretaker,  # Note: CareApplication uses caretaker as User, not CaretakerProfile
+        status='approved'
+    ).count()
+    
+    # Completed jobs
+    completed_jobs = CareApplication.objects.filter(
+        caretaker=caretaker,
+        status='completed'
+    ).count()
+    
+    # In-progress assignments
+    current_assignments = CareApplication.objects.filter(
+        caretaker=caretaker,
+        status='in_progress'
+    ).count()
+    
+    # Pending applications
+    pending_applications = CareApplication.objects.filter(
+        caretaker=caretaker,
+        status='pending'
+    ).count()
+    
+    # Recent applications (last 5)
+    recent_applications = CareApplication.objects.filter(
+        caretaker=caretaker
+    ).order_by('-applied_at')[:5]
 
-    context = {"caretaker": caretaker, "profile": profile}
+    context = {
+        "caretaker": caretaker, 
+        "profile": profile,
+        "total_assignments": total_assignments,
+        "completed_jobs": completed_jobs,
+        "current_assignments": current_assignments,
+        "pending_applications": pending_applications,
+        "recent_applications": recent_applications,
+    }
 
     return render(request, "applications/caretaker_profile_detail.html", context)
 

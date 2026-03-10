@@ -4,19 +4,25 @@ from . import views
 urlpatterns = [
     # Home / Landing Page
     path("", views.index, name="index"),
+
     # Login
     path("login/", views.custom_login, name="login"),
+
     # logout
-    path("logout/", views.custom_logout, name="logout"),
+    path('logout/', views.custom_logout, name='logout'),
+
     # Registration
     path("register/family/", views.family_register, name="family_register"),
     path("register/caretaker/", views.caretaker_register, name="caretaker_register"),
+    
     # Verification page (for unapproved caretakers)
     path(
         "verification-pending/", views.verification_pending, name="verification_pending"
     ),
+    
     # Search caretakers (Family feature)
     path("search-caretakers/", views.search_caretakers, name="search_caretakers"),
+    
     # View caretaker details
     path("caretaker/<int:id>/", views.caretaker_detail, name="caretaker_detail"),
     path("profile/family/", views.family_profile, name="family_profile"),
@@ -31,10 +37,14 @@ urlpatterns = [
         views.update_caretaker_profile,
         name="update_caretaker_profile",
     ),
+    
+    
     path("admin/dashboard/", views.admin_dashboard, name="admin_dashboard"),
+    
     # User Management
     path("admin-panel/dashboard/", views.admin_dashboard, name="admin_dashboard"),
-    # User Management
+    
+
     path("admin-panel/users/", views.admin_users_list, name="admin_users_list"),
     path(
         "admin-panel/caretakers/",

@@ -104,6 +104,7 @@
             font-size: 1rem;
             transition: all 0.2s ease;
             margin-bottom: 2px;
+            position: relative;
         }
 
         .nav-item i {
@@ -130,6 +131,79 @@
 
         .nav-item.active i {
             color: white;
+        }
+
+        /* Applications Sub-menu */
+        .applications-menu {
+            margin-left: 40px;
+            margin-top: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .applications-sub-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .applications-sub-item i {
+            width: 18px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .applications-sub-item:hover {
+            background: #1e4a7a;
+            color: white;
+        }
+
+        .applications-sub-item:hover i {
+            color: white;
+        }
+
+        .applications-sub-item.active {
+            background: #1e4a7a;
+            color: white;
+        }
+
+        .applications-sub-item.active i {
+            color: white;
+        }
+
+        .applications-sub-item .count {
+            margin-left: auto;
+            background: #ffd700;
+            color: #0f3460;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 12px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* Badge for pending applications */
+        .nav-badge {
+            position: absolute;
+            right: 18px;
+            background: #ffd700;
+            color: #0f3460;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 12px;
+            min-width: 20px;
+            text-align: center;
         }
 
         /* logout item */
@@ -389,27 +463,64 @@
 
         <div class="nav-menu">
             {% block sidebar_links %}
-            <!-- FIXED: Added dashboard: namespace -->
+            <!-- Dashboard -->
             <a href="{% url 'dashboard:family_dashboard' %}"
                 class="nav-item {% if request.resolver_match.url_name == 'family_dashboard' %}active{% endif %}">
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
             </a>
+
+            <!-- Applications Link with Badge (Parent) -->
+            <div class="nav-item" style="cursor: default;">
+                <i class="fas fa-file-alt"></i>
+                <span>Applications</span>
+                {% if total_applications_count %}
+                <span class="nav-badge">{{ total_applications_count }}</span>
+                {% endif %}
+            </div>
+            
+            <!-- Applications Sub-menu -->
+            <div class="applications-menu">
+                <a href="{% url 'applications:family_applications' %}?type=received" 
+                   class="applications-sub-item {% if request.GET.type == 'received' or not request.GET.type %}active{% endif %}">
+                    <i class="fas fa-inbox"></i>
+                    <span>Received</span>
+                    {% if received_count %}
+                    <span class="count">{{ received_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'applications:family_applications' %}?type=sent" 
+                   class="applications-sub-item {% if request.GET.type == 'sent' %}active{% endif %}">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Sent</span>
+                    {% if sent_count %}
+                    <span class="count">{{ sent_count }}</span>
+                    {% endif %}
+                </a>
+            </div>
+
+            <!-- Post Care Request -->
             <a href="{% url 'post_request' %}"
                 class="nav-item {% if request.resolver_match.url_name == 'post_request' %}active{% endif %}">
                 <i class="fas fa-plus-circle"></i>
                 <span>Post Care Request</span>
             </a>
+
+            <!-- My Requests -->
             <a href="{% url 'my_requests' %}"
                 class="nav-item {% if request.resolver_match.url_name == 'my_requests' %}active{% endif %}">
                 <i class="fas fa-clipboard-list"></i>
                 <span>My Requests</span>
             </a>
+
+            <!-- Find Caretakers -->
             <a href="{% url 'search_caretakers' %}"
                 class="nav-item {% if request.resolver_match.url_name == 'search_caretakers' %}active{% endif %}">
                 <i class="fas fa-search"></i>
                 <span>Find Caretakers</span>
             </a>
+
+            <!-- My Profile -->
             <a href="{% url 'family_profile' %}"
                 class="nav-item {% if request.resolver_match.url_name == 'family_profile' %}active{% endif %}">
                 <i class="fas fa-id-badge"></i>
@@ -496,6 +607,9 @@
 
             // Update notification count on page load
             updateNotificationCount();
+
+            // Also update pending applications count if needed
+            updatePendingApplicationsCount();
         });
 
         // Toggle notifications panel
@@ -544,6 +658,12 @@
                     }
                 })
                 .catch(error => console.error('Error updating count:', error));
+        }
+
+        // Update pending applications count (optional - can be done server-side)
+        function updatePendingApplicationsCount() {
+            // This can be implemented if you want real-time updates
+            // For now, it's handled server-side in the template
         }
 
         // Auto-refresh notifications every 60 seconds

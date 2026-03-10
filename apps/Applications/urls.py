@@ -1,6 +1,9 @@
 from django.urls import path
 from . import views
 
+# Add this line to set the application namespace
+app_name = 'applications'
+
 urlpatterns = [
 
     # ------------ CARETAKER URLS ---------------
@@ -21,6 +24,10 @@ urlpatterns = [
 
 
     # ------------ FAMILY URLS ------------------
+
+    # view all applications
+    path('family/', views.family_applications, name='family_applications'),
+
     # view applications for a specific request
     path('request/<int:request_id>/', views.request_applications, name='request_applications'),
     

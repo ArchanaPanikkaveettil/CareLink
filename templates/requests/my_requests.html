@@ -1,3 +1,4 @@
+<!-- templates/requests/my_requests.html -->
 {% extends 'users/family_base.html' %}
 
 {% load static %}
@@ -304,31 +305,6 @@
         margin-bottom: 20px;
     }
 
-    .stats-summary {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-
-    .stat-card {
-        background: white;
-        padding: 20px;
-        border-radius: 15px;
-        text-align: center;
-        border: 1px solid #e2e8f0;
-    }
-
-    .stat-card .number {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #0f3460;
-    }
-
-    .stat-card .label {
-        color: #64748b;
-        font-size: 0.9rem;
-    }
 
     @media (max-width: 768px) {
         .filters-section {
@@ -362,28 +338,7 @@
 
 {% block content %}
 <!-- Statistics Summary -->
-<div class="stats-summary">
-    <div class="stat-card">
-        <div class="number">{{ open_count|default:"0" }}</div>
-        <div class="label">Open</div>
-    </div>
-    <div class="stat-card">
-        <div class="number">{{ draft_count|default:"0" }}</div>
-        <div class="label">Drafts</div>
-    </div>
-    <div class="stat-card">
-        <div class="number">{{ assigned_count|default:"0" }}</div>
-        <div class="label">Assigned</div>
-    </div>
-    <div class="stat-card">
-        <div class="number">{{ closed_count|default:"0" }}</div>
-        <div class="label">Closed</div>
-    </div>
-    <div class="stat-card">
-        <div class="number">{{ requests.paginator.count|default:requests|length }}</div>
-        <div class="label">Total</div>
-    </div>
-</div>
+
 
 <!-- Filters -->
 <div class="filters-section">
@@ -412,7 +367,7 @@
                 <h3>
                     <i class="fas fa-user-circle"></i>
                     {{ request.patient_name }}
-                    <span class="request-id">{{ request.request_id }}</span>
+                    <span class="request-id">#{{ request.id }}</span>
                 </h3>
                 <p style="color: #64748b;">
                     <i class="fas fa-venus-mars"></i> {{ request.get_patient_gender_display }},
@@ -420,8 +375,7 @@
                 </p>
             </div>
             <span class="status-badge status-{{ request.status }}">
-                <i
-                    class="fas fa-{% if request.status == 'open' %}lock-open{% elif request.status == 'draft' %}pen{% elif request.status == 'assigned' %}check-circle{% else %}lock{% endif %}"></i>
+                <i class="fas fa-{% if request.status == 'open' %}lock-open{% elif request.status == 'draft' %}pen{% elif request.status == 'assigned' %}check-circle{% else %}lock{% endif %}"></i>
                 {{ request.get_status_display }}
             </span>
         </div>
@@ -433,7 +387,7 @@
             </div>
             <div class="detail-item">
                 <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Location</span>
-                <span class="detail-value">{{ request.city }}</span>
+                <span class="detail-value">{{ request.city|default:"Not specified" }}</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label"><i class="fas fa-calendar-alt"></i> Start Date</span>
@@ -451,7 +405,7 @@
             </div>
             <div class="detail-item">
                 <span class="detail-label"><i class="fas fa-clock"></i> Shift</span>
-                <span class="detail-value">{{ request.shift_timing }}</span>
+                <span class="detail-value">{{ request.shift_timing|default:"Flexible" }}</span>
             </div>
         </div>
 
@@ -480,8 +434,7 @@
         <div class="assigned-info">
             <i class="fas fa-user-check" style="color: #0f3460;"></i>
             <div>
-                <strong>Assigned to:</strong> {{
-                request.assigned_caretaker.get_full_name|default:request.assigned_caretaker.username }}
+                <strong>Assigned to:</strong> {{ request.assigned_caretaker.get_full_name|default:request.assigned_caretaker.username }}
                 {% if request.assigned_date %}
                 <br><small>on {{ request.assigned_date|date:"M d, Y" }}</small>
                 {% endif %}
@@ -505,20 +458,22 @@
             {% endif %}
 
             {% if request.status == 'open' %}
-            <a href="{% url 'request_applications' request.id %}" class="btn btn-primary">
-                <i class="fas fa-users"></i> Applications 
-                <!-- ({{ request.total_applications|default:"0" }}) -->
+            <!-- FIXED: Added applications namespace -->
+            <a href="{% url 'applications:request_applications' request.id %}" class="btn btn-primary">
+                <i class="fas fa-users"></i> View Applications ({{ request.total_applications|default:"0" }})
             </a>
             <a href="{% url 'close_request' request.id %}" class="btn btn-warning">
                 <i class="fas fa-ban"></i> Close
             </a>
             {% endif %}
 
+            {% if request.status == 'assigned' or request.status == 'closed' %}
+            <a href="{% url 'request_detail' request.id %}" class="btn btn-outline">
+                <i class="fas fa-info-circle"></i> Details
+            </a>
+            {% endif %}
         </div>
     </div>
-
-
-
     {% empty %}
     <div class="empty-state">
         <i class="fas fa-inbox"></i>
@@ -527,11 +482,9 @@
         {% if request.GET.search or request.GET.status %}
         <!-- Search/filter returned no results -->
         <p>No requests match your search criteria.</p>
-        <a href="{% url 'my_requests' %}" class="btn btn-outline"
-            style="display: inline-block; padding: 5px 20px; margin-top: 25px;">
+        <a href="{% url 'my_requests' %}" class="btn btn-outline" style="display: inline-block; padding: 5px 20px; margin-top: 25px;">
             <i class="fas fa-undo"></i> Clear Filters
         </a>
-
         {% else %}
         <!-- No requests at all -->
         <p>You haven't posted any care requests yet.</p>
@@ -541,15 +494,11 @@
         {% endif %}
     </div>
     {% endfor %}
-
-
-
-
 </div>
 
 <!-- Pagination -->
 {% if requests.has_other_pages %}
-<div style="display: flex; justify-content: center; gap: 10px; margin-top: 30px;">
+<div style="display: flex; justify-content: center; gap: 10px; margin-top: 30px; flex-wrap: wrap;">
     {% if requests.has_previous %}
     <a href="?page={{ requests.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
         class="btn btn-outline">
