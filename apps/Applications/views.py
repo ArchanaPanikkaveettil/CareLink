@@ -842,14 +842,19 @@ def mark_care_started(request, application_id):
 def caretaker_profile_detail(request, user_id):
     """View caretaker profile details (for families)"""
     caretaker = get_object_or_404(User, id=user_id, role="caretaker")
-    profile = get_object_or_404(CaretakerProfile, user=caretaker)
     
-    # Import CareApplication instead of Application
+    # Try to get profile, but don't fail if it doesn't exist
+    try:
+        profile = CaretakerProfile.objects.get(user=caretaker)
+    except CaretakerProfile.DoesNotExist:
+        profile = None
+    
+    # Import CareApplication
     from .models import CareApplication
     
     # Total assignments (all approved applications)
     total_assignments = CareApplication.objects.filter(
-        caretaker=caretaker,  # Note: CareApplication uses caretaker as User, not CaretakerProfile
+        caretaker=caretaker,
         status='approved'
     ).count()
     

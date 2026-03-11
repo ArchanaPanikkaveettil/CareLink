@@ -1,0 +1,361 @@
+{% extends 'users/family_base.html' %}
+
+{% load static %}
+
+{% block title %}{{ elder.name }} - CareLink{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #0f3460;
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 20px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+    .back-link:hover {
+        background: #f1f5f9;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #0f3460, #1e4a7a);
+        color: white;
+        padding: 30px;
+        border-radius: 20px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        flex-wrap: wrap;
+        position: relative;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .profile-info h1 {
+        font-size: 2rem;
+        margin-bottom: 5px;
+    }
+
+    .profile-info p {
+        font-size: 1rem;
+        opacity: 0.95;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .primary-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: #ffd700;
+        color: #0f3460;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+    }
+
+    .card-title {
+        color: #0f3460;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .detail-row {
+        display: flex;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px dashed #e2e8f0;
+    }
+
+    .detail-label {
+        width: 40%;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .detail-value {
+        width: 60%;
+        color: #0f3460;
+        font-weight: 500;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+
+    .status-independent { background: #dcfce7; color: #166534; }
+    .status-walker { background: #fef3c7; color: #92400e; }
+    .status-wheelchair { background: #dbeafe; color: #1e40af; }
+    .status-bedridden { background: #fee2e2; color: #991b1b; }
+
+    .emergency-contact {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 12px 25px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1.5px solid #0f3460;
+        color: #0f3460;
+    }
+
+    .btn-outline:hover {
+        background: #0f3460;
+        color: white;
+    }
+
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+
+    @media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .primary-badge {
+            position: static;
+            margin-top: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <a href="{% url 'elder_list' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Elders
+    </a>
+
+    <div class="profile-header">
+        {% if elder.is_primary %}
+        <div class="primary-badge">
+            <i class="fas fa-star"></i> Primary Elder
+        </div>
+        {% endif %}
+        
+        <div class="profile-avatar">
+            {% if elder.profile_picture %}
+            <img src="{{ elder.profile_picture.url }}" alt="{{ elder.name }}">
+            {% else %}
+            <i class="fas fa-user-circle"></i>
+            {% endif %}
+        </div>
+        
+        <div class="profile-info">
+            <h1>{{ elder.name }}</h1>
+            <p><i class="fas fa-heart"></i> {{ elder.get_relationship_display }}</p>
+            <p><i class="fas fa-birthday-cake"></i> {{ elder.age }} years old</p>
+            <p><i class="fas fa-venus-mars"></i> {{ elder.get_gender_display }}</p>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        <!-- Medical Information -->
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fas fa-notes-medical"></i> Medical Information
+            </h3>
+            
+            <div class="detail-row">
+                <span class="detail-label">Blood Group</span>
+                <span class="detail-value">{{ elder.blood_group|default:"Not specified" }}</span>
+            </div>
+            
+            {% if elder.medical_conditions %}
+            <div class="detail-row">
+                <span class="detail-label">Medical Conditions</span>
+                <span class="detail-value">{{ elder.medical_conditions }}</span>
+            </div>
+            {% endif %}
+            
+            {% if elder.allergies %}
+            <div class="detail-row">
+                <span class="detail-label">Allergies</span>
+                <span class="detail-value">{{ elder.allergies }}</span>
+            </div>
+            {% endif %}
+            
+            {% if elder.medications %}
+            <div class="detail-row">
+                <span class="detail-label">Medications</span>
+                <span class="detail-value">{{ elder.medications }}</span>
+            </div>
+            {% endif %}
+            
+            {% if elder.dietary_restrictions %}
+            <div class="detail-row">
+                <span class="detail-label">Dietary Restrictions</span>
+                <span class="detail-value">{{ elder.dietary_restrictions }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Care Requirements -->
+        <div class="info-card">
+            <h3 class="card-title">
+                <i class="fas fa-wheelchair"></i> Care Requirements
+            </h3>
+            
+            <div class="detail-row">
+                <span class="detail-label">Mobility Status</span>
+                <span class="detail-value">
+                    <span class="status-badge status-{{ elder.mobility_status }}">
+                        {{ elder.get_mobility_status_display }}
+                    </span>
+                </span>
+            </div>
+            
+            <div class="detail-row">
+                <span class="detail-label">Cognitive Status</span>
+                <span class="detail-value">
+                    <span class="status-badge status-{{ elder.cognitive_status }}">
+                        {{ elder.get_cognitive_status_display }}
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Contact -->
+    <div class="info-card" style="margin-bottom: 25px;">
+        <h3 class="card-title">
+            <i class="fas fa-phone-alt"></i> Emergency Contact
+        </h3>
+        
+        {% if elder.has_emergency_contact %}
+        <div class="emergency-contact">
+            <p><strong><i class="fas fa-user"></i> Name:</strong> {{ elder.emergency_contact_name }}</p>
+            <p><strong><i class="fas fa-phone"></i> Phone:</strong> {{ elder.emergency_contact_phone }}</p>
+            <p><strong><i class="fas fa-tag"></i> Relationship:</strong> {{ elder.emergency_contact_relation }}</p>
+        </div>
+        {% else %}
+        <p class="text-muted">No emergency contact added</p>
+        {% endif %}
+    </div>
+
+    <!-- Notes -->
+    {% if elder.notes %}
+    <div class="info-card" style="margin-bottom: 25px;">
+        <h3 class="card-title">
+            <i class="fas fa-sticky-note"></i> Additional Notes
+        </h3>
+        <p>{{ elder.notes|linebreaks }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="{% url 'elder_edit' elder.id %}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Edit Profile
+        </a>
+        <a href="{% url 'elder_list' %}" class="btn btn-outline">
+            <i class="fas fa-users"></i> All Elders
+        </a>
+        <a href="{% url 'elder_delete' elder.id %}" class="btn btn-danger" 
+           onclick="return confirm('Are you sure you want to delete {{ elder.name }}\'s profile?')">
+            <i class="fas fa-trash"></i> Delete
+        </a>
+    </div>
+</div>
+{% endblock %}

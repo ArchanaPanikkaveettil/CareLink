@@ -80,6 +80,185 @@ class User(AbstractUser):
 
 
 # ---------------------------
+# Elder Profile Model (define BEFORE FamilyProfile)
+# ---------------------------
+
+
+class ElderProfile(models.Model):
+    """Model for elderly persons under a family's care"""
+
+    RELATIONSHIP_CHOICES = [
+        ("parent", "Parent"),
+        ("grandparent", "Grandparent"),
+        ("spouse", "Spouse"),
+        ("sibling", "Sibling"),
+        ("other", "Other"),
+    ]
+
+    GENDER_CHOICES = [
+        ("male", "Male"),
+        ("female", "Female"),
+        ("other", "Other"),
+    ]
+
+    BLOOD_GROUP_CHOICES = [
+        ("A+", "A+"),
+        ("A-", "A-"),
+        ("B+", "B+"),
+        ("B-", "B-"),
+        ("O+", "O+"),
+        ("O-", "O-"),
+        ("AB+", "AB+"),
+        ("AB-", "AB-"),
+        ("unknown", "Unknown"),
+    ]
+
+    MOBILITY_STATUS = [
+        ("independent", "Independent"),
+        ("walker", "Walker/Cane"),
+        ("wheelchair", "Wheelchair"),
+        ("bedridden", "Bedridden"),
+    ]
+
+    COGNITIVE_STATUS = [
+        ("normal", "Normal"),
+        ("mild_impairment", "Mild Cognitive Impairment"),
+        ("dementia", "Dementia"),
+        ("alzheimers", "Alzheimer's"),
+    ]
+
+    # Basic Information
+    family = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="elder_profiles",
+        limit_choices_to={"role": "family"},
+    )
+    name = models.CharField(max_length=100)
+    age = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(120)])
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
+    relationship = models.CharField(
+        max_length=20, choices=RELATIONSHIP_CHOICES, default="parent"
+    )
+
+    # Medical Information
+    blood_group = models.CharField(
+        max_length=10, choices=BLOOD_GROUP_CHOICES, blank=True, default=""
+    )
+    medical_conditions = models.TextField(
+        help_text="List of medical conditions", blank=True, default=""
+    )
+    allergies = models.TextField(blank=True, default="")
+    medications = models.TextField(
+        help_text="Current medications", blank=True, default=""
+    )
+    dietary_restrictions = models.TextField(blank=True, default="")
+
+    # Care Requirements
+    mobility_status = models.CharField(
+        max_length=20, choices=MOBILITY_STATUS, default="independent"
+    )
+    cognitive_status = models.CharField(
+        max_length=20, choices=COGNITIVE_STATUS, default="normal"
+    )
+
+    # Emergency Contact (specific to this elder)
+    emergency_contact_name = models.CharField(max_length=100, blank=True, default="")
+    emergency_contact_phone = models.CharField(max_length=20, blank=True, default="")
+    emergency_contact_relation = models.CharField(max_length=50, blank=True, default="")
+
+    # Additional Information
+    notes = models.TextField(
+        blank=True, default="", help_text="Any additional notes about the elder"
+    )
+    is_primary = models.BooleanField(
+        default=False, help_text="Primary elder for quick requests"
+    )
+
+    # Profile Picture (optional)
+    profile_picture = models.ImageField(upload_to="elder_pics/", null=True, blank=True)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-is_primary", "name"]
+        verbose_name = "Elder Profile"
+        verbose_name_plural = "Elder Profiles"
+
+    def __str__(self):
+        return f"{self.name} ({self.get_relationship_display()})"
+
+    def save(self, *args, **kwargs):
+        # Ensure only one primary elder per family
+        if self.is_primary:
+            ElderProfile.objects.filter(family=self.family, is_primary=True).exclude(
+                id=self.id
+            ).update(is_primary=False)
+        super().save(*args, **kwargs)
+
+    # ==================== PROPERTIES FOR TEMPLATES ====================
+
+    @property
+    def age_display(self):
+        """Return age with suffix"""
+        if self.age:
+            return f"{self.age} years"
+        return "Not specified"
+
+    @property
+    def medical_info_summary(self):
+        """Return summary of medical conditions"""
+        if self.medical_conditions:
+            return (
+                self.medical_conditions[:100] + "..."
+                if len(self.medical_conditions) > 100
+                else self.medical_conditions
+            )
+        return "No medical conditions specified"
+
+    @property
+    def has_emergency_contact(self):
+        """Check if emergency contact exists"""
+        return bool(self.emergency_contact_name and self.emergency_contact_phone)
+
+    @property
+    def full_emergency_contact(self):
+        """Return formatted emergency contact"""
+        if self.has_emergency_contact:
+            contact = self.emergency_contact_name
+            if self.emergency_contact_phone:
+                contact += f" - {self.emergency_contact_phone}"
+            if self.emergency_contact_relation:
+                contact += f" ({self.emergency_contact_relation})"
+            return contact
+        return "No emergency contact"
+
+    @property
+    def mobility_badge_class(self):
+        """Return CSS class for mobility status badge"""
+        badge_map = {
+            "independent": "success",
+            "walker": "warning",
+            "wheelchair": "info",
+            "bedridden": "danger",
+        }
+        return badge_map.get(self.mobility_status, "secondary")
+
+    @property
+    def cognitive_badge_class(self):
+        """Return CSS class for cognitive status badge"""
+        badge_map = {
+            "normal": "success",
+            "mild_impairment": "warning",
+            "dementia": "danger",
+            "alzheimers": "danger",
+        }
+        return badge_map.get(self.cognitive_status, "secondary")
+
+
+# ---------------------------
 # Caretaker Profile
 # ---------------------------
 
@@ -267,6 +446,7 @@ class CaretakerProfile(models.Model):
         """Get count of all approved assignments"""
         try:
             from . import Application
+
             return Application.objects.filter(caretaker=self, status="approved").count()
         except:
             return 0
@@ -276,6 +456,7 @@ class CaretakerProfile(models.Model):
         """Get count of in-progress assignments"""
         try:
             from . import Application
+
             return Application.objects.filter(
                 caretaker=self, status="in_progress"
             ).count()
@@ -287,6 +468,7 @@ class CaretakerProfile(models.Model):
         """Get count of pending applications"""
         try:
             from . import Application
+
             return Application.objects.filter(caretaker=self, status="pending").count()
         except:
             return 0
@@ -356,7 +538,7 @@ class CaretakerProfile(models.Model):
 
 
 # ---------------------------
-# Family Profile
+# Family Profile (with elders field)
 # ---------------------------
 
 
@@ -383,6 +565,14 @@ class FamilyProfile(models.Model):
 
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="family_profile"
+    )
+
+    # Elders under this family's care - ManyToMany to ElderProfile
+    elders = models.ManyToManyField(
+        ElderProfile,
+        related_name='family_profiles',
+        blank=True,
+        help_text="Elderly persons under this family's care"
     )
 
     # Family Information
@@ -416,7 +606,7 @@ class FamilyProfile(models.Model):
         max_length=10, choices=GENDER_CHOICES, blank=True, default=""
     )
     patient_blood_group = models.CharField(
-        max_length=20,  # Increased to 20 to safely accommodate all display values
+        max_length=20,
         blank=True,
         default="",
         choices=[
@@ -553,59 +743,79 @@ class CaretakerAvailability(models.Model):
 # Application Model
 # ---------------------------
 
+
 class Application(models.Model):
     APPLICATION_STATUS = [
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
-        ('in_progress', 'In Progress'),
-        ('completed', 'Completed'),
-        ('cancelled', 'Cancelled'),
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
     ]
-    
+
     # Relationships
-    caretaker = models.ForeignKey(CaretakerProfile, on_delete=models.CASCADE, related_name='applications')
-    family = models.ForeignKey(FamilyProfile, on_delete=models.CASCADE, related_name='applications')
-    
+    caretaker = models.ForeignKey(
+        CaretakerProfile, on_delete=models.CASCADE, related_name="applications"
+    )
+    family = models.ForeignKey(
+        FamilyProfile, on_delete=models.CASCADE, related_name="applications"
+    )
+
     # Application details
-    status = models.CharField(max_length=20, choices=APPLICATION_STATUS, default='pending')
+    status = models.CharField(
+        max_length=20, choices=APPLICATION_STATUS, default="pending"
+    )
     applied_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
-    
+
     # Optional fields
-    notes = models.TextField(blank=True, default='')
+    notes = models.TextField(blank=True, default="")
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
-    
+
     # Payment/rate information
-    agreed_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    
+    agreed_rate = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+
     def __str__(self):
         return f"{self.caretaker.user.get_full_name()} - {self.family.user.get_full_name()} - {self.status}"
-    
+
     class Meta:
-        ordering = ['-applied_date']
+        ordering = ["-applied_date"]
 
 
 # ---------------------------
 # Caretaker Review Model
 # ---------------------------
 
+
 class CaretakerReview(models.Model):
     RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
-    
-    caretaker = models.ForeignKey(CaretakerProfile, on_delete=models.CASCADE, related_name='reviews')
-    family = models.ForeignKey(FamilyProfile, on_delete=models.CASCADE, related_name='given_reviews')
-    application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='review', null=True, blank=True)
-    
+
+    caretaker = models.ForeignKey(
+        CaretakerProfile, on_delete=models.CASCADE, related_name="reviews"
+    )
+    family = models.ForeignKey(
+        FamilyProfile, on_delete=models.CASCADE, related_name="given_reviews"
+    )
+    application = models.OneToOneField(
+        Application,
+        on_delete=models.CASCADE,
+        related_name="review",
+        null=True,
+        blank=True,
+    )
+
     rating = models.IntegerField(choices=RATING_CHOICES)
-    comment = models.TextField(blank=True, default='')
+    comment = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return f"Review for {self.caretaker} by {self.family} - {self.rating}⭐"
-    
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         # Update caretaker's average rating

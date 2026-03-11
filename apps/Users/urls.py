@@ -101,4 +101,17 @@ urlpatterns = [
         views.admin_quick_view_caretaker,
         name="admin_quick_view_caretaker",
     ),
+
+
+    # ========== ELDER PROFILE URLS ==========
+    path('elders/', views.elder_list, name='elder_list'),
+    path('elders/add/', views.elder_add, name='elder_add'),
+    path('elders/<int:elder_id>/', views.elder_detail, name='elder_detail'),
+    path('elders/<int:elder_id>/edit/', views.elder_edit, name='elder_edit'),
+    path('elders/<int:elder_id>/delete/', views.elder_delete, name='elder_delete'),
+    path('elders/<int:elder_id>/set-primary/', views.elder_set_primary, name='elder_set_primary'),
+    # ========== END ELDER PROFILE URLS ==========
+
+
+
 ]

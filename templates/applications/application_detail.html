@@ -170,7 +170,7 @@
 
             <div class="info-row">
                 <span class="info-label">Job Type</span>
-                <span class="info-value">{{ application.get_job_type_display }}</span>
+                <span class="info-value">{{ application.request.get_care_type_display }}</span>
             </div>
 
             <div class="info-row">
@@ -204,12 +204,24 @@
                             <span class="timeline-event">Offer Accepted</span>
                         </div>
                         {% endif %}
+                        {% if application.offer_declined_at %}
+                        <div class="timeline-item">
+                            <span class="timeline-date">{{ application.offer_declined_at|date:"M d, Y" }}</span>
+                            <span class="timeline-event">Offer Declined</span>
+                        </div>
+                        {% endif %}
+                        {% if application.rejected_at %}
+                        <div class="timeline-item">
+                            <span class="timeline-date">{{ application.rejected_at|date:"M d, Y" }}</span>
+                            <span class="timeline-event">Rejected</span>
+                        </div>
+                        {% endif %}
                     </div>
                 </span>
             </div>
         </div>
 
-        <!-- Candidate Details - FIXED SECTION -->
+        <!-- Candidate Details -->
         <div class="detail-card">
             <div class="card-title">
                 <i class="fas fa-user"></i> Candidate Details
@@ -227,7 +239,7 @@
 
             <div class="info-row">
                 <span class="info-label">Phone</span>
-                <span class="info-value">{{ application.caretaker.phone|default:"Not provided" }}</span>
+                <span class="info-value">{{ application.caretaker.phone_number|default:"Not provided" }}</span>
             </div>
 
             <div class="info-row">
@@ -240,11 +252,25 @@
                     {% endif %}
                 </span>
             </div>
+
+            {% if application.caretaker.caretaker_profile and application.caretaker.caretaker_profile.skills %}
+            <div class="info-row">
+                <span class="info-label">Skills</span>
+                <span class="info-value">{{ application.caretaker.caretaker_profile.skills|truncatechars:50 }}</span>
+            </div>
+            {% endif %}
+
+            {% if application.caretaker.caretaker_profile and application.caretaker.caretaker_profile.city %}
+            <div class="info-row">
+                <span class="info-label">Location</span>
+                <span class="info-value">{{ application.caretaker.caretaker_profile.city }}</span>
+            </div>
+            {% endif %}
         </div>
     </div>
 
     <!-- Back Button -->
-    <a href="{% url 'applications:request_applications' application.request.id %}" class="btn btn-secondary">
+    <a href="{% url 'applications:family_applications' %}?type=received" class="btn btn-secondary">
         <i class="fas fa-arrow-left"></i> Back to Applications
     </a>
 </div>

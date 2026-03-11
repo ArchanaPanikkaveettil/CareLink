@@ -1,0 +1,160 @@
+{% extends 'users/family_base.html' %}
+
+{% load static %}
+
+{% block title %}Delete {{ elder.name }} - CareLink{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-container {
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+
+    .delete-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        text-align: center;
+    }
+
+    .warning-icon {
+        font-size: 4rem;
+        color: #ef4444;
+        margin-bottom: 20px;
+    }
+
+    .delete-card h2 {
+        color: #0f3460;
+        margin-bottom: 15px;
+    }
+
+    .delete-card p {
+        color: #64748b;
+        margin-bottom: 25px;
+        line-height: 1.6;
+    }
+
+    .elder-info {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 12px;
+        margin: 20px 0;
+        text-align: left;
+    }
+
+    .elder-info h3 {
+        color: #0f3460;
+        margin-bottom: 10px;
+    }
+
+    .elder-info p {
+        margin: 5px 0;
+        color: #475569;
+    }
+
+    .warning-text {
+        color: #ef4444;
+        font-size: 0.9rem;
+        margin: 20px 0;
+        padding: 10px;
+        background: #fee2e2;
+        border-radius: 8px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #475569;
+    }
+
+    @media (max-width: 768px) {
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="delete-card">
+        <div class="warning-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <h2>Delete Elder Profile</h2>
+        <p>Are you sure you want to delete this elder profile? This action cannot be undone.</p>
+        
+        <div class="elder-info">
+            <h3>{{ elder.name }}</h3>
+            <p><i class="fas fa-heart"></i> {{ elder.get_relationship_display }}</p>
+            <p><i class="fas fa-birthday-cake"></i> {{ elder.age }} years old</p>
+            {% if elder.is_primary %}
+            <p><span class="badge" style="background: #0f3460; color: white; padding: 3px 10px; border-radius: 15px;">
+                <i class="fas fa-star"></i> Primary Elder
+            </span></p>
+            {% endif %}
+        </div>
+        
+        <div class="warning-text">
+            <i class="fas fa-info-circle"></i>
+            This will permanently delete all medical information, emergency contacts, and notes associated with this elder.
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Yes, Delete Profile
+                </button>
+                <a href="{% url 'elder_detail' elder.id %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

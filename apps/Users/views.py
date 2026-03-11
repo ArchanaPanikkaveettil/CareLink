@@ -6,6 +6,8 @@ from django.db.models import Q, Count
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import User, CaretakerProfile, FamilyProfile, CaretakerAvailability
+from apps.Users.models import User, CaretakerProfile
+from django.contrib.auth.decorators import login_required
 
 User = get_user_model()
 User = get_user_model()
@@ -1257,8 +1259,8 @@ def verification_pending(request):
 
     if request.user.is_verified:
         # Fix: Use the correct URL name with namespace
-        return redirect('dashboard:caretaker_dashboard')  # Add 'dashboard:' namespace
-    
+        return redirect("dashboard:caretaker_dashboard")  # Add 'dashboard:' namespace
+
     return render(request, "users/verification_pending.html")
 
 
@@ -1315,16 +1317,21 @@ def search_caretakers(request):
 
 @login_required
 def caretaker_detail(request, id):
-    # Only families can view caretaker details
-    if request.user.role != "family":
-        messages.error(request, "Access denied.")
-        return redirect("index")
+    """View caretaker profile details"""
+    # Get the caretaker user
+    caretaker = get_object_or_404(User, id=id, role="caretaker")
 
-    caretaker = get_object_or_404(
-        CaretakerProfile.objects.select_related("user"), id=id, user__is_verified=True
-    )
+    # Try to get the profile, but don't fail if it doesn't exist
+    try:
+        profile = CaretakerProfile.objects.get(user=caretaker)
+    except CaretakerProfile.DoesNotExist:
+        profile = None
 
-    return render(request, "users/caretaker_detail.html", {"caretaker": caretaker})
+    context = {
+        "caretaker": caretaker,
+        "profile": profile,
+    }
+    return render(request, "users/caretaker_detail.html", context)
 
 
 # -------------------------------------------------------------------------
@@ -1615,4 +1622,217 @@ def family_dashboard(request):
     return render(request, "users/family_dashboard.html", context)
 
 
+# -------------------------------------------------------------------------
+# Elder Profile Views
+# -------------------------------------------------------------------------
 
+from .models import ElderProfile
+
+
+@login_required
+def elder_list(request):
+    """List all elders for the family"""
+    if request.user.role != "family":
+        messages.error(request, "Access denied.")
+        return redirect("index")
+
+    elders = ElderProfile.objects.filter(family=request.user).order_by(
+        "-is_primary", "name"
+    )
+
+    context = {
+        "elders": elders,
+    }
+    return render(request, "users/elder_list.html", context)
+
+
+@login_required
+def elder_detail(request, elder_id):
+    """View elder details"""
+    if request.user.role != "family":
+        messages.error(request, "Access denied.")
+        return redirect("index")
+
+    elder = get_object_or_404(ElderProfile, id=elder_id, family=request.user)
+
+    context = {
+        "elder": elder,
+    }
+    return render(request, "users/elder_detail.html", context)
+
+
+@login_required
+def elder_add(request):
+    """Add a new elder"""
+    if request.user.role != 'family':
+        messages.error(request, "Access denied.")
+        return redirect('index')
+    
+    if request.method == 'POST':
+        try:
+            elder = ElderProfile.objects.create(
+                family=request.user,
+                name=request.POST.get('name'),
+                age=request.POST.get('age'),
+                gender=request.POST.get('gender'),
+                relationship=request.POST.get('relationship'),
+                blood_group=request.POST.get('blood_group', ''),
+                medical_conditions=request.POST.get('medical_conditions', ''),
+                allergies=request.POST.get('allergies', ''),
+                medications=request.POST.get('medications', ''),
+                dietary_restrictions=request.POST.get('dietary_restrictions', ''),
+                mobility_status=request.POST.get('mobility_status', 'independent'),
+                cognitive_status=request.POST.get('cognitive_status', 'normal'),
+                emergency_contact_name=request.POST.get('emergency_contact_name', ''),
+                emergency_contact_phone=request.POST.get('emergency_contact_phone', ''),
+                emergency_contact_relation=request.POST.get('emergency_contact_relation', ''),
+                notes=request.POST.get('notes', ''),
+                is_primary=request.POST.get('is_primary') == 'on',
+            )
+            
+            # Add elder to family profile's elders list
+            try:
+                family_profile = request.user.family_profile
+                family_profile.elders.add(elder)
+                family_profile.save()
+            except FamilyProfile.DoesNotExist:
+                # Create family profile if it doesn't exist
+                family_profile = FamilyProfile.objects.create(user=request.user)
+                family_profile.elders.add(elder)
+                family_profile.save()
+            
+            # If this is the first elder, automatically set as primary
+            if ElderProfile.objects.filter(family=request.user).count() == 1:
+                elder.is_primary = True
+                elder.save()
+            
+            messages.success(request, f"Elder profile for {elder.name} added successfully!")
+            return redirect('elder_list')
+        except Exception as e:
+            messages.error(request, f"Error adding elder: {str(e)}")
+    
+    return render(request, 'users/elder_add.html')
+
+
+
+@login_required
+def elder_edit(request, elder_id):
+    """Edit elder profile"""
+    if request.user.role != "family":
+        messages.error(request, "Access denied.")
+        return redirect("index")
+
+    elder = get_object_or_404(ElderProfile, id=elder_id, family=request.user)
+
+    if request.method == "POST":
+        try:
+            elder.name = request.POST.get("name", elder.name)
+            elder.age = request.POST.get("age", elder.age)
+            elder.gender = request.POST.get("gender", elder.gender)
+            elder.relationship = request.POST.get("relationship", elder.relationship)
+            elder.blood_group = request.POST.get("blood_group", elder.blood_group)
+            elder.medical_conditions = request.POST.get(
+                "medical_conditions", elder.medical_conditions
+            )
+            elder.allergies = request.POST.get("allergies", elder.allergies)
+            elder.medications = request.POST.get("medications", elder.medications)
+            elder.dietary_restrictions = request.POST.get(
+                "dietary_restrictions", elder.dietary_restrictions
+            )
+            elder.mobility_status = request.POST.get(
+                "mobility_status", elder.mobility_status
+            )
+            elder.cognitive_status = request.POST.get(
+                "cognitive_status", elder.cognitive_status
+            )
+            elder.emergency_contact_name = request.POST.get(
+                "emergency_contact_name", elder.emergency_contact_name
+            )
+            elder.emergency_contact_phone = request.POST.get(
+                "emergency_contact_phone", elder.emergency_contact_phone
+            )
+            elder.emergency_contact_relation = request.POST.get(
+                "emergency_contact_relation", elder.emergency_contact_relation
+            )
+            elder.notes = request.POST.get("notes", elder.notes)
+
+            # Handle primary status
+            new_primary = request.POST.get("is_primary") == "on"
+            if new_primary and not elder.is_primary:
+                # Set this as primary, which will unset others via model's save method
+                elder.is_primary = True
+            elif not new_primary and elder.is_primary:
+                # Check if this is the only elder
+                if ElderProfile.objects.filter(family=request.user).count() > 1:
+                    elder.is_primary = False
+                else:
+                    messages.warning(
+                        request, "Cannot unset primary as this is the only elder."
+                    )
+
+            # Handle profile picture
+            if "profile_picture" in request.FILES:
+                elder.profile_picture = request.FILES["profile_picture"]
+
+            elder.save()
+            messages.success(
+                request, f"Elder profile for {elder.name} updated successfully!"
+            )
+            return redirect("elder_detail", elder_id=elder.id)
+        except Exception as e:
+            messages.error(request, f"Error updating elder: {str(e)}")
+
+    context = {
+        "elder": elder,
+    }
+    return render(request, "users/elder_edit.html", context)
+
+
+@login_required
+def elder_delete(request, elder_id):
+    """Delete elder profile"""
+    if request.user.role != "family":
+        messages.error(request, "Access denied.")
+        return redirect("index")
+
+    elder = get_object_or_404(ElderProfile, id=elder_id, family=request.user)
+
+    if request.method == "POST":
+        name = elder.name
+        was_primary = elder.is_primary
+        elder.delete()
+
+        # If we deleted the primary elder, set another as primary
+        if was_primary:
+            remaining = ElderProfile.objects.filter(family=request.user).first()
+            if remaining:
+                remaining.is_primary = True
+                remaining.save()
+                messages.info(
+                    request, f"{remaining.name} has been set as the new primary elder."
+                )
+
+        messages.success(request, f"Elder profile for {name} deleted successfully!")
+        return redirect("elder_list")
+
+    context = {
+        "elder": elder,
+    }
+    return render(request, "users/elder_confirm_delete.html", context)
+
+
+@login_required
+def elder_set_primary(request, elder_id):
+    """Set an elder as primary"""
+    if request.user.role != "family":
+        messages.error(request, "Access denied.")
+        return redirect("index")
+
+    elder = get_object_or_404(ElderProfile, id=elder_id, family=request.user)
+
+    # Set this as primary (model save will handle unsetting others)
+    elder.is_primary = True
+    elder.save()
+
+    messages.success(request, f"{elder.name} is now the primary elder.")
+    return redirect("elder_list")

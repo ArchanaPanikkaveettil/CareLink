@@ -183,12 +183,151 @@
         color: #0f3460;
     }
 
+    /* Elder Cards Styling */
+    .elders-section {
+        margin-top: 30px;
+    }
+
+    .elders-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .elder-card {
+        background: #f8fafc;
+        border-radius: 15px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    .elder-card.primary {
+        border: 2px solid #0f3460;
+        background: linear-gradient(to bottom, #f8fafc, #f0f4ff);
+    }
+
+    .elder-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(15, 52, 96, 0.1);
+    }
+
+    .primary-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #0f3460;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .elder-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .elder-avatar {
+        width: 50px;
+        height: 50px;
+        background: #0f3460;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .elder-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .elder-info h4 {
+        color: #0f3460;
+        margin: 0 0 5px;
+        font-size: 1.1rem;
+    }
+
+    .elder-info p {
+        color: #64748b;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .elder-details {
+        margin: 15px 0;
+        padding: 10px 0;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .elder-detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        font-size: 0.9rem;
+    }
+
+    .elder-detail-label {
+        color: #64748b;
+    }
+
+    .elder-detail-value {
+        color: #0f3460;
+        font-weight: 500;
+    }
+
+    .elder-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .btn-sm {
+        padding: 5px 12px;
+        font-size: 0.8rem;
+        border-radius: 6px;
+    }
+
+    .btn-outline-sm {
+        background: transparent;
+        border: 1px solid #0f3460;
+        color: #0f3460;
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-outline-sm:hover {
+        background: #0f3460;
+        color: white;
+    }
+
     @media (max-width: 768px) {
         .profile-container {
             grid-template-columns: 1fr;
         }
 
         .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .elders-grid {
             grid-template-columns: 1fr;
         }
     }
@@ -229,7 +368,7 @@
                 <div class="stat-label">Open</div>
             </div>
             <div class="stat">
-                <div class="stat-number">{{ total_applications|default:"0" }}</div> <!-- ← Changed from applications -->
+                <div class="stat-number">{{ total_applications|default:"0" }}</div>
                 <div class="stat-label">Applications</div>
             </div>
         </div>
@@ -292,74 +431,91 @@
             </div>
         </div>
 
-        <!-- {% if profile.emergency_contact %}
-        <h3 class="section-title" style="margin-top: 20px;">
-            <i class="fas fa-phone-alt"></i> Emergency Contact
-        </h3>
-
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label"><i class="fas fa-user"></i> Contact Person</div>
-                <div class="info-value">{{ profile.emergency_contact_name|default:"Not provided" }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label"><i class="fas fa-phone"></i> Phone</div>
-                <div class="info-value">{{ profile.emergency_contact_phone|default:"Not provided" }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label"><i class="fas fa-tag"></i> Relationship</div>
-                <div class="info-value">{{ profile.emergency_contact_relation|default:"Not provided" }}</div>
-            </div>
-        </div>
-        {% endif %} -->
-
-
-        <!-- OR -->
-
-        <!-- Emergency Contact Section -->
-        <!-- ----------------------- -->
-        <!-- {% if profile.emergency_contact_name or profile.emergency_contact_phone or profile.emergency_contact_relation %}
-        <h3 class="section-title" style="margin-top: 20px;">
-            <i class="fas fa-phone-alt"></i> Emergency Contact
-        </h3>
-
-        <div class="info-grid">
-            {% if profile.emergency_contact_name %}
-            <div class="info-item">
-                <div class="info-label"><i class="fas fa-user"></i> Contact Person</div>
-                <div class="info-value">{{ profile.emergency_contact_name }}</div>
-            </div>
-            {% endif %}
-
-            {% if profile.emergency_contact_phone %}
-            <div class="info-item">
-                <div class="info-label"><i class="fas fa-phone"></i> Phone</div>
-                <div class="info-value">{{ profile.emergency_contact_phone }}</div>
-            </div>
-            {% endif %}
-
-            {% if profile.emergency_contact_relation %}
-            <div class="info-item">
-                <div class="info-label"><i class="fas fa-tag"></i> Relationship</div>
-                <div class="info-value">{{ profile.emergency_contact_relation }}</div>
-            </div>
-            {% endif %}
-        </div>
-        {% else %} -->
-
-        <!-- Show this only when no emergency contact exists -->
-        <!-- -------------------------------------------------- -->
-
-        <!-- <div class="info-item" style="background: #f8fafc; margin-top: 20px;">
-            <div class="info-value" style="color: #64748b; text-align: center; padding: 15px;">
-                <i class="fas fa-info-circle"></i> No emergency contact added yet.
-                <a href="{% url 'update_family_profile' %}" style="color: #0f3460; display: block; margin-top: 10px;">
-                    <i class="fas fa-plus-circle"></i> Add Emergency Contact
+        <!-- ========== ELDERS SECTION - ADD THIS ========== -->
+        <div class="elders-section">
+            <h3 class="section-title">
+                <i class="fas fa-users"></i> Elders in Your Care
+                <a href="{% url 'elder_add' %}" class="btn btn-primary btn-sm" style="margin-left: auto; font-size: 0.9rem; padding: 5px 15px;">
+                    <i class="fas fa-plus-circle"></i> Add Elder
                 </a>
-            </div>
-        </div>
-        {% endif %} -->
+            </h3>
 
+            {% with elders=user.elder_profiles.all %}
+                {% if elders %}
+                    <div class="elders-grid">
+                        {% for elder in elders %}
+                        <div class="elder-card {% if elder.is_primary %}primary{% endif %}">
+                            {% if elder.is_primary %}
+                            <div class="primary-badge">
+                                <i class="fas fa-star"></i> Primary
+                            </div>
+                            {% endif %}
+                            
+                            <div class="elder-header">
+                                <div class="elder-avatar">
+                                    {% if elder.profile_picture %}
+                                    <img src="{{ elder.profile_picture.url }}" alt="{{ elder.name }}">
+                                    {% else %}
+                                    <i class="fas fa-user-circle"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="elder-info">
+                                    <h4>{{ elder.name }}</h4>
+                                    <p><i class="fas fa-heart"></i> {{ elder.get_relationship_display }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="elder-details">
+                                <div class="elder-detail-item">
+                                    <span class="elder-detail-label">Age/Gender:</span>
+                                    <span class="elder-detail-value">{{ elder.age }} yrs, {{ elder.get_gender_display }}</span>
+                                </div>
+                                <div class="elder-detail-item">
+                                    <span class="elder-detail-label">Mobility:</span>
+                                    <span class="elder-detail-value">{{ elder.get_mobility_status_display }}</span>
+                                </div>
+                                {% if elder.blood_group %}
+                                <div class="elder-detail-item">
+                                    <span class="elder-detail-label">Blood Group:</span>
+                                    <span class="elder-detail-value">{{ elder.blood_group }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="elder-actions">
+                                <a href="{% url 'elder_detail' elder.id %}" class="btn-outline-sm">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <a href="{% url 'elder_edit' elder.id %}" class="btn-outline-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                {% if not elder.is_primary %}
+                                <a href="{% url 'elder_set_primary' elder.id %}" class="btn-outline-sm" 
+                                   onclick="return confirm('Set {{ elder.name }} as primary elder?')">
+                                    <i class="fas fa-star"></i> Set Primary
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="info-item" style="background: #f8fafc; margin-top: 20px;">
+                        <div class="info-value" style="color: #64748b; text-align: center; padding: 20px;">
+                            <i class="fas fa-users fa-2x mb-2" style="color: #cbd5e1;"></i>
+                            <p>No elders added yet.</p>
+                            <a href="{% url 'elder_add' %}" style="color: #0f3460; display: inline-block; margin-top: 10px; padding: 8px 20px; background: #0f3460; color: white; border-radius: 8px; text-decoration: none;">
+                                <i class="fas fa-plus-circle"></i> Add Your First Elder
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+        <!-- ========== END ELDERS SECTION ========== -->
+
+        <!-- Emergency Contact Section (commented out) -->
+        <!-- ... existing emergency contact code ... -->
 
     </div>
 </div>

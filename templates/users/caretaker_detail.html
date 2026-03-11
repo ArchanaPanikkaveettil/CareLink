@@ -1,255 +1,543 @@
-<!DOCTYPE html>
-<html>
+{% extends 'users/family_base.html' %}
 
-<head>
-    <title>Caretaker Details - CareLink</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            margin: 0;
-            padding: 0;
-        }
+{% load static %}
 
-        .navbar {
-            background: #28a745;
-            color: white;
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+{% block title %}Caretaker Profile - {{ caretaker.get_full_name|default:caretaker.username }}{% endblock %}
 
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-        }
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
 
-        .navbar a:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #0f3460;
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 20px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
 
-        .container {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
+    .back-link:hover {
+        background: #f1f5f9;
+    }
 
-        .profile-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 25px;
+    }
 
-        .profile-header {
-            background: #28a745;
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
+    /* Sidebar Card */
+    .profile-sidebar {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        height: fit-content;
+    }
 
-        .profile-header h1 {
-            margin: 0;
-            font-size: 28px;
-        }
+    .avatar-container {
+        text-align: center;
+        margin-bottom: 20px;
+    }
 
-        .profile-header .badge {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-            margin-top: 10px;
-            font-size: 14px;
-        }
+    .avatar-circle {
+        width: 150px;
+        height: 150px;
+        background: linear-gradient(135deg, #0f3460, #1a4a8a);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        border: 4px solid #e2e8f0;
+        overflow: hidden;
+    }
 
-        .profile-body {
-            padding: 30px;
-        }
+    .avatar-circle i {
+        font-size: 4rem;
+        color: white;
+    }
 
-        .info-section {
-            margin-bottom: 25px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
-        }
+    .avatar-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 
-        .info-section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
+    .profile-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #0f3460;
+        margin-bottom: 5px;
+        text-align: center;
+    }
 
-        .info-section h3 {
-            color: #333;
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 18px;
+    .profile-role {
+        text-align: center;
+        color: #64748b;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .verification-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin: 10px auto;
+        width: fit-content;
+    }
+
+    .badge-verified {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .contact-info {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        color: #475569;
+    }
+
+    .contact-item i {
+        width: 20px;
+        color: #0f3460;
+        font-size: 1.1rem;
+    }
+
+    /* Main Content Cards */
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .card-header i {
+        font-size: 1.3rem;
+        color: #0f3460;
+    }
+
+    .card-header h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #0f3460;
+        margin: 0;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .info-row {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .info-label {
+        font-size: 0.85rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #0f3460;
+    }
+
+    .skills-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .skill-tag {
+        background: #f1f5f9;
+        color: #0f3460;
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+    }
+
+    .documents-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .document-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: #f8fafc;
+        border-radius: 12px;
+        transition: all 0.3s;
+    }
+
+    .document-item:hover {
+        background: #f1f5f9;
+        transform: translateY(-2px);
+    }
+
+    .document-item i {
+        font-size: 1.8rem;
+        color: #0f3460;
+    }
+
+    .document-info {
+        flex: 1;
+    }
+
+    .document-info h4 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #0f3460;
+        margin: 0 0 3px;
+    }
+
+    .document-info p {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .document-link {
+        color: #0f3460;
+        font-size: 1.2rem;
+        padding: 5px 10px;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+    .document-link:hover {
+        background: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #64748b;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: #cbd5e1;
+        margin-bottom: 15px;
+    }
+
+    .alert-warning {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        color: #92400e;
+        padding: 20px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .alert-warning i {
+        font-size: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
         }
 
         .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+            grid-template-columns: 1fr;
         }
+    }
+</style>
+{% endblock %}
 
-        .info-item {
-            margin-bottom: 10px;
-        }
+{% block content %}
+<div class="profile-container">
+    <!-- Back Link -->
+    <a href="javascript:history.back()" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
 
-        .info-label {
-            font-weight: bold;
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-
-        .info-value {
-            color: #333;
-            font-size: 16px;
-        }
-
-        .certificate-section {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 15px;
-        }
-
-        .certificate-link {
-            display: inline-block;
-            background: #007bff;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-
-        .certificate-link:hover {
-            background: #0056b3;
-        }
-
-        .action-buttons {
-            margin-top: 30px;
-            text-align: center;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 12px 30px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .btn-primary {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #218838;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 3px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .status-available {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-busy {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-booked {
-            background: #f8d7da;
-            color: #721c24;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="navbar">
-        <h2>CareLink</h2>
-        <a href="{% url 'search_caretakers' %}">← Back to Search</a>
-    </div>
-
-    <div class="container">
-        <div class="profile-card">
-            <div class="profile-header">
-                <h1>{{ caretaker.user.username }}</h1>
-                <div class="badge">
-                    Experience: {{ caretaker.experience_years }} years
+    <div class="profile-grid">
+        <!-- Sidebar -->
+        <div class="profile-sidebar">
+            <div class="avatar-container">
+                <div class="avatar-circle">
+                    {% if caretaker.profile_picture %}
+                        <img src="{{ caretaker.profile_picture.url }}" alt="{{ caretaker.get_full_name }}">
+                    {% else %}
+                        <i class="fas fa-user-nurse"></i>
+                    {% endif %}
                 </div>
+                <h2 class="profile-name">{{ caretaker.get_full_name|default:caretaker.username }}</h2>
+                <div class="profile-role">
+                    <i class="fas fa-briefcase"></i> Caretaker
+                </div>
+                
+                {% if caretaker.is_verified %}
+                    <div class="verification-badge badge-verified">
+                        <i class="fas fa-check-circle"></i> Verified Caretaker
+                    </div>
+                {% else %}
+                    <div class="verification-badge badge-pending">
+                        <i class="fas fa-clock"></i> Verification Pending
+                    </div>
+                {% endif %}
             </div>
 
-            <div class="profile-body">
-                <!-- Personal Information -->
-                <div class="info-section">
-                    <h3>Personal Information</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Phone Number</div>
-                            <div class="info-value">{{ caretaker.phone|default:"Not provided" }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Address</div>
-                            <div class="info-value">{{ caretaker.address|default:"Not provided" }}</div>
-                        </div>
-                    </div>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>{{ caretaker.email }}</span>
                 </div>
-
-                <!-- Professional Information -->
-                <div class="info-section">
-                    <h3>Professional Information</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Qualification</div>
-                            <div class="info-value">{{ caretaker.qualification|default:"Not specified" }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Experience</div>
-                            <div class="info-value">{{ caretaker.experience_years }} years</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Certificate Section -->
-                {% if caretaker.certificate %}
-                <div class="info-section">
-                    <h3>Certificate</h3>
-                    <div class="certificate-section">
-                        <p>The caretaker has uploaded a certificate/document.</p>
-                        <a href="{{ caretaker.certificate.url }}" class="certificate-link" target="_blank">
-                            View Certificate
-                        </a>
-                    </div>
+                {% if caretaker.phone %}
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <span>{{ caretaker.phone }}</span>
                 </div>
                 {% endif %}
-
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                    <a href="{% url 'search_caretakers' %}" class="btn btn-primary">
-                        Back to Search
-                    </a>
-                </div>
             </div>
         </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            {% if profile %}
+                <!-- Professional Information -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <i class="fas fa-briefcase"></i>
+                        <h3>Professional Information</h3>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-star"></i> Experience</span>
+                            <span class="info-value">{{ profile.experience_years|default:"0" }} years</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-graduation-cap"></i> Qualification</span>
+                            <span class="info-value">{{ profile.qualification|default:"Not specified" }}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-venus-mars"></i> Gender</span>
+                            <span class="info-value">{{ profile.get_gender_display|default:"Not specified" }}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-calendar-alt"></i> Date of Birth</span>
+                            <span class="info-value">{{ profile.date_of_birth|date:"d M Y"|default:"Not specified" }}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-clock"></i> Availability</span>
+                            <span class="info-value">{{ profile.get_availability_status_display|default:"Not specified" }}</span>
+                        </div>
+                        
+                        {% if profile.age %}
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-birthday-cake"></i> Age</span>
+                            <span class="info-value">{{ profile.age }} years</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if profile.skills %}
+                    <div style="margin-top: 20px;">
+                        <span class="info-label"><i class="fas fa-tools"></i> Skills</span>
+                        <div class="skills-container">
+                            {% for skill in profile.skills.split %}
+                                <span class="skill-tag">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if profile.languages %}
+                    <div style="margin-top: 20px;">
+                        <span class="info-label"><i class="fas fa-language"></i> Languages</span>
+                        <div class="skills-container">
+                            {% for lang in profile.languages.split %}
+                                <span class="skill-tag">{{ lang }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if profile.bio %}
+                    <div style="margin-top: 20px;">
+                        <span class="info-label"><i class="fas fa-info-circle"></i> Bio</span>
+                        <p style="color: #475569; margin-top: 10px; line-height: 1.6;">{{ profile.bio }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Location Information -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h3>Location</h3>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-home"></i> Address</span>
+                            <span class="info-value">{{ profile.address|default:"Not provided" }}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-city"></i> City</span>
+                            <span class="info-value">{{ profile.city|default:"Not provided" }}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-map"></i> State</span>
+                            <span class="info-value">{{ profile.state|default:"Not provided" }}</span>
+                        </div>
+                        
+                        <div class="info-row">
+                            <span class="info-label"><i class="fas fa-mail-bulk"></i> Pincode</span>
+                            <span class="info-value">{{ profile.pincode|default:"Not provided" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>Documents</h3>
+                    </div>
+                    
+                    <div class="documents-grid">
+                        {% if profile.certificate %}
+                        <div class="document-item">
+                            <i class="fas fa-certificate"></i>
+                            <div class="document-info">
+                                <h4>Certificate</h4>
+                                <p>Professional Certificate</p>
+                            </div>
+                            <a href="{{ profile.certificate.url }}" target="_blank" class="document-link" title="View Certificate">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        {% if profile.identity_proof %}
+                        <div class="document-item">
+                            <i class="fas fa-id-card"></i>
+                            <div class="document-info">
+                                <h4>ID Proof</h4>
+                                <p>Identity Document</p>
+                            </div>
+                            <a href="{{ profile.identity_proof.url }}" target="_blank" class="document-link" title="View ID Proof">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        {% if profile.resume %}
+                        <div class="document-item">
+                            <i class="fas fa-file-pdf"></i>
+                            <div class="document-info">
+                                <h4>Resume</h4>
+                                <p>CV / Resume</p>
+                            </div>
+                            <a href="{{ profile.resume.url }}" target="_blank" class="document-link" title="View Resume">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        {% if profile.background_check %}
+                        <div class="document-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <div class="document-info">
+                                <h4>Background Check</h4>
+                                <p>Verification Report</p>
+                            </div>
+                            <a href="{{ profile.background_check.url }}" target="_blank" class="document-link" title="View Background Check">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if not profile.certificate and not profile.identity_proof and not profile.resume and not profile.background_check %}
+                    <div class="empty-state">
+                        <i class="fas fa-file-alt"></i>
+                        <p>No documents uploaded</p>
+                    </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Profile Incomplete</strong>
+                        <p class="mt-2 mb-0">This caretaker hasn't completed their profile yet. Please check back later.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
     </div>
-
-</body>
-
-</html>
+</div>
+{% endblock %}
