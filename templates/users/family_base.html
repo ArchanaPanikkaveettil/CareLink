@@ -478,19 +478,19 @@
                 <span class="nav-badge">{{ total_applications_count }}</span>
                 {% endif %}
             </div>
-            
+
             <!-- Applications Sub-menu -->
             <div class="applications-menu">
-                <a href="{% url 'applications:family_applications' %}?type=received" 
-                   class="applications-sub-item {% if request.GET.type == 'received' or not request.GET.type %}active{% endif %}">
+                <a href="{% url 'applications:family_applications' %}?type=received"
+                    class="applications-sub-item {% if request.GET.type == 'received' or not request.GET.type %}active{% endif %}">
                     <i class="fas fa-inbox"></i>
                     <span>Received</span>
                     {% if received_count %}
                     <span class="count">{{ received_count }}</span>
                     {% endif %}
                 </a>
-                <a href="{% url 'applications:family_applications' %}?type=sent" 
-                   class="applications-sub-item {% if request.GET.type == 'sent' %}active{% endif %}">
+                <a href="{% url 'applications:family_applications' %}?type=sent"
+                    class="applications-sub-item {% if request.GET.type == 'sent' %}active{% endif %}">
                     <i class="fas fa-paper-plane"></i>
                     <span>Sent</span>
                     {% if sent_count %}
@@ -607,9 +607,6 @@
 
             // Update notification count on page load
             updateNotificationCount();
-
-            // Also update pending applications count if needed
-            updatePendingApplicationsCount();
         });
 
         // Toggle notifications panel
@@ -623,17 +620,62 @@
             }
         }
 
-        // Load notifications via AJAX
+        // Load notifications via AJAX - FIXED to handle JSON response
         function loadNotifications() {
             fetch('/notifications/get/')
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('notifications-panel').innerHTML = html;
+                .then(response => response.json())  // Change from .text() to .json()
+                .then(data => {
+                    document.getElementById('notifications-panel').innerHTML = data.html;
+                    // Update count after loading
+                    updateNotificationCount();
                 })
                 .catch(error => {
+                    console.error('Error loading notifications:', error);
                     document.getElementById('notifications-panel').innerHTML =
-                        '<div class="notification-empty">Error loading notifications</div>';
+                        '<div class="loading-spinner">Error loading notifications</div>';
                 });
+        }
+
+        // Mark a single notification as read
+        function markNotificationRead(notificationId) {
+            fetch(`/notifications/${notificationId}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload notifications
+                        loadNotifications();
+                        // Update count
+                        updateNotificationCount();
+                    }
+                })
+                .catch(error => console.error('Error marking notification as read:', error));
+        }
+
+        // Mark all notifications as read
+        function markAllNotificationsRead() {
+            fetch('/notifications/mark-all-read/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload notifications
+                        loadNotifications();
+                        // Update count
+                        updateNotificationCount();
+                    }
+                })
+                .catch(error => console.error('Error marking all as read:', error));
         }
 
         // Close notifications when clicking outside
@@ -660,10 +702,20 @@
                 .catch(error => console.error('Error updating count:', error));
         }
 
-        // Update pending applications count (optional - can be done server-side)
-        function updatePendingApplicationsCount() {
-            // This can be implemented if you want real-time updates
-            // For now, it's handled server-side in the template
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
 
         // Auto-refresh notifications every 60 seconds

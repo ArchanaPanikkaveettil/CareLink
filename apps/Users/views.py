@@ -9,6 +9,7 @@ from .models import User, CaretakerProfile, FamilyProfile, CaretakerAvailability
 from apps.Users.models import User, CaretakerProfile
 from django.contrib.auth.decorators import login_required
 
+
 User = get_user_model()
 User = get_user_model()
 
@@ -1315,23 +1316,27 @@ def search_caretakers(request):
 # -------------------------------------------------------------------------
 
 
+
 @login_required
 def caretaker_detail(request, id):
     """View caretaker profile details"""
-    # Get the caretaker user
-    caretaker = get_object_or_404(User, id=id, role="caretaker")
-
-    # Try to get the profile, but don't fail if it doesn't exist
+    # Try to get the caretaker user, but show a nice error if not found
+    try:
+        caretaker = User.objects.get(id=id, role='caretaker')
+    except User.DoesNotExist:
+        messages.error(request, f"Caretaker with ID {id} not found.")
+        return redirect('search_caretakers')
+    
     try:
         profile = CaretakerProfile.objects.get(user=caretaker)
     except CaretakerProfile.DoesNotExist:
         profile = None
-
+    
     context = {
-        "caretaker": caretaker,
-        "profile": profile,
+        'caretaker': caretaker,
+        'profile': profile,
     }
-    return render(request, "users/caretaker_detail.html", context)
+    return render(request, 'users/caretaker_detail.html', context)
 
 
 # -------------------------------------------------------------------------

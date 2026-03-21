@@ -1,4 +1,103 @@
 <!-- templates/notifications/dropdown.html -->
+
+/* Notification Dropdown Styles */
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background 0.2s;
+    position: relative;
+}
+
+.notification-item:hover {
+    background: #f8fafc;
+}
+
+.notification-item.unread {
+    background: #f0f9ff;
+}
+
+.notification-icon {
+    width: 36px;
+    height: 36px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notification-icon i {
+    font-size: 1rem;
+    color: #0f3460;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-message {
+    font-size: 0.9rem;
+    color: #1e293b;
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+
+.notification-time {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.mark-read-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: #94a3b8;
+    transition: color 0.2s;
+    flex-shrink: 0;
+}
+
+.mark-read-btn:hover {
+    color: #10b981;
+}
+
+.notification-empty {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+}
+
+.notification-empty i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.notification-footer {
+    padding: 12px;
+    text-align: center;
+    border-top: 1px solid #e2e8f0;
+}
+
+.notification-footer a {
+    color: #0f3460;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.notification-footer a:hover {
+    text-decoration: underline;
+}
+
+
 <div class="notifications-dropdown">
     <div class="notifications-header">
         <h3>

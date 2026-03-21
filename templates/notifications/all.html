@@ -1,67 +1,254 @@
-<!-- templates/notifications/all.html -->
-{% extends 'users/nurse_base.html' %}
+{% extends 'users/family_base.html' %}
+
 {% load static %}
 
 {% block title %}All Notifications - CareLink{% endblock %}
 
+{% block page_icon %}<i class="fas fa-bell"></i>{% endblock %}
 {% block page_title %}All Notifications{% endblock %}
 
+{% block extra_css %}
+<style>
+    .notifications-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .notifications-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .notifications-header h2 {
+        color: #0f3460;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .mark-all-btn {
+        background: #0f3460;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+    }
+
+    .mark-all-btn:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+    }
+
+    .notification-list {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .notification-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 20px;
+        border-bottom: 1px solid #e2e8f0;
+        transition: background 0.2s;
+    }
+
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+
+    .notification-item.unread {
+        background: #f0f9ff;
+    }
+
+    .notification-item:hover {
+        background: #f8fafc;
+    }
+
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        background: #f1f5f9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .notification-icon i {
+        font-size: 1.2rem;
+        color: #0f3460;
+    }
+
+    .notification-content {
+        flex: 1;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        color: #0f3460;
+        margin-bottom: 5px;
+    }
+
+    .notification-message {
+        color: #475569;
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+
+    .notification-meta {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .notification-time {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .mark-read-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        color: #94a3b8;
+        border-radius: 50%;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+    .mark-read-btn:hover {
+        background: #e2e8f0;
+        color: #10b981;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: #0f3460;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        margin-bottom: 25px;
+    }
+
+    .dashboard-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #0f3460;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .dashboard-btn:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .pagination .btn {
+        background: white;
+        border: 1px solid #e2e8f0;
+        padding: 8px 15px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #0f3460;
+        transition: all 0.3s;
+    }
+
+    .pagination .btn:hover {
+        background: #0f3460;
+        color: white;
+    }
+
+    .pagination .current {
+        background: #0f3460;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="main-content">
-    <div class="page-header">
-        <h1>
-            <i class="fas fa-bell" style="color: #1e3c72;"></i>
+<div class="notifications-container">
+    <div class="notifications-header">
+        <h2>
+            <i class="fas fa-bell"></i>
             All Notifications
-        </h1>
-        <button class="mark-read-btn" id="markAllRead">
-            <i class="fas fa-check-double"></i>
-            Mark all as read
+        </h2>
+        {% if notifications %}
+        <button onclick="markAllRead()" class="mark-all-btn">
+            <i class="fas fa-check-double"></i> Mark All as Read
         </button>
+        {% endif %}
     </div>
 
-    <!-- Notifications Container -->
-    <div class="notifications-container" id="notificationsContainer">
-        {% if notifications %}
-        <div class="notification-list">
-            {% for notification in notifications %}
-            <div class="notification-item {% if not notification.is_read %}unread{% endif %}"
-                data-id="{{ notification.id }}">
-                <div class="notification-icon">
-                    <i
-                        class="fas {% if notification.notification_type == 'assignment' %}fa-calendar-check{% elif notification.notification_type == 'application' %}fa-file-alt{% elif notification.notification_type == 'message' %}fa-envelope{% else %}fa-bell{% endif %}"></i>
-                </div>
-                <div class="notification-content">
-                    <div class="notification-title">{{ notification.title }}</div>
-                    <div class="notification-message">{{ notification.message }}</div>
-                    <div class="notification-time">
+    {% if notifications %}
+    <div class="notification-list">
+        {% for notification in notifications %}
+        <div class="notification-item {% if not notification.is_read %}unread{% endif %}" data-id="{{ notification.id }}">
+            <div class="notification-icon">
+                <i class="fas {% if notification.notification_type == 'assignment' %}fa-calendar-check{% elif notification.notification_type == 'application' %}fa-file-alt{% elif notification.notification_type == 'message' %}fa-envelope{% else %}fa-bell{% endif %}"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">{{ notification.title|default:"Notification" }}</div>
+                <div class="notification-message">{{ notification.message }}</div>
+                <div class="notification-meta">
+                    <span class="notification-time">
                         <i class="far fa-clock"></i>
                         {{ notification.created_at|timesince }} ago
-                    </div>
+                    </span>
+                    {% if notification.link %}
+                    <a href="{{ notification.link }}" class="notification-link">View Details →</a>
+                    {% endif %}
                 </div>
-                {% if not notification.is_read %}
-                <div class="notification-actions">
-                    <button class="mark-read" onclick="markAsRead('{{ notification.id }}')">
-                        <i class="fas fa-check"></i> Mark read
-                    </button>
-                </div>
-                {% endif %}
             </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <!-- Empty State -->
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="far fa-bell"></i>
-            </div>
-            <h3>No Notifications</h3>
-            <p>You don't have any notifications yet. When you receive notifications, they will appear here.</p>
-
-            <a href="{% url 'dashboard:caretaker_dashboard' %}" class="dashboard-btn">
-                <i class="fas fa-arrow-right"></i>
-                Go to Dashboard
-            </a>
-
+            {% if not notification.is_read %}
+            <button class="mark-read-btn" onclick="markAsRead('{{ notification.id }}')" title="Mark as read">
+                <i class="fas fa-check"></i>
+            </button>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
@@ -70,91 +257,94 @@
     <div class="pagination">
         {% if notifications.has_previous %}
         <a href="?page={{ notifications.previous_page_number }}" class="btn">
-            <i class="fas fa-chevron-left"></i>
+            <i class="fas fa-chevron-left"></i> Previous
         </a>
         {% endif %}
 
         {% for i in notifications.paginator.page_range %}
-        {% if notifications.number == i %}
-        <span class="btn active">{{ i }}</span>
-        {% else %}
-        <a href="?page={{ i }}" class="btn">{{ i }}</a>
-        {% endif %}
+            {% if notifications.number == i %}
+            <span class="current">{{ i }}</span>
+            {% else %}
+            <a href="?page={{ i }}" class="btn">{{ i }}</a>
+            {% endif %}
         {% endfor %}
 
         {% if notifications.has_next %}
         <a href="?page={{ notifications.next_page_number }}" class="btn">
-            <i class="fas fa-chevron-right"></i>
+            Next <i class="fas fa-chevron-right"></i>
         </a>
         {% endif %}
     </div>
-</div>
+    {% endif %}
 
-<!-- Search bar at bottom -->
-<div class="search-bar">
-    <i class="fas fa-search"></i>
-    <span>Type here to search</span>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-bell-slash"></i>
+        <h3>No Notifications</h3>
+        <p>You don't have any notifications yet. When you receive notifications, they will appear here.</p>
+        <a href="{% url 'dashboard:family_dashboard' %}" class="dashboard-btn">
+            <i class="fas fa-arrow-right"></i>
+            Go to Dashboard
+        </a>
+    </div>
+    {% endif %}
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-    /* Add all the CSS styles from the previous response here */
-    /* (I'll include the CSS in a separate block below) */
-</style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Mark all as read
-    document.getElementById('markAllRead')?.addEventListener('click', function () {
-        fetch("{% url 'notifications:mark_all_read' %}", {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Remove unread class from all notifications
-                    document.querySelectorAll('.notification-item').forEach(item => {
-                        item.classList.remove('unread');
-                    });
-                    // Remove all mark read buttons
-                    document.querySelectorAll('.notification-actions').forEach(action => {
-                        action.remove();
-                    });
-
-                    // Update button text temporarily
-                    const btn = document.getElementById('markAllRead');
-                    btn.innerHTML = '<i class="fas fa-check"></i> All marked as read';
-                    setTimeout(() => {
-                        btn.innerHTML = '<i class="fas fa-check-double"></i> Mark all as read';
-                    }, 2000);
-                }
-            });
-    });
-
-    // Mark individual notification as read
-    window.markAsRead = function (notificationId) {
+    // Mark a single notification as read
+    function markAsRead(notificationId) {
         fetch(`/notifications/${notificationId}/mark-read/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json'
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const notification = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
-                    notification.classList.remove('unread');
-                    const actions = notification.querySelector('.notification-actions');
-                    if (actions) actions.remove();
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload page to reflect changes
+                window.location.reload();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Mark all notifications as read
+    function markAllRead() {
+        fetch('/notifications/mark-all-read/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload page to reflect changes
+                window.location.reload();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
-            });
-    };
+            }
+        }
+        return cookieValue;
+    }
 </script>
 {% endblock %}

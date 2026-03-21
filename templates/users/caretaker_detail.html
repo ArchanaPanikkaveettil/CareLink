@@ -92,6 +92,32 @@
         gap: 5px;
     }
 
+    .availability-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin: 10px auto;
+        width: fit-content;
+        background: #10b981;
+        color: white;
+    }
+
+    .availability-badge.busy {
+        background: #f59e0b;
+    }
+
+    .availability-badge.fully_booked {
+        background: #ef4444;
+    }
+
+    .availability-badge.offline {
+        background: #64748b;
+    }
+
     .verification-badge {
         display: inline-flex;
         align-items: center;
@@ -132,6 +158,40 @@
         width: 20px;
         color: #0f3460;
         font-size: 1.1rem;
+    }
+
+    /* Statistics Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-card i {
+        font-size: 2rem;
+        color: #0f3460;
+        margin-bottom: 10px;
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #0f3460;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.9rem;
     }
 
     /* Main Content Cards */
@@ -304,6 +364,10 @@
         .info-grid {
             grid-template-columns: 1fr;
         }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 {% endblock %}
@@ -330,6 +394,12 @@
                 <div class="profile-role">
                     <i class="fas fa-briefcase"></i> Caretaker
                 </div>
+                
+                {% if profile %}
+                <div class="availability-badge {% if profile.availability_status == 'available' %}available{% elif profile.availability_status == 'busy' %}busy{% elif profile.availability_status == 'fully_booked' %}fully_booked{% else %}offline{% endif %}">
+                    <i class="fas fa-circle"></i> {{ profile.get_availability_status_display|default:"Available" }}
+                </div>
+                {% endif %}
                 
                 {% if caretaker.is_verified %}
                     <div class="verification-badge badge-verified">
@@ -359,6 +429,25 @@
         <!-- Main Content -->
         <div class="main-content">
             {% if profile %}
+                <!-- Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-briefcase"></i>
+                        <div class="stat-number">{{ profile.experience_years|default:"0" }}</div>
+                        <div class="stat-label">Years Experience</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="stat-number">{{ profile.completed_jobs|default:"0" }}</div>
+                        <div class="stat-label">Completed Jobs</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-star"></i>
+                        <div class="stat-number">{{ profile.average_rating|default:"0"|floatformat:1 }}</div>
+                        <div class="stat-label">Rating</div>
+                    </div>
+                </div>
+
                 <!-- Professional Information -->
                 <div class="info-card">
                     <div class="card-header">

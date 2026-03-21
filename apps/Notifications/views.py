@@ -42,7 +42,6 @@ def mark_notification_read(request, notification_id):
     notification.save()
     return JsonResponse({'success': True})
 
-
 @login_required
 def get_notifications_ajax(request):
     """Return notifications HTML for dropdown"""
@@ -63,3 +62,13 @@ def get_notifications_ajax(request):
         'html': html,
         'count': unread_count
     })
+
+# ADD THIS VIEW - For getting just the notification count
+@login_required
+def get_notification_count(request):
+    """Return unread notification count for AJAX"""
+    count = Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    ).count()
+    return JsonResponse({'count': count})
