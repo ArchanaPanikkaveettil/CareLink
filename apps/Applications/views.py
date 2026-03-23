@@ -4,9 +4,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.core.paginator import Paginator
-from apps.Applications.models import CareApplication    
+from apps.Applications.models import CareApplication
 from apps.Requests.models import CareRequest
 from apps.Users.models import User, CaretakerProfile
+from apps.Notifications.models import Notification
 
 
 # ============================================================================
@@ -17,6 +18,8 @@ from apps.Users.models import User, CaretakerProfile
 # -------------------------------------------------------------------------
 # Apply for a care request
 # -------------------------------------------------------------------------
+
+
 @login_required
 def apply_request(request, request_id):
     """Apply for a care request (for caretakers)"""
@@ -48,12 +51,38 @@ def apply_request(request, request_id):
             messages.error(request, "You have already applied for this request.")
             return redirect("my_applications")
 
-        CareApplication.objects.create(
+        # Create the application
+        application = CareApplication.objects.create(
             request=care_request,
             caretaker=request.user,
             message=message,
             proposed_rate=proposed_rate,
             status="pending",
+        )
+
+        # ========== CREATE NOTIFICATIONS ==========
+
+        # 1. Notify the family who posted the request
+        Notification.objects.create(
+            recipient=care_request.family,
+            sender=request.user,
+            notification_type="application",
+            title="New Application Received",
+            message=f'{request.user.get_full_name() or request.user.username} has applied for your care request "{care_request.patient_name}".',
+            icon="fa-file-alt",
+            link=f"/applications/request/{care_request.id}/",
+            is_read=False,
+        )
+
+        # 2. Notify the caretaker (confirmation)
+        Notification.objects.create(
+            recipient=request.user,
+            notification_type="application",
+            title="Application Submitted",
+            message=f'Your application for "{care_request.patient_name}" has been submitted successfully.',
+            icon="fa-check-circle",
+            link="/applications/my-applications/",
+            is_read=False,
         )
 
         messages.success(request, "Application submitted successfully!")
@@ -165,8 +194,17 @@ def respond_to_offer(request, application_id, response):
         with transaction.atomic():
             application.accept_offer()
 
-            # TODO: Send notification to family
-            # send_offer_accepted_notification(application)
+            # ========== CREATE NOTIFICATION ==========
+            Notification.objects.create(
+                recipient=application.request.family,
+                sender=request.user,
+                notification_type="assignment",
+                title="Offer Accepted",
+                message=f"{application.caretaker.get_full_name()} has accepted your offer for {application.request.patient_name}.",
+                icon="fa-check-circle",
+                link=f"/applications/detail/{application.id}/",
+                is_read=False,
+            )
 
             messages.success(
                 request,
@@ -176,8 +214,17 @@ def respond_to_offer(request, application_id, response):
     elif response == "decline":
         application.decline_offer()
 
-        # TODO: Send notification to family
-        # send_offer_declined_notification(application)
+        # ========== CREATE NOTIFICATION ==========
+        Notification.objects.create(
+            recipient=application.request.family,
+            sender=request.user,
+            notification_type="assignment",
+            title="Offer Declined",
+            message=f"{application.caretaker.get_full_name()} has declined your offer for {application.request.patient_name}.",
+            icon="fa-times-circle",
+            link=f"/applications/request/{application.request.id}/",
+            is_read=False,
+        )
 
         messages.info(request, "You have declined the offer.")
 
@@ -209,6 +256,7 @@ def view_offer(request, application_id):
 # FAMILY VIEWS
 # ============================================================================
 
+
 # -------------------------------------------------------------------------
 # Family Applications Dashboard - View all applications across all requests
 # -------------------------------------------------------------------------
@@ -216,55 +264,59 @@ def view_offer(request, application_id):
 def family_applications(request):
     """View all applications received across all care requests (for families)"""
     if request.user.role != "family":
-        messages.error(request, "Access denied. Only family members can view applications.")
+        messages.error(
+            request, "Access denied. Only family members can view applications."
+        )
         return redirect("index")
 
     # Get all care requests posted by this family
     care_requests = CareRequest.objects.filter(family=request.user)
-    
+
     # Get applications for these requests
-    applications = CareApplication.objects.filter(
-        request__in=care_requests
-    ).select_related(
-        'request', 'caretaker', 'caretaker__caretaker_profile'
-    ).order_by('-applied_at')
+    applications = (
+        CareApplication.objects.filter(request__in=care_requests)
+        .select_related("request", "caretaker", "caretaker__caretaker_profile")
+        .order_by("-applied_at")
+    )
 
     # Filter by status
-    status = request.GET.get('status', 'all')
-    if status != 'all':
+    status = request.GET.get("status", "all")
+    if status != "all":
         applications = applications.filter(status=status)
 
     # Count by status for the filter tabs
     total_count = applications.count()
-    pending_count = applications.filter(status='pending').count()
-    accepted_count = applications.filter(status='accepted').count()
-    rejected_count = applications.filter(status='rejected').count()
-    shortlisted_count = applications.filter(status='shortlisted').count()
-    offer_sent_count = applications.filter(status='offer_sent').count()
+    pending_count = applications.filter(status="pending").count()
+    accepted_count = applications.filter(status="accepted").count()
+    rejected_count = applications.filter(status="rejected").count()
+    shortlisted_count = applications.filter(status="shortlisted").count()
+    offer_sent_count = applications.filter(status="offer_sent").count()
 
     # Pagination
     paginator = Paginator(applications, 10)  # Show 10 applications per page
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     #  Get counts for sidebar
-    received_count = applications.filter(status__in=['pending', 'accepted', 'rejected', 'offer_sent']).count()
+    received_count = applications.filter(
+        status__in=["pending", "accepted", "rejected", "offer_sent"]
+    ).count()
     sent_count = 0  # Will be implemented later for direct requests
 
     context = {
-        'applications': page_obj,
-        'total_count': total_count,
-        'pending_count': pending_count,
-        'accepted_count': accepted_count,
-        'rejected_count': rejected_count,
-        'shortlisted_count': shortlisted_count,
-        'offer_sent_count': offer_sent_count,
-        'current_status': status,
-        'received_count': received_count,
-        'sent_count': sent_count,
-        'total_applications_count': total_count,
+        "applications": page_obj,
+        "total_count": total_count,
+        "pending_count": pending_count,
+        "accepted_count": accepted_count,
+        "rejected_count": rejected_count,
+        "shortlisted_count": shortlisted_count,
+        "offer_sent_count": offer_sent_count,
+        "current_status": status,
+        "received_count": received_count,
+        "sent_count": sent_count,
+        "total_applications_count": total_count,
     }
-    return render(request, 'applications/family_applications.html', context)
+    return render(request, "applications/family_applications.html", context)
 
 
 # -------------------------------------------------------------------------
@@ -278,15 +330,15 @@ def family_quick_accept(request, application_id):
         return redirect("index")
 
     application = get_object_or_404(
-        CareApplication, 
-        id=application_id, 
+        CareApplication,
+        id=application_id,
         request__family=request.user,
-        status='pending'
+        status="pending",
     )
 
     if request.method == "POST":
         # Simple accept flow for dashboard
-        application.status = 'accepted'
+        application.status = "accepted"
         application.accepted_at = timezone.now()
         application.save()
 
@@ -294,26 +346,25 @@ def family_quick_accept(request, application_id):
         care_request = application.request
         care_request.assigned_caretaker = application.caretaker
         care_request.assigned_date = timezone.now()
-        care_request.status = 'assigned'
+        care_request.status = "assigned"
         care_request.save()
 
         # Reject all other pending applications for this request
-        CareApplication.objects.filter(
-            request=care_request,
-            status='pending'
-        ).exclude(id=application.id).update(
-            status='rejected',
-            rejection_note='Another candidate was selected',
-            rejected_at=timezone.now()
+        CareApplication.objects.filter(request=care_request, status="pending").exclude(
+            id=application.id
+        ).update(
+            status="rejected",
+            rejection_note="Another candidate was selected",
+            rejected_at=timezone.now(),
         )
 
         messages.success(
-            request, 
-            f"✅ Application from {application.caretaker.get_full_name()} has been accepted and assigned."
+            request,
+            f"✅ Application from {application.caretaker.get_full_name()} has been accepted and assigned.",
         )
-        return redirect('family_applications')
+        return redirect("family_applications")
 
-    return redirect('family_applications')
+    return redirect("family_applications")
 
 
 # -------------------------------------------------------------------------
@@ -327,28 +378,27 @@ def family_quick_reject(request, application_id):
         return redirect("index")
 
     application = get_object_or_404(
-        CareApplication, 
-        id=application_id, 
+        CareApplication,
+        id=application_id,
         request__family=request.user,
-        status='pending'
+        status="pending",
     )
 
     if request.method == "POST":
-        application.status = 'rejected'
-        application.rejection_note = request.POST.get('rejection_note', 'Rejected from dashboard')
+        application.status = "rejected"
+        application.rejection_note = request.POST.get(
+            "rejection_note", "Rejected from dashboard"
+        )
         application.rejected_at = timezone.now()
         application.save()
 
         messages.success(
-            request, 
-            f"✅ Application from {application.caretaker.get_full_name()} has been rejected."
+            request,
+            f"✅ Application from {application.caretaker.get_full_name()} has been rejected.",
         )
-        return redirect('family_applications')
+        return redirect("family_applications")
 
-    return redirect('family_applications')
-
-
-
+    return redirect("family_applications")
 
 
 # -------------------------------------------------------------------------
@@ -463,6 +513,19 @@ def reject_application(request, application_id):
         application.status = "rejected"
         application.rejection_note = request.POST.get("rejection_note", "")
         application.save()
+        
+        # ========== CREATE NOTIFICATION ==========
+        Notification.objects.create(
+            recipient=application.caretaker,
+            sender=request.user,
+            notification_type='application',
+            title='Application Update',
+            message=f'Your application for "{application.request.patient_name}" has been reviewed. Please check the status.',
+            icon='fa-info-circle',
+            link=f'/applications/detail/{application.id}/',
+            is_read=False
+        )
+        
         messages.success(request, "Application rejected.")
     else:
         messages.error(request, "This application cannot be rejected.")
@@ -527,8 +590,17 @@ def shortlist_application(request, application_id):
         # Shortlist the application
         application.shortlist(notes=notes, rank=shortlisted_count + 1)
 
-        # TODO: Send notification to caretaker
-        # send_shortlist_notification(application)
+        # ========== CREATE NOTIFICATION ==========
+        Notification.objects.create(
+            recipient=application.caretaker,
+            sender=request.user,
+            notification_type="application",
+            title="Application Shortlisted",
+            message=f'Your application for "{application.request.patient_name}" has been shortlisted by the family.',
+            icon="fa-star",
+            link=f"/applications/detail/{application.id}/",
+            is_read=False,
+        )
 
         messages.success(
             request, f"{application.caretaker.get_full_name()} has been shortlisted."
@@ -688,6 +760,18 @@ def remove_shortlist(request, application_id):
         application.shortlisted_at = None
         application.save()
 
+        # ========== CREATE NOTIFICATION ==========
+        Notification.objects.create(
+            recipient=application.caretaker,
+            sender=request.user,
+            notification_type='application',
+            title='Shortlist Update',
+            message=f'Your application for "{application.request.patient_name}" has been removed from the shortlist.',
+            icon='fa-info-circle',
+            link=f'/applications/detail/{application.id}/',
+            is_read=False
+        )
+
         # Reorder remaining shortlisted candidates
         remaining = CareApplication.objects.filter(
             request=application.request, status="shortlisted"
@@ -713,44 +797,53 @@ def remove_shortlist(request, application_id):
 # Send offer to shortlisted candidate
 # -------------------------------------------------------------------------
 
+
 @login_required
 def send_offer(request, application_id):
     """Send an offer letter to a caretaker"""
     # Get the application or return 404
     application = get_object_or_404(CareApplication, id=application_id)
-    
+
     # Check if user is the family who owns the request
     if request.user != application.request.family:
-        messages.error(request, "❌ Access denied. You don't have permission to send offers for this request.")
-        return redirect('index')
-    
+        messages.error(
+            request,
+            "❌ Access denied. You don't have permission to send offers for this request.",
+        )
+        return redirect("index")
+
     # Check if request is still open
-    if application.request.status != 'open':
+    if application.request.status != "open":
         messages.error(request, "❌ This request is no longer accepting applications.")
-        return redirect('request_applications', request_id=application.request.id)
-    
+        return redirect("request_applications", request_id=application.request.id)
+
     # Check if application is in valid state for sending offer
-    if application.status not in ['pending', 'shortlisted']:
-        messages.error(request, f"❌ Cannot send offer to application with status: {application.get_status_display()}")
-        return redirect('request_applications', request_id=application.request.id)
-    
-    if request.method == 'POST':
+    if application.status not in ["pending", "shortlisted"]:
+        messages.error(
+            request,
+            f"❌ Cannot send offer to application with status: {application.get_status_display()}",
+        )
+        return redirect("request_applications", request_id=application.request.id)
+
+    if request.method == "POST":
         try:
             # Get form data
-            offer_message = request.POST.get('offer_message')
-            proposed_rate = request.POST.get('proposed_rate')
-            start_date = request.POST.get('start_date')
-            offer_valid_until = request.POST.get('offer_valid_until')
-            working_hours = request.POST.get('working_hours')
-            special_terms = request.POST.get('special_terms', '')
-            
+            offer_message = request.POST.get("offer_message")
+            proposed_rate = request.POST.get("proposed_rate")
+            start_date = request.POST.get("start_date")
+            offer_valid_until = request.POST.get("offer_valid_until")
+            working_hours = request.POST.get("working_hours")
+            special_terms = request.POST.get("special_terms", "")
+
             # Validate required fields
             if not all([offer_message, proposed_rate, start_date, offer_valid_until]):
                 messages.error(request, "❌ Please fill in all required fields.")
-                return redirect('request_applications', request_id=application.request.id)
-            
+                return redirect(
+                    "request_applications", request_id=application.request.id
+                )
+
             # Update application with offer details
-            application.status = 'offer_sent'
+            application.status = "offer_sent"
             application.offer_message = offer_message
             application.offer_proposed_rate = proposed_rate
             application.offer_start_date = start_date
@@ -759,46 +852,56 @@ def send_offer(request, application_id):
             application.offer_special_terms = special_terms
             application.offer_sent_at = timezone.now()
             application.save()
-            
+
             # Reject all other pending applications for this request
-            # REMOVED the duplicate import - CareApplication is already imported at the top
             CareApplication.objects.filter(
-                request=application.request,
-                status='pending'
+                request=application.request, status="pending"
             ).exclude(id=application.id).update(
-                status='rejected',
-                rejection_note='Another candidate was selected',
-                rejected_at=timezone.now()
+                status="rejected",
+                rejection_note="Another candidate was selected",
+                rejected_at=timezone.now(),
             )
-            
+
             # Freeze shortlisted applications
             CareApplication.objects.filter(
-                request=application.request,
-                status='shortlisted'
+                request=application.request, status="shortlisted"
             ).exclude(id=application.id).update(
-                status='frozen',
-                frozen_reason='Offer sent to another candidate',
-                frozen_at=timezone.now()
+                status="frozen",
+                frozen_reason="Offer sent to another candidate",
+                frozen_at=timezone.now(),
             )
-            
+
+            # ========== CREATE NOTIFICATION ==========
+            Notification.objects.create(
+                recipient=application.caretaker,
+                sender=request.user,
+                notification_type="assignment",
+                title="New Offer Received",
+                message=f"You have received an offer for the position caring for {application.request.patient_name}.",
+                icon="fa-envelope",
+                link=f"/applications/detail/{application.id}/",
+                is_read=False,
+            )
+
             # Send email notification if checked
-            if request.POST.get('notify_by_email'):
+            if request.POST.get("notify_by_email"):
                 # Add email sending logic here
                 # You can implement this later
                 pass
-            
+
             messages.success(
-                request, 
-                f"✅ Offer letter sent successfully to {application.caretaker.get_full_name()}!"
+                request,
+                f"✅ Offer letter sent successfully to {application.caretaker.get_full_name()}!",
             )
-            
+
         except Exception as e:
             messages.error(request, f"❌ Error sending offer: {str(e)}")
-        
-        return redirect('request_applications', request_id=application.request.id)
-    
+
+        return redirect("request_applications", request_id=application.request.id)
+
     # If not POST, redirect to applications page
-    return redirect('request_applications', request_id=application.request.id)
+    return redirect("request_applications", request_id=application.request.id)
+
 
 # ============================================================================
 # SHARED VIEWS (Both roles)
@@ -842,47 +945,43 @@ def mark_care_started(request, application_id):
 def caretaker_profile_detail(request, user_id):
     """View caretaker profile details (for families)"""
     caretaker = get_object_or_404(User, id=user_id, role="caretaker")
-    
+
     # Try to get profile, but don't fail if it doesn't exist
     try:
         profile = CaretakerProfile.objects.get(user=caretaker)
     except CaretakerProfile.DoesNotExist:
         profile = None
-    
+
     # Import CareApplication
     from .models import CareApplication
-    
+
     # Total assignments (all approved applications)
     total_assignments = CareApplication.objects.filter(
-        caretaker=caretaker,
-        status='approved'
+        caretaker=caretaker, status="approved"
     ).count()
-    
+
     # Completed jobs
     completed_jobs = CareApplication.objects.filter(
-        caretaker=caretaker,
-        status='completed'
+        caretaker=caretaker, status="completed"
     ).count()
-    
+
     # In-progress assignments
     current_assignments = CareApplication.objects.filter(
-        caretaker=caretaker,
-        status='in_progress'
+        caretaker=caretaker, status="in_progress"
     ).count()
-    
+
     # Pending applications
     pending_applications = CareApplication.objects.filter(
-        caretaker=caretaker,
-        status='pending'
+        caretaker=caretaker, status="pending"
     ).count()
-    
+
     # Recent applications (last 5)
-    recent_applications = CareApplication.objects.filter(
-        caretaker=caretaker
-    ).order_by('-applied_at')[:5]
+    recent_applications = CareApplication.objects.filter(caretaker=caretaker).order_by(
+        "-applied_at"
+    )[:5]
 
     context = {
-        "caretaker": caretaker, 
+        "caretaker": caretaker,
         "profile": profile,
         "total_assignments": total_assignments,
         "completed_jobs": completed_jobs,

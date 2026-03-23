@@ -1,0 +1,250 @@
+<!-- templates/requests/book_caretaker.html -->
+{% extends 'users/family_base.html' %}
+
+{% load static %}
+
+{% block title %}Book Caretaker - CareLink{% endblock %}
+
+{% block page_icon %}<i class="fas fa-calendar-plus"></i>{% endblock %}
+{% block page_title %}Book Caretaker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+    }
+    
+    .booking-form-container, .booking-summary {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #0f3460;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+    
+    .summary-label {
+        color: #64748b;
+    }
+    
+    .summary-value {
+        font-weight: 600;
+        color: #0f3460;
+    }
+    
+    .total-amount {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 2px solid #e2e8f0;
+        font-size: 18px;
+    }
+    
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        width: 100%;
+        font-size: 16px;
+        font-weight: 500;
+        margin-top: 20px;
+    }
+    
+    .btn-primary:hover {
+        background: #1e4a7a;
+    }
+    
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 10px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+    
+    .info-box {
+        background: #f0f9ff;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+    }
+    
+    @media (max-width: 768px) {
+        .booking-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="booking-container">
+    <!-- Booking Form -->
+    <div class="booking-form-container">
+        <h3>Booking Details</h3>
+        
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            <strong>Selected Slot:</strong>
+            <div>Date: {{ selected_date|default:"Not selected" }}</div>
+            <div>Time: {{ selected_start|default:"Not selected" }} - {{ selected_end|default:"Not selected" }}</div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="booking_date">Booking Date *</label>
+                <input type="date" class="form-control" id="booking_date" name="booking_date" 
+                       value="{{ selected_date }}" required readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="start_time">Start Time *</label>
+                <input type="time" class="form-control" id="start_time" name="start_time" 
+                       value="{{ selected_start }}" required readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="end_time">End Time *</label>
+                <input type="time" class="form-control" id="end_time" name="end_time" 
+                       value="{{ selected_end }}" required readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="family_notes">Special Instructions (Optional)</label>
+                <textarea class="form-control" id="family_notes" name="family_notes" rows="4" 
+                          placeholder="Any specific instructions for this session..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-check-circle"></i> Send Booking Request
+            </button>
+        </form>
+    </div>
+    
+    <!-- Booking Summary -->
+    <div class="booking-summary">
+        <h3>Request Summary</h3>
+        
+        <div class="summary-item">
+            <span class="summary-label">Care Request:</span>
+            <span class="summary-value">{{ care_request.title|default:care_request.patient_name }}</span>
+        </div>
+        
+        <div class="summary-item">
+            <span class="summary-label">Care Type:</span>
+            <span class="summary-value">{{ care_request.get_care_type_display }}</span>
+        </div>
+        
+        <div class="summary-item">
+            <span class="summary-label">Caretaker:</span>
+            <span class="summary-value">{{ caretaker.get_full_name }}</span>
+        </div>
+        
+        <div class="summary-item">
+            <span class="summary-label">Duration:</span>
+            <span class="summary-value">
+                {% if selected_start and selected_end %}
+                    {% with start_h=selected_start|slice:":2"|add:0 start_m=selected_start|slice:"3:5"|add:0 end_h=selected_end|slice:":2"|add:0 end_m=selected_end|slice:"3:5"|add:0 %}
+                        {% with start_min=start_h|add:start_m|divisibleby:60 end_min=end_h|add:end_m|divisibleby:60 %}
+                            {{ end_h|add:end_m|divisibleby:60|add:-start_h|add:-start_m|divisibleby:60 }} hours
+                        {% endwith %}
+                    {% endwith %}
+                {% else %}
+                    To be calculated
+                {% endif %}
+            </span>
+        </div>
+        
+        <div class="summary-item">
+            <span class="summary-label">Rate:</span>
+            <span class="summary-value">${{ care_request.salary_offered }}/hour</span>
+        </div>
+        
+        <div class="total-amount">
+            <div class="summary-item">
+                <span class="summary-label"><strong>Total Amount:</strong></span>
+                <span class="summary-value"><strong>$--</strong></span>
+            </div>
+        </div>
+        
+        <a href="{% url 'requests:caretaker_availability' caretaker_id=caretaker.id %}" 
+           class="btn-secondary" style="display: block; text-align: center; margin-top: 20px;">
+            <i class="fas fa-arrow-left"></i> Back to Calendar
+        </a>
+    </div>
+</div>
+
+<script>
+    // Calculate duration and total when times are selected
+    function calculateTotal() {
+        const startTime = document.getElementById('start_time').value;
+        const endTime = document.getElementById('end_time').value;
+        const rate = {{ care_request.salary_offered | default:0 }};
+        
+        if (startTime && endTime) {
+            const start = new Date(`2000-01-01T${startTime}`);
+            const end = new Date(`2000-01-01T${endTime}`);
+            const hours = (end - start) / (1000 * 60 * 60);
+            
+            if (hours > 0) {
+                const total = hours * rate;
+                const totalElement = document.querySelector('.total-amount .summary-value strong');
+                if (totalElement) {
+                    totalElement.textContent = `$${total.toFixed(2)}`;
+                }
+            }
+        }
+    }
+    
+    document.getElementById('start_time').addEventListener('change', calculateTotal);
+    document.getElementById('end_time').addEventListener('change', calculateTotal);
+    
+    // Run on load
+    calculateTotal();
+    }
+</script>
+{% endblock %}

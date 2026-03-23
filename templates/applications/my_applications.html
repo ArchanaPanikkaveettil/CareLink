@@ -547,7 +547,7 @@
         <h1 style="font-size: 2rem; color: #0f3460;">
             <i class="fas fa-file-alt" style="margin-right: 10px;"></i>My Applications
         </h1>
-        <a href="{% url 'browse_requests' %}" class="btn btn-outline">
+        <a href="{% url 'requests:browse_requests' %}" class="btn btn-outline">
             <i class="fas fa-search"></i> Browse More Requests
         </a>
     </div>
@@ -750,15 +750,15 @@
                 {% endif %}
 
                 <div class="offer-actions">
-                    <a href="{% url 'view_offer' application.id %}" class="btn btn-outline" style="flex: 0.5;">
+                    <a href="{% url 'applications:view_offer' application.id %}" class="btn btn-outline" style="flex: 0.5;">
                         <i class="fas fa-eye"></i> View Full Offer
                     </a>
                     {% if not application.is_offer_expired %}
-                    <a href="{% url 'respond_to_offer' application.id 'accept' %}" class="btn btn-accept" 
+                    <a href="{% url 'applications:respond_to_offer' application.id 'accept' %}" class="btn btn-accept" 
                        onclick="return confirm('Accept this offer? You will be committed to this position and any other active applications will be withdrawn.')">
                         <i class="fas fa-check-circle"></i> Accept Offer
                     </a>
-                    <a href="{% url 'respond_to_offer' application.id 'decline' %}" class="btn btn-decline" 
+                    <a href="{% url 'applications:respond_to_offer' application.id 'decline' %}" class="btn btn-decline" 
                        onclick="return confirm('Decline this offer? This action cannot be undone.')">
                         <i class="fas fa-times-circle"></i> Decline
                     </a>
@@ -776,7 +776,7 @@
                     {% endif %}
                 </div>
                 <div>
-                    <a href="{% url 'request_detail' application.request.id %}" class="btn btn-outline btn-sm">
+                    <a href="{% url 'requests:request_detail' application.request.id %}" class="btn btn-outline btn-sm">
                         <i class="fas fa-eye"></i> View Request
                     </a>
                     {% if application.status == 'pending' %}
@@ -797,7 +797,7 @@
             <i class="fas fa-file-alt"></i>
             <h3>No Applications Yet</h3>
             <p>You haven't applied for any care requests yet.</p>
-            <a href="{% url 'browse_requests' %}" class="btn btn-outline">
+            <a href="{% url 'requests:browse_requests' %}" class="btn btn-outline">
                 <i class="fas fa-search"></i> Browse Requests
             </a>
         </div>

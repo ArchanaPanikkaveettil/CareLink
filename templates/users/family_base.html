@@ -14,7 +14,6 @@
         rel="stylesheet">
 
     <style>
-        /* ... (keep all your existing styles) ... */
         * {
             margin: 0;
             padding: 0;
@@ -267,7 +266,7 @@
         }
 
         /* Notification Bell Styles */
-        .notifications-wrapper {
+        .notification-wrapper {
             position: relative;
         }
 
@@ -312,7 +311,7 @@
             border: 2px solid white;
         }
 
-        .notifications-panel {
+        .notification-dropdown {
             position: absolute;
             top: 55px;
             right: 0;
@@ -324,10 +323,11 @@
             z-index: 1000;
         }
 
-        .loading-spinner {
-            padding: 40px;
+        .dropdown-loading {
             text-align: center;
-            color: #94a3b8;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
         }
 
         .date-badge {
@@ -400,27 +400,6 @@
             margin: 0 auto;
         }
 
-        /* loading spinner */
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #0f3460;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
         /* responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -440,7 +419,7 @@
                 align-items: flex-start;
             }
 
-            .notifications-panel {
+            .notification-dropdown {
                 width: 300px;
                 right: -100px;
             }
@@ -457,7 +436,7 @@
                 <i class="fas fa-hand-holding-heart"></i> CareLink
             </h2>
             <div class="user-greeting">
-                <i class="fas fa-user-circle"></i> {{ user.get_full_name|default:user.username }} · family
+                <i class="fas fa-user-circle"></i> {{ user.get_full_name|default:user.username }}
             </div>
         </div>
 
@@ -470,71 +449,62 @@
                 <span>Dashboard</span>
             </a>
 
-            <!-- Applications Link with Badge (Parent) -->
-            <div class="nav-item" style="cursor: default;">
-                <i class="fas fa-file-alt"></i>
-                <span>Applications</span>
-                {% if total_applications_count %}
-                <span class="nav-badge">{{ total_applications_count }}</span>
-                {% endif %}
-            </div>
+            <!-- Care Requests Section -->
+            <div class="nav-section-title">Care Requests</div>
 
-            <!-- Applications Sub-menu -->
-            <div class="applications-menu">
-                <a href="{% url 'applications:family_applications' %}?type=received"
-                    class="applications-sub-item {% if request.GET.type == 'received' or not request.GET.type %}active{% endif %}">
-                    <i class="fas fa-inbox"></i>
-                    <span>Received</span>
-                    {% if received_count %}
-                    <span class="count">{{ received_count }}</span>
-                    {% endif %}
-                </a>
-                <a href="{% url 'applications:family_applications' %}?type=sent"
-                    class="applications-sub-item {% if request.GET.type == 'sent' %}active{% endif %}">
-                    <i class="fas fa-paper-plane"></i>
-                    <span>Sent</span>
-                    {% if sent_count %}
-                    <span class="count">{{ sent_count }}</span>
-                    {% endif %}
-                </a>
-            </div>
-
-            <!-- Post Care Request -->
-            <a href="{% url 'post_request' %}"
+            <a href="{% url 'requests:post_request' %}"
                 class="nav-item {% if request.resolver_match.url_name == 'post_request' %}active{% endif %}">
                 <i class="fas fa-plus-circle"></i>
-                <span>Post Care Request</span>
+                <span>Post Request</span>
             </a>
 
-            <!-- My Requests -->
-            <a href="{% url 'my_requests' %}"
+            <a href="{% url 'requests:my_requests' %}"
                 class="nav-item {% if request.resolver_match.url_name == 'my_requests' %}active{% endif %}">
-                <i class="fas fa-clipboard-list"></i>
+                <i class="fas fa-list"></i>
                 <span>My Requests</span>
+                {% if open_requests_count %}
+                <span class="nav-badge">{{ open_requests_count }}</span>
+                {% endif %}
             </a>
 
-            <!-- Find Caretakers -->
-            <a href="{% url 'search_caretakers' %}"
+            <!-- Find Caretakers Section -->
+            <div class="nav-section-title">Find Care</div>
+
+            <a href="{% url 'requests:search_caretakers' %}"
                 class="nav-item {% if request.resolver_match.url_name == 'search_caretakers' %}active{% endif %}">
                 <i class="fas fa-search"></i>
                 <span>Find Caretakers</span>
             </a>
 
-            <!-- My Profile -->
-            <a href="{% url 'family_profile' %}"
-                class="nav-item {% if request.resolver_match.url_name == 'family_profile' %}active{% endif %}">
-                <i class="fas fa-id-badge"></i>
+            <a href="{% url 'requests:my_bookings' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'my_bookings' %}active{% endif %}">
+                <i class="fas fa-calendar-check"></i>
+                <span>My Bookings</span>
+                {% if pending_bookings_count %}
+                <span class="nav-badge">{{ pending_bookings_count }}</span>
+                {% endif %}
+            </a>
+
+            <!-- Profile Section -->
+            <div class="nav-section-title">Profile</div>
+
+            <a href="{% url 'update_family_profile' %}"
+                class="nav-item {% if request.resolver_match.url_name == 'update_family_profile' %}active{% endif %}">
+                <i class="fas fa-user-circle"></i>
                 <span>My Profile</span>
             </a>
-            {% endblock %}
 
+            <!-- Logout -->
             <div class="logout-item">
                 <a href="{% url 'logout' %}" class="nav-item">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </a>
             </div>
+            {% endblock %}
         </div>
+
+
     </div>
 
     <!-- Main Content -->
@@ -548,13 +518,21 @@
 
             <div style="display: flex; align-items: center; gap: 15px;">
                 <!-- Notification Bell -->
-                <div class="notifications-wrapper">
+                <div class="notification-wrapper">
                     <button class="notification-bell" onclick="toggleNotifications()">
                         <i class="fas fa-bell"></i>
-                        <span class="notification-count" id="notification-count">0</span>
+                        <span id="notification-count" class="notification-count" style="display: none;">0</span>
                     </button>
-                    <div class="notifications-panel" id="notifications-panel" style="display: none;">
-                        <div class="loading-spinner">Loading notifications...</div>
+
+                    <!-- Notification Dropdown Panel -->
+                    <div id="notification-dropdown" class="notification-dropdown" style="display: none;">
+                        <div id="notification-content">
+                            <!-- Loading spinner -->
+                            <div class="dropdown-loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Loading...
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -611,8 +589,8 @@
 
         // Toggle notifications panel
         function toggleNotifications() {
-            const panel = document.getElementById('notifications-panel');
-            if (panel.style.display === 'none') {
+            const panel = document.getElementById('notification-dropdown');
+            if (panel.style.display === 'none' || panel.style.display === '') {
                 panel.style.display = 'block';
                 loadNotifications();
             } else {
@@ -620,67 +598,98 @@
             }
         }
 
-        // Load notifications via AJAX - FIXED to handle JSON response
+        // Load notifications via AJAX
         function loadNotifications() {
+            const dropdownContent = document.getElementById('notification-content');
+            dropdownContent.innerHTML = '<div class="dropdown-loading"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+
             fetch('/notifications/get/')
-                .then(response => response.json())  // Change from .text() to .json()
+                .then(response => response.json())
                 .then(data => {
-                    document.getElementById('notifications-panel').innerHTML = data.html;
-                    // Update count after loading
+                    if (data.html) {
+                        dropdownContent.innerHTML = data.html;
+                        attachNotificationEventHandlers();
+                    } else {
+                        dropdownContent.innerHTML = '<div class="no-notifications"><i class="fas fa-bell-slash"></i><p>No notifications</p></div>';
+                    }
                     updateNotificationCount();
                 })
                 .catch(error => {
                     console.error('Error loading notifications:', error);
-                    document.getElementById('notifications-panel').innerHTML =
-                        '<div class="loading-spinner">Error loading notifications</div>';
+                    dropdownContent.innerHTML = '<div class="no-notifications"><i class="fas fa-exclamation-circle"></i><p>Error loading notifications</p></div>';
                 });
         }
 
-        // Mark a single notification as read
+        function attachNotificationEventHandlers() {
+            document.querySelectorAll('.mark-read-btn').forEach(btn => {
+                btn.removeEventListener('click', handleMarkReadClick);
+                btn.addEventListener('click', handleMarkReadClick);
+            });
+
+            const markAllBtn = document.querySelector('.mark-all-read-btn');
+            if (markAllBtn) {
+                markAllBtn.removeEventListener('click', handleMarkAllReadClick);
+                markAllBtn.addEventListener('click', handleMarkAllReadClick);
+            }
+        }
+
+        function handleMarkReadClick(event) {
+            event.stopPropagation();
+            const btn = event.currentTarget;
+            const notificationItem = btn.closest('.notification-item');
+            if (notificationItem) {
+                const notificationId = notificationItem.dataset.notificationId;
+                if (notificationId) {
+                    markNotificationRead(notificationId);
+                }
+            }
+        }
+
+        function handleMarkAllReadClick(event) {
+            event.stopPropagation();
+            markAllNotificationsRead();
+        }
+
         function markNotificationRead(notificationId) {
             fetch(`/notifications/${notificationId}/mark-read/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken'),
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
                 }
             })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        // Reload notifications
+                    if (data.status === 'success') {
                         loadNotifications();
-                        // Update count
                         updateNotificationCount();
                     }
                 })
                 .catch(error => console.error('Error marking notification as read:', error));
         }
 
-        // Mark all notifications as read
         function markAllNotificationsRead() {
             fetch('/notifications/mark-all-read/', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken'),
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
                 }
             })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        // Reload notifications
+                    if (data.status === 'success') {
                         loadNotifications();
-                        // Update count
                         updateNotificationCount();
                     }
                 })
                 .catch(error => console.error('Error marking all as read:', error));
         }
 
-        // Close notifications when clicking outside
         document.addEventListener('click', function (event) {
-            const panel = document.getElementById('notifications-panel');
+            const panel = document.getElementById('notification-dropdown');
             const bell = document.querySelector('.notification-bell');
 
             if (panel && bell && !bell.contains(event.target) && !panel.contains(event.target)) {
@@ -688,21 +697,20 @@
             }
         });
 
-        // Update notification count
         function updateNotificationCount() {
             fetch('/notifications/count/')
                 .then(response => response.json())
                 .then(data => {
                     const badge = document.getElementById('notification-count');
                     if (badge) {
-                        badge.textContent = data.count;
-                        badge.style.display = data.count > 0 ? 'flex' : 'none';
+                        const count = data.count || 0;
+                        badge.textContent = count;
+                        badge.style.display = count > 0 ? 'flex' : 'none';
                     }
                 })
                 .catch(error => console.error('Error updating count:', error));
         }
 
-        // Helper function to get CSRF token
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -718,8 +726,7 @@
             return cookieValue;
         }
 
-        // Auto-refresh notifications every 60 seconds
-        setInterval(updateNotificationCount, 60000);
+        setInterval(updateNotificationCount, 30000);
     </script>
 
     {% block extra_js %}{% endblock %}

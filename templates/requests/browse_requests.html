@@ -1,10 +1,11 @@
-<!-- Remove the loading of template tags at the top - line 2 should be gone -->
-
 {% extends 'users/nurse_base.html' %}
+
+{% load static %}
 
 {% block title %}Browse Care Requests - CareLink{% endblock %}
 
-{% block page_title %}<i class="fas fa-search" style="color: #4bc3a3; margin-right: 10px;"></i>Browse Care Requests{% endblock %}
+{% block page_icon %}<i class="fas fa-search"></i>{% endblock %}
+{% block page_title %}Browse Care Requests{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -14,26 +15,26 @@
         border-radius: 20px;
         padding: 25px;
         margin-bottom: 30px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
     }
-    
+
     .filters-title {
         font-size: 1.2rem;
         font-weight: 600;
         color: #2c3e50;
         margin-bottom: 20px;
     }
-    
+
     .filter-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 15px;
     }
-    
+
     .filter-group {
         margin-bottom: 0;
     }
-    
+
     .filter-group label {
         display: block;
         margin-bottom: 8px;
@@ -41,8 +42,9 @@
         font-size: 0.9rem;
         font-weight: 500;
     }
-    
-    .filter-group select, .filter-group input {
+
+    .filter-group select,
+    .filter-group input {
         width: 100%;
         padding: 10px 15px;
         border: 2px solid #eef2f4;
@@ -50,18 +52,19 @@
         font-size: 0.95rem;
         transition: all 0.3s;
     }
-    
-    .filter-group select:focus, .filter-group input:focus {
+
+    .filter-group select:focus,
+    .filter-group input:focus {
         border-color: #4bc3a3;
         outline: none;
     }
-    
+
     .filter-actions {
         display: flex;
         gap: 10px;
         margin-top: 20px;
     }
-    
+
     .btn-apply {
         background: #4bc3a3;
         color: white;
@@ -72,12 +75,12 @@
         cursor: pointer;
         transition: all 0.3s;
     }
-    
+
     .btn-apply:hover {
         background: #3aa58a;
         transform: translateY(-2px);
     }
-    
+
     .btn-reset {
         background: #f8f9fa;
         color: #6c757d;
@@ -88,11 +91,11 @@
         cursor: pointer;
         transition: all 0.3s;
     }
-    
+
     .btn-reset:hover {
         background: #eef2f4;
     }
-    
+
     /* Requests Grid */
     .requests-grid {
         display: grid;
@@ -100,21 +103,21 @@
         gap: 25px;
         margin-top: 30px;
     }
-    
+
     .card {
         background: white;
         border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
         transition: all 0.3s;
         position: relative;
     }
-    
+
     .card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     }
-    
+
     .card-header {
         padding: 20px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -123,38 +126,42 @@
         align-items: center;
         gap: 15px;
     }
-    
+
     .patient-avatar {
         width: 50px;
         height: 50px;
-        background: rgba(255,255,255,0.2);
+        background: rgba(255, 255, 255, 0.2);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.5rem;
     }
-    
+
+    .patient-info {
+        flex: 1;
+    }
+
     .patient-info h3 {
         margin: 0;
         font-size: 1.1rem;
         font-weight: 600;
     }
-    
+
     .patient-info p {
         margin: 5px 0 0;
         font-size: 0.85rem;
         opacity: 0.9;
     }
-    
+
     .card-body {
         padding: 20px;
     }
-    
+
     .care-details {
         margin-bottom: 15px;
     }
-    
+
     .care-type {
         display: inline-block;
         background: #e8f4fd;
@@ -165,14 +172,14 @@
         font-weight: 600;
         margin-bottom: 10px;
     }
-    
+
     .description {
         color: #4a5568;
         line-height: 1.6;
         margin-bottom: 15px;
         font-size: 0.95rem;
     }
-    
+
     .meta-info {
         display: flex;
         flex-wrap: wrap;
@@ -182,7 +189,7 @@
         border-top: 1px solid #eef2f4;
         border-bottom: 1px solid #eef2f4;
     }
-    
+
     .meta-item {
         display: flex;
         align-items: center;
@@ -190,28 +197,28 @@
         color: #6c757d;
         font-size: 0.85rem;
     }
-    
+
     .meta-item i {
         color: #4bc3a3;
         width: 16px;
     }
-    
+
     .requirements {
         margin-bottom: 15px;
     }
-    
+
     .requirements h4 {
         font-size: 0.9rem;
         color: #2c3e50;
         margin-bottom: 8px;
     }
-    
+
     .skill-tags {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
     }
-    
+
     .skill-tag {
         background: #f8f9fa;
         color: #495057;
@@ -219,15 +226,30 @@
         border-radius: 15px;
         font-size: 0.8rem;
     }
-    
+
+    .urgency-high {
+        background: #fee2e2 !important;
+        color: #dc2626 !important;
+    }
+
+    .urgency-medium {
+        background: #fef3c7 !important;
+        color: #d97706 !important;
+    }
+
+    .urgency-low {
+        background: #e0e7ff !important;
+        color: #4f46e5 !important;
+    }
+
     .card-footer {
         padding: 20px;
         border-top: 1px solid #eef2f4;
         display: flex;
         gap: 10px;
     }
-    
-    .btn-apply {
+
+    .btn-apply-card {
         flex: 1;
         background: #4bc3a3;
         color: white;
@@ -237,12 +259,17 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s;
+        text-decoration: none;
+        text-align: center;
+        display: inline-block;
     }
-    
-    .btn-apply:hover {
+
+    .btn-apply-card:hover {
         background: #3aa58a;
+        transform: translateY(-2px);
+        color: white;
     }
-    
+
     .btn-view {
         flex: 1;
         background: #f8f9fa;
@@ -255,12 +282,35 @@
         transition: all 0.3s;
         text-decoration: none;
         text-align: center;
+        display: inline-block;
     }
-    
+
     .btn-view:hover {
         background: #eef2f4;
+        color: #6c757d;
     }
-    
+
+    .btn-view-availability {
+        display: inline-block;
+        background: #0f3460;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        text-align: center;
+        flex: 1;
+    }
+
+    .btn-view-availability:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+        color: white;
+    }
+
     .no-requests {
         text-align: center;
         padding: 60px 20px;
@@ -268,36 +318,62 @@
         border-radius: 20px;
         grid-column: 1 / -1;
     }
-    
+
     .no-requests i {
         font-size: 4rem;
         color: #dee2e6;
         margin-bottom: 20px;
     }
-    
+
     .no-requests h3 {
         color: #495057;
         margin-bottom: 10px;
     }
-    
+
     .no-requests p {
         color: #6c757d;
     }
-    
+
     .loading {
         text-align: center;
         padding: 40px;
         display: none;
     }
-    
+
     .loading i {
         animation: spin 1s linear infinite;
         color: #4bc3a3;
     }
-    
+
+    .applied-badge {
+        display: inline-block;
+        background: #10b981;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+
     @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .requests-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-footer {
+            flex-direction: column;
+        }
     }
 </style>
 {% endblock %}
@@ -309,54 +385,53 @@
         <div class="filters-title">
             <i class="fas fa-filter" style="margin-right: 10px;"></i>Filter Requests
         </div>
-        <div class="filter-grid">
-            <div class="filter-group">
-                <label>Care Type</label>
-                <select id="careType">
-                    <option value="">All Types</option>
-                    <option value="elderly">Elderly Care</option>
-                    <option value="child">Child Care</option>
-                    <option value="special">Special Needs</option>
-                    <option value="medical">Medical Care</option>
-                </select>
+        <form method="get" action="{% url 'requests:browse_requests' %}">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label>Care Type</label>
+                    <select name="care_type">
+                        <option value="">All Types</option>
+                        <option value="full_time" {% if request.GET.care_type == 'full_time' %}selected{% endif %}>Full
+                            Time</option>
+                        <option value="part_time" {% if request.GET.care_type == 'part_time' %}selected{% endif %}>Part
+                            Time</option>
+                        <option value="night_care" {% if request.GET.care_type == 'night_care' %}selected{% endif %}>Night
+                            Care</option>
+                        <option value="home_visit" {% if request.GET.care_type == 'home_visit' %}selected{% endif %}>Home
+                            Visit</option>
+                        <option value="emergency" {% if request.GET.care_type == 'emergency' %}selected{% endif %}>
+                            Emergency Care</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="search" placeholder="Search by patient name or location"
+                        value="{{ request.GET.search|default:'' }}">
+                </div>
+                <div class="filter-group">
+                    <label>Urgency</label>
+                    <select name="urgency">
+                        <option value="">Any Urgency</option>
+                        <option value="high" {% if request.GET.urgency == 'high' %}selected{% endif %}>High</option>
+                        <option value="medium" {% if request.GET.urgency == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="low" {% if request.GET.urgency == 'low' %}selected{% endif %}>Low</option>
+                    </select>
+                </div>
             </div>
-            <div class="filter-group">
-                <label>Location</label>
-                <input type="text" id="location" placeholder="Enter city or area">
+            <div class="filter-actions">
+                <button type="submit" class="btn-apply">
+                    <i class="fas fa-search"></i> Apply Filters
+                </button>
+                <a href="{% url 'requests:browse_requests' %}" class="btn-reset">
+                    <i class="fas fa-undo"></i> Reset
+                </a>
             </div>
-            <div class="filter-group">
-                <label>Schedule</label>
-                <select id="schedule">
-                    <option value="">Any Schedule</option>
-                    <option value="fulltime">Full Time</option>
-                    <option value="parttime">Part Time</option>
-                    <option value="weekends">Weekends Only</option>
-                    <option value="evenings">Evenings</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Urgency</label>
-                <select id="urgency">
-                    <option value="">Any Urgency</option>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                </select>
-            </div>
-        </div>
-        <div class="filter-actions">
-            <button class="btn-apply" onclick="applyFilters()">
-                <i class="fas fa-search"></i> Apply Filters
-            </button>
-            <button class="btn-reset" onclick="resetFilters()">
-                <i class="fas fa-undo"></i> Reset
-            </button>
-        </div>
+        </form>
     </div>
 
     <!-- Loading Indicator -->
-    <div class="loading" id="loading">
-        <i class="fas fa-spinner"></i> Loading...
+    <div class="loading" id="loading" style="display: none;">
+        <i class="fas fa-spinner fa-spin"></i> Loading...
     </div>
 
     <!-- Requests Grid -->
@@ -364,57 +439,79 @@
         {% for request in requests %}
         <div class="card">
             <div class="card-header">
+                <div class="patient-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
                 <div class="patient-info">
-                    <div class="patient-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div>
-                        <h3>{{ request.patient_name }}</h3>
-                        <p>{{ request.patient_age }} years • {{ request.patient_gender }}</p>
-                    </div>
+                    <h3>{{ request.patient_name }}
+                        {% if request.id in applied_request_ids %}
+                        <span class="applied-badge">
+                            <i class="fas fa-check"></i> Applied
+                        </span>
+                        {% endif %}
+                    </h3>
+                    <p>{{ request.patient_age }} years • {{ request.get_patient_gender_display }}</p>
                 </div>
             </div>
-            
+
             <div class="card-body">
                 <div class="care-details">
                     <span class="care-type">
-                        <i class="fas fa-heartbeat"></i> {{ request.care_type }}
+                        <i class="fas fa-heartbeat"></i> {{ request.get_care_type_display }}
                     </span>
+                    {% if request.urgency_level %}
+                    <span class="care-type urgency-{{ request.urgency_level }}">
+                        <i class="fas fa-exclamation-circle"></i> {{ request.get_urgency_level_display }}
+                    </span>
+                    {% endif %}
                 </div>
-                
-                <p class="description">{{ request.description|truncatechars:120 }}</p>
-                
+
+                <p class="description">{{ request.medical_condition|truncatechars:120 }}</p>
+
                 <div class="meta-info">
                     <div class="meta-item">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span>{{ request.location }}</span>
+                        <span>{{ request.city }}, {{ request.state }}</span>
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-calendar"></i>
-                        <span>{{ request.start_date|date:"M d, Y" }}</span>
+                        <span>Starts: {{ request.start_date|date:"M d, Y" }}</span>
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-clock"></i>
-                        <span>{{ request.schedule }}</span>
+                        <span>{{ request.shift_timing|default:"Flexible" }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>${{ request.salary_offered }}/{{ request.get_payment_frequency_display|lower }}</span>
                     </div>
                 </div>
-                
-                {% if request.requirements %}
+
+                {% if request.required_skills %}
                 <div class="requirements">
-                    <h4>Requirements:</h4>
+                    <h4>Required Skills:</h4>
                     <div class="skill-tags">
-                        {% for req in request.requirements.split %}
-                        <span class="skill-tag">{{ req }}</span>
+                        {% for skill in request.required_skills.split|slice:":5" %}
+                        <span class="skill-tag">{{ skill|truncatechars:15 }}</span>
                         {% endfor %}
                     </div>
                 </div>
                 {% endif %}
             </div>
-            
+
             <div class="card-footer">
-                <a href="{% url 'request_detail' request.id %}" class="btn-view">
+                <a href="{% url 'requests:request_detail' request_id=request.id %}" class="btn-view">
                     <i class="fas fa-eye"></i> View Details
                 </a>
+                {% if request.id not in applied_request_ids %}
+                <a href="{% url 'requests:apply_for_request' request_id=request.id %}" class="btn-apply-card">
+                    <i class="fas fa-paper-plane"></i> Apply Now
+                </a>
+                {% else %}
+                <button class="btn-apply-card" style="background: #94a3b8; cursor: not-allowed;" disabled>
+                    <i class="fas fa-check"></i> Already Applied
+                </button>
+                {% endif %}
             </div>
         </div>
         {% empty %}
@@ -422,26 +519,42 @@
             <i class="fas fa-inbox"></i>
             <h3>No Requests Found</h3>
             <p>There are no care requests matching your criteria.</p>
+            <a href="{% url 'requests:browse_requests' %}" class="btn-apply-card"
+                style="display: inline-block; margin-top: 20px; width: auto; padding: 10px 25px;">
+                <i class="fas fa-undo"></i> Clear Filters
+            </a>
         </div>
         {% endfor %}
     </div>
+
+    <!-- Pagination -->
+    {% if requests.has_other_pages %}
+    <div class="pagination" style="display: flex; justify-content: center; gap: 10px; margin-top: 30px;">
+        {% if requests.has_previous %}
+        <a href="?page={{ requests.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+            class="btn-view">
+            <i class="fas fa-chevron-left"></i> Previous
+        </a>
+        {% endif %}
+
+        <span class="btn-apply-card" style="background: #0f3460; cursor: default;">
+            Page {{ requests.number }} of {{ requests.paginator.num_pages }}
+        </span>
+
+        {% if requests.has_next %}
+        <a href="?page={{ requests.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+            class="btn-view">
+            Next <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 
 <script>
-function applyFilters() {
-    document.getElementById('loading').style.display = 'block';
-    // Add your filter logic here
-    setTimeout(() => {
-        document.getElementById('loading').style.display = 'none';
-    }, 500);
-}
-
-function resetFilters() {
-    document.getElementById('careType').value = '';
-    document.getElementById('location').value = '';
-    document.getElementById('schedule').value = '';
-    document.getElementById('urgency').value = '';
-    applyFilters();
-}
+    // Optional: Add loading effect on form submit
+    document.querySelector('form').addEventListener('submit', function () {
+        document.getElementById('loading').style.display = 'block';
+    });
 </script>
 {% endblock %}

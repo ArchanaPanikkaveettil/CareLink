@@ -444,15 +444,13 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <a href="{% url 'request_detail' request.id %}" class="btn btn-outline">
-                <i class="fas fa-eye"></i> View Details
-            </a>
+            <a href="{% url 'requests:request_detail' request.id %}" class="btn btn-outline">
 
             {% if request.status == 'draft' %}
-            <a href="{% url 'edit_request' request.id %}" class="btn btn-warning">
+            <a href="{% url 'requests:edit_request' request.id %}" class="btn btn-warning">
                 <i class="fas fa-edit"></i> Edit Draft
             </a>
-            <a href="{% url 'publish_request' request.id %}" class="btn btn-success">
+            <a href="{% url 'requests:publish_request' request.id %}" class="btn btn-success">
                 <i class="fas fa-paper-plane"></i> Publish
             </a>
             {% endif %}
@@ -462,13 +460,13 @@
             <a href="{% url 'applications:request_applications' request.id %}" class="btn btn-primary">
                 <i class="fas fa-users"></i> View Applications ({{ request.total_applications|default:"0" }})
             </a>
-            <a href="{% url 'close_request' request.id %}" class="btn btn-warning">
+            <a href="{% url 'requests:close_request' request.id %}" class="btn btn-warning">
                 <i class="fas fa-ban"></i> Close
             </a>
             {% endif %}
 
             {% if request.status == 'assigned' or request.status == 'closed' %}
-            <a href="{% url 'request_detail' request.id %}" class="btn btn-outline">
+            <a href="{% url 'requests:request_detail' request.id %}" class="btn btn-outline">
                 <i class="fas fa-info-circle"></i> Details
             </a>
             {% endif %}
@@ -482,13 +480,13 @@
         {% if request.GET.search or request.GET.status %}
         <!-- Search/filter returned no results -->
         <p>No requests match your search criteria.</p>
-        <a href="{% url 'my_requests' %}" class="btn btn-outline" style="display: inline-block; padding: 5px 20px; margin-top: 25px;">
+        <a href="{% url 'requests:my_requests' %}" class="btn btn-outline" style="display: inline-block; padding: 5px 20px; margin-top: 25px;">
             <i class="fas fa-undo"></i> Clear Filters
         </a>
         {% else %}
         <!-- No requests at all -->
         <p>You haven't posted any care requests yet.</p>
-        <a href="{% url 'post_request' %}" class="btn btn-primary" style="display: inline-block; padding: 12px 30px;">
+        <a href="{% url 'requests:post_request' %}" class="btn btn-primary" style="display: inline-block; padding: 12px 30px;">
             <i class="fas fa-plus-circle"></i> Post Your First Request
         </a>
         {% endif %}

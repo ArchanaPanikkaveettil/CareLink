@@ -1,13 +1,378 @@
 <!-- templates/notifications/dropdown.html -->
+<div class="notifications-dropdown">
+    <div class="dropdown-header">
+        <h4>
+            <i class="fas fa-bell"></i> 
+            Notifications
+        </h4>
+        <div class="dropdown-actions">
+            {% if notifications %}
+                {% if unread_count > 0 %}
+                <button class="mark-all-read-btn action-btn" onclick="markAllNotificationsRead()" title="Mark all as read">
+                    <i class="fas fa-check-double"></i>
+                </button>
+                {% endif %}
+                <button class="clear-read-btn action-btn" onclick="deleteReadNotifications()" title="Clear read notifications">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                <button class="clear-all-btn action-btn" onclick="deleteAllNotifications()" title="Clear all notifications">
+                    <i class="fas fa-trash"></i>
+                </button>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="notifications-list">
+        {% if notifications %}
+            {% for notification in notifications %}
+            <div class="notification-item {% if not notification.is_read %}unread{% endif %}" 
+                 data-notification-id="{{ notification.id }}">
+                <div class="notification-icon">
+                    <i class="fas {{ notification.icon|default:'fa-bell' }}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">{{ notification.title|default:"Notification" }}</div>
+                    <div class="notification-message">{{ notification.message|truncatechars:80 }}</div>
+                    <div class="notification-time">
+                        <i class="far fa-clock"></i> 
+                        {{ notification.created_at|timesince }} ago
+                    </div>
+                </div>
+                <div class="notification-actions">
+                    {% if not notification.is_read %}
+                    <button class="mark-read-btn" onclick="event.stopPropagation(); markNotificationRead({{ notification.id }})" title="Mark as read">
+                        <i class="fas fa-check-circle"></i>
+                    </button>
+                    {% endif %}
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteNotification({{ notification.id }})" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-notifications">
+                <i class="fas fa-bell-slash fa-2x"></i>
+                <p>No new notifications.</p>
+                <small>You're all caught up!</small>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="dropdown-footer">
+        <a href="{% url 'notifications:all_notifications' %}" class="see-all-link">
+            <i class="fas fa-eye"></i>
+            <span>See All Notifications</span>
+            <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+</div>
 
-/* Notification Dropdown Styles */
+<script>
+    // Mark individual notification as read
+    function markNotificationRead(notificationId) {
+        fetch(`/notifications/${notificationId}/mark-read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Reload notifications
+                if (typeof loadNotifications === 'function') {
+                    loadNotifications();
+                }
+                if (typeof updateNotificationCount === 'function') {
+                    updateNotificationCount();
+                }
+            }
+        })
+        .catch(error => console.error('Error marking notification as read:', error));
+    }
+    
+    // Mark all notifications as read
+    function markAllNotificationsRead() {
+        fetch('/notifications/mark-all-read/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                if (typeof loadNotifications === 'function') {
+                    loadNotifications();
+                }
+                if (typeof updateNotificationCount === 'function') {
+                    updateNotificationCount();
+                }
+            }
+        })
+        .catch(error => console.error('Error marking all as read:', error));
+    }
+    
+    // Delete a single notification
+    function deleteNotification(notificationId) {
+        if (confirm('Delete this notification?')) {
+            fetch(`/notifications/${notificationId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                    if (typeof updateNotificationCount === 'function') {
+                        updateNotificationCount();
+                    }
+                }
+            })
+            .catch(error => console.error('Error deleting notification:', error));
+        }
+    }
+    
+    // Delete only read notifications
+    function deleteReadNotifications() {
+        if (confirm('Delete all read notifications?')) {
+            fetch('/notifications/delete-read/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                    if (typeof updateNotificationCount === 'function') {
+                        updateNotificationCount();
+                    }
+                }
+            })
+            .catch(error => console.error('Error deleting read notifications:', error));
+        }
+    }
+    
+    // Delete all notifications
+    function deleteAllNotifications() {
+        if (confirm('Delete ALL notifications? This action cannot be undone.')) {
+            fetch('/notifications/delete-all/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                    if (typeof updateNotificationCount === 'function') {
+                        updateNotificationCount();
+                    }
+                }
+            })
+            .catch(error => console.error('Error deleting all notifications:', error));
+        }
+    }
+    
+    // Get CSRF token from cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Attach click handlers to notification items for navigation
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.notification-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                // Don't trigger if clicking buttons
+                if (e.target.closest('.mark-read-btn') || e.target.closest('.delete-btn')) {
+                    return;
+                }
+                
+                const notificationId = this.dataset.notificationId;
+                
+                // Mark as read before navigating
+                if (this.classList.contains('unread')) {
+                    fetch(`/notifications/${notificationId}/mark-read/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    }).then(() => {
+                        // Navigate to notification link if exists
+                        const notificationLink = this.querySelector('.notification-link');
+                        if (notificationLink && notificationLink.href) {
+                            window.location.href = notificationLink.href;
+                        }
+                    }).catch(error => console.error('Error:', error));
+                } else {
+                    const notificationLink = this.querySelector('.notification-link');
+                    if (notificationLink && notificationLink.href) {
+                        window.location.href = notificationLink.href;
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+
+    /* Notifications Dropdown Styles */
+.notifications-wrapper {
+    position: relative;
+}
+
+.notification-bell {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s;
+}
+
+.notification-bell:hover {
+    background: #e2e8f0;
+    transform: scale(1.05);
+}
+
+.notification-bell i {
+    font-size: 1.2rem;
+    color: #0f3460;
+}
+
+.notification-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+}
+
+.notifications-panel {
+    position: absolute;
+    top: 55px;
+    right: 0;
+    width: 380px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e2e8f0;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+/* Dropdown Header */
+.dropdown-header {
+    padding: 16px 20px;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dropdown-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f3460;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dropdown-header h4 i {
+    color: #0f3460;
+    font-size: 1.1rem;
+}
+
+.dropdown-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.action-btn:hover {
+    background: #f1f5f9;
+    color: #0f3460;
+}
+
+/* Notifications List */
+.notifications-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Notification Item */
 .notification-item {
     display: flex;
-    align-items: flex-start;
     gap: 12px;
-    padding: 15px;
-    border-bottom: 1px solid #e2e8f0;
-    transition: background 0.2s;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s;
+    cursor: pointer;
     position: relative;
 }
 
@@ -17,11 +382,13 @@
 
 .notification-item.unread {
     background: #f0f9ff;
+    border-left: 3px solid #0f3460;
 }
 
+/* Notification Icon */
 .notification-icon {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     background: #f1f5f9;
     border-radius: 50%;
     display: flex;
@@ -35,15 +402,29 @@
     color: #0f3460;
 }
 
+/* Notification Content */
 .notification-content {
     flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-weight: 600;
+    color: #0f3460;
+    font-size: 0.85rem;
+    margin-bottom: 4px;
 }
 
 .notification-message {
-    font-size: 0.9rem;
-    color: #1e293b;
-    margin-bottom: 5px;
+    color: #475569;
+    font-size: 0.8rem;
     line-height: 1.4;
+    margin-bottom: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .notification-time {
@@ -54,95 +435,167 @@
     gap: 4px;
 }
 
-.mark-read-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 5px;
-    color: #94a3b8;
-    transition: color 0.2s;
+.notification-time i {
+    font-size: 0.65rem;
+}
+
+/* Notification Actions */
+.notification-actions {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
     flex-shrink: 0;
 }
 
-.mark-read-btn:hover {
-    color: #10b981;
+.mark-read-btn, .delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: #94a3b8;
 }
 
-.notification-empty {
+.mark-read-btn:hover {
+    background: #dcfce7;
+    color: #10b981;
+    transform: scale(1.05);
+}
+
+.delete-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    transform: scale(1.05);
+}
+
+/* Empty State */
+.no-notifications {
+    text-align: center;
+    padding: 48px 24px;
+    color: #94a3b8;
+}
+
+.no-notifications i {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    color: #cbd5e1;
+}
+
+.no-notifications p {
+    margin: 8px 0 4px;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.no-notifications small {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+/* Dropdown Footer */
+.dropdown-footer {
+    padding: 12px 16px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+    text-align: center;
+}
+
+.see-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #0f3460;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.see-all-link:hover {
+    gap: 12px;
+    color: #1e4a7a;
+}
+
+/* Loading Spinner */
+.loading-spinner {
     text-align: center;
     padding: 40px;
     color: #94a3b8;
 }
 
-.notification-empty i {
-    font-size: 2rem;
+.loading-spinner i {
+    font-size: 1.5rem;
     margin-bottom: 10px;
-    display: block;
 }
 
-.notification-footer {
-    padding: 12px;
-    text-align: center;
-    border-top: 1px solid #e2e8f0;
+/* Scrollbar Styling */
+.notifications-list::-webkit-scrollbar {
+    width: 6px;
 }
 
-.notification-footer a {
-    color: #0f3460;
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 500;
+.notifications-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
 }
 
-.notification-footer a:hover {
-    text-decoration: underline;
+.notifications-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.notifications-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Animation */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notifications-panel {
+    animation: slideDown 0.2s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .notifications-panel {
+        width: 320px;
+        right: -60px;
+    }
+    
+    .notification-item {
+        padding: 12px;
+    }
+    
+    .notification-icon {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .notification-icon i {
+        font-size: 0.8rem;
+    }
+    
+    .notification-title {
+        font-size: 0.8rem;
+    }
+    
+    .notification-message {
+        font-size: 0.75rem;
+    }
 }
 
 
-<div class="notifications-dropdown">
-    <div class="notifications-header">
-        <h3>
-            <i class="fas fa-bell" style="color: #0a2a38;"></i>
-            Notifications
-        </h3>
-        <a href="{% url 'notifications:all' %}">
-            <i class="fas fa-external-link-alt"></i> View All
-        </a>
-    </div>
-
-    <div class="notifications-list">
-        {% if notifications %}
-        {% for notification in notifications %}
-        <div class="notification-item {% if not notification.is_read %}unread{% endif %}"
-            data-id="{{ notification.id }}">
-            <div class="notification-icon">
-                <i
-                    class="fas {% if notification.notification_type == 'assignment' %}fa-calendar-check{% elif notification.notification_type == 'application' %}fa-file-alt{% elif notification.notification_type == 'message' %}fa-envelope{% else %}fa-bell{% endif %}"></i>
-            </div>
-            <div class="notification-content">
-                <div class="notification-message">{{ notification.message|truncatechars:50 }}</div>
-                <div class="notification-time">
-                    <i class="far fa-clock"></i>
-                    {{ notification.created_at|timesince }} ago
-                </div>
-            </div>
-            {% if not notification.is_read %}
-            <button class="mark-read-btn" onclick="markNotificationRead('{{ notification.id }}')">
-                <i class="fas fa-check"></i>
-            </button>
-            {% endif %}
-        </div>
-        {% endfor %}
-        {% else %}
-        <div class="notification-empty">
-            <i class="far fa-bell-slash" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
-            <p>No notifications yet</p>
-        </div>
-        {% endif %}
-    </div>
-
-    <div class="notifications-footer">
-        <a href="{% url 'notifications:all' %}">
-            <i class="fas fa-arrow-right"></i> See all notifications
-        </a>
-    </div>
-</div>
+</style>

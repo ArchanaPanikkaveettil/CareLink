@@ -284,6 +284,62 @@
         margin-bottom: 20px;
     }
 
+
+    .active-filters {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-label {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: #0f3460;
+    border: 1px solid #e2e8f0;
+}
+
+.filter-tag i {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.remove-filter {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-left: 4px;
+}
+
+.remove-filter:hover {
+    color: #ef4444;
+}
+
+.form-text {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-top: 4px;
+    display: block;
+}
+
+
+
     @media (max-width: 768px) {
         .filter-actions {
             flex-direction: column;
@@ -302,6 +358,8 @@
 {% endblock %}
 
 {% block content %}
+
+
 <!-- Search Section -->
 <div class="search-section">
     <div class="search-title">
@@ -312,14 +370,16 @@
         <div class="search-grid">
             <div class="form-group">
                 <label><i class="fas fa-search"></i> Search</label>
-                <input type="text" class="form-control" name="q" placeholder="Name, qualification, location..."
+                <input type="text" class="form-control" name="q" 
+                    placeholder="Search by name, qualification, skills, location, city, state..."
                     value="{{ request.GET.q|default:'' }}">
+                <small class="form-text text-muted">Search across name, qualification, skills, city, state, address</small>
             </div>
 
             <div class="form-group">
                 <label><i class="fas fa-briefcase"></i> Min Experience</label>
-                <input type="number" class="form-control" name="experience" placeholder="Years"
-                    value="{{ request.GET.experience|default:'' }}" min="0">
+                <input type="number" class="form-control" name="experience" 
+                    placeholder="Years" value="{{ request.GET.experience|default:'' }}" min="0">
             </div>
 
             <div class="form-group">
@@ -346,10 +406,38 @@
     </form>
 </div>
 
+<!-- Active Filters -->
+{% if request.GET.q or request.GET.experience or request.GET.availability %}
+<div class="active-filters">
+    <span class="filter-label">Active Filters:</span>
+    {% if request.GET.q %}
+    <span class="filter-tag">
+        <i class="fas fa-search"></i> "{{ request.GET.q }}"
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'q' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="remove-filter">×</a>
+    </span>
+    {% endif %}
+    {% if request.GET.experience %}
+    <span class="filter-tag">
+        <i class="fas fa-briefcase"></i> {{ request.GET.experience }}+ years
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'experience' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="remove-filter">×</a>
+    </span>
+    {% endif %}
+    {% if request.GET.availability %}
+    <span class="filter-tag">
+        <i class="fas fa-clock"></i> {{ request.GET.availability|title }}
+        <a href="?{% for key, value in request.GET.items %}{% if key != 'availability' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="remove-filter">×</a>
+    </span>
+    {% endif %}
+</div>
+{% endif %}
+
+
+
 <!-- Results Count -->
 <div class="results-count">
     <span>{{ caretakers|length }}</span> caretakers found
 </div>
+
 
 <!-- Caretakers Grid -->
 <div class="caretakers-grid">
@@ -360,19 +448,21 @@
                 <i class="fas fa-user-nurse"></i>
             </div>
             <div class="caretaker-info">
+                <!-- ✅ FIXED: caretaker is a CaretakerProfile object, access user through caretaker.user -->
                 <h3>{{ caretaker.user.get_full_name|default:caretaker.user.username }}</h3>
                 <p>
-                    {% if caretaker.availability_status == 'available' %}
+                    {% if caretaker.availability_status  ==  'available' %}
                     <span class="badge-available">
                         <i class="fas fa-circle"></i> Available
                     </span>
-                    {% elif caretaker.availability_status == 'busy' %}
+                    {% elif caretaker.availability_status  ==  'busy' %}
                     <span class="badge-busy">
                         <i class="fas fa-circle"></i> Busy
                     </span>
                     {% else %}
                     <span class="badge-busy">
-                        <i class="fas fa-circle"></i> {{ caretaker.get_availability_status_display }}
+                        <i class="fas fa-circle"></i> {{ caretaker.get_availability_status_display|default:"Available"
+                        }}
                     </span>
                     {% endif %}
                 </p>
@@ -382,7 +472,7 @@
         <div class="details-grid">
             <div class="detail-item">
                 <span class="detail-label"><i class="fas fa-briefcase"></i> Experience</span>
-                <span class="detail-value">{{ caretaker.experience_years }} years</span>
+                <span class="detail-value">{{ caretaker.experience_years|default:"0" }} years</span>
             </div>
             <div class="detail-item">
                 <span class="detail-label"><i class="fas fa-graduation-cap"></i> Qualification</span>
@@ -397,6 +487,7 @@
                 <span class="detail-value">{{ caretaker.languages|default:"Not specified"|truncatechars:15 }}</span>
             </div>
         </div>
+
 
         {% if caretaker.skills %}
         <div class="skills">
@@ -417,6 +508,7 @@
                 <i class="fas fa-eye"></i> View Profile
             </a>
         </div>
+
     </div>
     {% empty %}
     <div class="empty-state">
@@ -426,4 +518,6 @@
     </div>
     {% endfor %}
 </div>
+
+
 {% endblock %}

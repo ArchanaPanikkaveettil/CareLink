@@ -1,0 +1,323 @@
+<!-- templates/requests/create_care_request.html -->
+{% extends 'users/family_base.html' %}
+
+{% load static %}
+
+{% block title %}Create Care Request - CareLink{% endblock %}
+
+{% block page_icon %}<i class="fas fa-plus-circle"></i>{% endblock %}
+{% block page_title %}Create Care Request{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .form-section {
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .form-section h3 {
+        color: #0f3460;
+        margin-bottom: 20px;
+        font-size: 1.3rem;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #1e293b;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .days-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .day-checkbox {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .day-checkbox input {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    .day-checkbox label {
+        margin: 0;
+        font-size: 12px;
+        font-weight: normal;
+        cursor: pointer;
+    }
+    
+    .help-text {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 5px;
+    }
+    
+    .errorlist {
+        color: #ef4444;
+        font-size: 12px;
+        margin-top: 5px;
+        list-style: none;
+        padding: 0;
+    }
+    
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-secondary:hover {
+        background: #475569;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+        margin-top: 30px;
+    }
+    
+    @media (max-width: 768px) {
+        .row {
+            grid-template-columns: 1fr;
+        }
+        
+        .days-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        .form-container {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="form-section">
+            <h3>📋 Basic Information</h3>
+            
+            <div class="form-group">
+                <label for="{{ form.elder.id_for_label }}">Select Elder (Optional)</label>
+                {{ form.elder }}
+                {% if form.elder.errors %}
+                    <ul class="errorlist">{{ form.elder.errors }}</ul>
+                {% endif %}
+                <div class="help-text">Select which elder this care is for, or leave blank for general care</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}">Request Title *</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <ul class="errorlist">{{ form.title.errors }}</ul>
+                {% endif %}
+                <div class="help-text">e.g., "Morning Care for Grandmother" or "Evening Assistance Needed"</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Description *</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <ul class="errorlist">{{ form.description.errors }}</ul>
+                {% endif %}
+                <div class="help-text">Describe the care needed, patient condition, and any specific requirements</div>
+            </div>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label for="{{ form.care_type.id_for_label }}">Care Type *</label>
+                    {{ form.care_type }}
+                    {% if form.care_type.errors %}
+                        <ul class="errorlist">{{ form.care_type.errors }}</ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.hours_per_session.id_for_label }}">Hours per Session</label>
+                    {{ form.hours_per_session }}
+                    {% if form.hours_per_session.errors %}
+                        <ul class="errorlist">{{ form.hours_per_session.errors }}</ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Schedule -->
+        <div class="form-section">
+            <h3>📅 Schedule</h3>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label for="{{ form.start_date.id_for_label }}">Start Date *</label>
+                    {{ form.start_date }}
+                    {% if form.start_date.errors %}
+                        <ul class="errorlist">{{ form.start_date.errors }}</ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.end_date.id_for_label }}">End Date (for long-term)</label>
+                    {{ form.end_date }}
+                    {% if form.end_date.errors %}
+                        <ul class="errorlist">{{ form.end_date.errors }}</ul>
+                    {% endif %}
+                    <div class="help-text">Leave blank if ongoing</div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label for="{{ form.preferred_time_from.id_for_label }}">Preferred Start Time</label>
+                    {{ form.preferred_time_from }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.preferred_time_to.id_for_label }}">Preferred End Time</label>
+                    {{ form.preferred_time_to }}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Days of Week (for weekly recurring)</label>
+                <div class="days-grid">
+                    <div class="day-checkbox">
+                        {{ form.monday }}
+                        <label for="{{ form.monday.id_for_label }}">Mon</label>
+                    </div>
+                    <div class="day-checkbox">
+                        {{ form.tuesday }}
+                        <label for="{{ form.tuesday.id_for_label }}">Tue</label>
+                    </div>
+                    <div class="day-checkbox">
+                        {{ form.wednesday }}
+                        <label for="{{ form.wednesday.id_for_label }}">Wed</label>
+                    </div>
+                    <div class="day-checkbox">
+                        {{ form.thursday }}
+                        <label for="{{ form.thursday.id_for_label }}">Thu</label>
+                    </div>
+                    <div class="day-checkbox">
+                        {{ form.friday }}
+                        <label for="{{ form.friday.id_for_label }}">Fri</label>
+                    </div>
+                    <div class="day-checkbox">
+                        {{ form.saturday }}
+                        <label for="{{ form.saturday.id_for_label }}">Sat</label>
+                    </div>
+                    <div class="day-checkbox">
+                        {{ form.sunday }}
+                        <label for="{{ form.sunday.id_for_label }}">Sun</label>
+                    </div>
+                </div>
+                <div class="help-text">Select days when care is needed (for recurring care)</div>
+            </div>
+        </div>
+        
+        <!-- Requirements -->
+        <div class="form-section">
+            <h3>⚙️ Requirements & Budget</h3>
+            
+            <div class="form-group">
+                <label for="{{ form.required_skills.id_for_label }}">Required Skills</label>
+                {{ form.required_skills }}
+                <div class="help-text">e.g., CPR certified, Elder care experience, Medication management</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.special_instructions.id_for_label }}">Special Instructions</label>
+                {{ form.special_instructions }}
+                <div class="help-text">Any specific instructions for the caretaker</div>
+            </div>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label for="{{ form.budget_per_hour.id_for_label }}">Budget per Hour ($)</label>
+                    {{ form.budget_per_hour }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.budget_total.id_for_label }}">Total Budget (Optional)</label>
+                    {{ form.budget_total }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <a href="{% url 'requests:my_requests' %}" class="btn-secondary">Cancel</a>
+            <button type="submit" class="btn-primary">Create Care Request</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

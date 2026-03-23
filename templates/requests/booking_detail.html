@@ -1,0 +1,353 @@
+<!-- templates/requests/booking_detail.html -->
+{% extends 'users/family_base.html' %}
+
+{% load static %}
+
+{% block title %}Booking Details - CareLink{% endblock %}
+
+{% block page_icon %}<i class="fas fa-receipt"></i>{% endblock %}
+{% block page_title %}Booking Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 25px;
+    }
+    
+    .booking-details, .booking-actions {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+    
+    .info-section {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .info-section h3 {
+        color: #0f3460;
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .info-label {
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .info-value {
+        font-weight: 600;
+        color: #0f3460;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+        margin-top: 20px;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-bottom: 20px;
+        border-left: 2px solid #e2e8f0;
+        padding-left: 20px;
+        margin-left: 10px;
+    }
+    
+    .timeline-item:last-child {
+        border-left: 2px solid transparent;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 0;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #667eea;
+    }
+    
+    .timeline-date {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-bottom: 5px;
+    }
+    
+    .timeline-title {
+        font-weight: 600;
+        color: #0f3460;
+        margin-bottom: 5px;
+    }
+    
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+    }
+    
+    .btn {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+    }
+    
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #059669;
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+    
+    .btn-warning {
+        background: #f59e0b;
+        color: white;
+    }
+    
+    .btn-warning:hover {
+        background: #d97706;
+    }
+    
+    .btn-outline {
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #0f3460;
+    }
+    
+    .btn-outline:hover {
+        background: #f8fafc;
+    }
+    
+    .message-box {
+        background: #f0f9ff;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 8px;
+    }
+    
+    @media (max-width: 768px) {
+        .booking-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="booking-container">
+    <div class="booking-details">
+        <div class="status-badge status-{{ booking.status }}">
+            Status: {{ booking.get_status_display }}
+        </div>
+        
+        <div class="info-section">
+            <h3><i class="fas fa-calendar-alt"></i> Session Details</h3>
+            <div class="info-row">
+                <span class="info-label">Date:</span>
+                <span class="info-value">{{ booking.booking_date|date:"l, F d, Y" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Time:</span>
+                <span class="info-value">{{ booking.start_time|time:"h:i A" }} - {{ booking.end_time|time:"h:i A" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Duration:</span>
+                <span class="info-value">{{ booking.duration_hours }} hours</span>
+            </div>
+            {% if booking.get_total_amount %}
+            <div class="info-row">
+                <span class="info-label">Total Amount:</span>
+                <span class="info-value">${{ booking.get_total_amount|floatformat:2 }}</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="info-section">
+            <h3><i class="fas fa-info-circle"></i> Care Details</h3>
+            <div class="info-row">
+                <span class="info-label">Care Request:</span>
+                <span class="info-value">{{ booking.care_request.title|default:booking.care_request.patient_name }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Care Type:</span>
+                <span class="info-value">{{ booking.care_request.get_care_type_display }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">{% if is_family %}Caretaker{% else %}Family{% endif %}:</span>
+                <span class="info-value">
+                    {% if is_family %}
+                        {{ booking.caretaker.get_full_name }}
+                    {% else %}
+                        {{ booking.family.get_full_name }}
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        
+        {% if booking.family_notes %}
+        <div class="info-section">
+            <h3><i class="fas fa-comment"></i> Family Notes</h3>
+            <div class="message-box">
+                {{ booking.family_notes }}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if booking.caretaker_notes %}
+        <div class="info-section">
+            <h3><i class="fas fa-comment-dots"></i> Caretaker Notes</h3>
+            <div class="message-box">
+                {{ booking.caretaker_notes }}
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="info-section">
+            <h3><i class="fas fa-history"></i> Timeline</h3>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-date">{{ booking.created_at|date:"M d, Y H:i" }}</div>
+                    <div class="timeline-title">Booking Created</div>
+                    <div class="timeline-desc">Booking request was submitted</div>
+                </div>
+                {% if booking.confirmed_at %}
+                <div class="timeline-item">
+                    <div class="timeline-date">{{ booking.confirmed_at|date:"M d, Y H:i" }}</div>
+                    <div class="timeline-title">Booking Confirmed</div>
+                    <div class="timeline-desc">Caretaker confirmed the booking</div>
+                </div>
+                {% endif %}
+                {% if booking.completed_at %}
+                <div class="timeline-item">
+                    <div class="timeline-date">{{ booking.completed_at|date:"M d, Y H:i" }}</div>
+                    <div class="timeline-title">Session Completed</div>
+                    <div class="timeline-desc">Care session completed successfully</div>
+                </div>
+                {% endif %}
+                {% if booking.cancelled_at %}
+                <div class="timeline-item">
+                    <div class="timeline-date">{{ booking.cancelled_at|date:"M d, Y H:i" }}</div>
+                    <div class="timeline-title">Booking Cancelled</div>
+                    <div class="timeline-desc">Booking was cancelled</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="booking-actions">
+        <h3><i class="fas fa-cog"></i> Actions</h3>
+        <div class="btn-group">
+            {% if is_caretaker and booking.status == 'pending' %}
+                <form method="post" action="{% url 'requests:confirm_booking' booking_id=booking.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success" style="width: 100%;">
+                        <i class="fas fa-check-circle"></i> Confirm Booking
+                    </button>
+                </form>
+            {% endif %}
+            
+            {% if booking.status == 'confirmed' and is_caretaker %}
+                <form method="post" action="{% url 'requests:start_booking' booking_id=booking.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-play"></i> Start Session
+                    </button>
+                </form>
+            {% endif %}
+            
+            {% if booking.status == 'in_progress' and is_caretaker %}
+                <form method="post" action="{% url 'requests:complete_booking' booking_id=booking.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success" style="width: 100%;">
+                        <i class="fas fa-check-double"></i> Complete Session
+                    </button>
+                </form>
+            {% endif %}
+            
+            {% if booking.status not in 'completed,cancelled' %}
+                <form method="post" action="{% url 'requests:cancel_booking' booking_id=booking.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" style="width: 100%;" 
+                            onclick="return confirm('Are you sure you want to cancel this booking?')">
+                        <i class="fas fa-times-circle"></i> Cancel Booking
+                    </button>
+                </form>
+            {% endif %}
+            
+            <a href="
+                {% if is_family %}
+                    {% url 'requests:my_bookings' %}
+                {% else %}
+                    {% url 'requests:my_bookings' %}
+                {% endif %}
+            " class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Back to Bookings
+            </a>
+            
+            {% if is_family and booking.status == 'completed' %}
+                <a href="#" class="btn btn-outline">
+                    <i class="fas fa-star"></i> Leave a Review
+                </a>
+            {% endif %}
+        </div>
+        
+        {% if booking.status == 'pending' %}
+        <div class="message-box" style="margin-top: 20px; background: #fef3c7;">
+            <i class="fas fa-clock"></i>
+            <strong>Waiting for confirmation</strong>
+            <p style="margin-top: 5px;">The caretaker has been notified and will confirm your booking soon.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

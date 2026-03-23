@@ -11,10 +11,9 @@
         padding: 20px;
     }
 
-    /* Breadcrumb Navigation */
+    /* Breadcrumb */
     .breadcrumb {
         margin-bottom: 25px;
-        padding: 10px 0;
     }
 
     .breadcrumb a {
@@ -29,13 +28,8 @@
 
     .breadcrumb i {
         margin: 0 8px;
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         color: #94a3b8;
-    }
-
-    .breadcrumb span {
-        color: #64748b;
-        font-size: 0.9rem;
     }
 
     /* Profile Layout */
@@ -91,7 +85,6 @@
         font-weight: 700;
         color: #0f3460;
         margin-bottom: 8px;
-        text-align: center;
     }
 
     .caretaker-role {
@@ -113,9 +106,6 @@
         font-size: 0.8rem;
         font-weight: 500;
         margin-bottom: 12px;
-        width: fit-content;
-        margin-left: auto;
-        margin-right: auto;
     }
 
     .status-badge.available {
@@ -137,24 +127,17 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        background: #dcfce7;
+        color: #166534;
         padding: 6px 14px;
         border-radius: 50px;
         font-size: 0.8rem;
         font-weight: 500;
         margin-bottom: 20px;
-        width: fit-content;
-        margin-left: auto;
-        margin-right: auto;
     }
 
-    .verified-badge.verified {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .verified-badge.pending {
-        background: #fef3c7;
-        color: #92400e;
+    .verified-badge i {
+        font-size: 0.85rem;
     }
 
     .contact-details {
@@ -281,7 +264,6 @@
         color: #64748b;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        font-weight: 600;
     }
 
     .info-value {
@@ -303,7 +285,6 @@
         padding: 6px 14px;
         border-radius: 50px;
         font-size: 0.85rem;
-        font-weight: 500;
     }
 
     .documents-grid {
@@ -354,7 +335,6 @@
         color: #0f3460;
         padding: 5px 10px;
         border-radius: 6px;
-        transition: all 0.3s;
     }
 
     .doc-link:hover {
@@ -372,14 +352,10 @@
         margin-bottom: 10px;
     }
 
-    /* Booking Section */
+    /* Booking Button */
     .booking-section {
         margin-top: 10px;
         text-align: center;
-        padding: 20px;
-        background: #f8fafc;
-        border-radius: 20px;
-        border: 1px solid #e2e8f0;
     }
 
     .btn-book {
@@ -407,7 +383,7 @@
         font-size: 1.1rem;
     }
 
-    /* Alert Warning */
+    /* Warning Alert */
     .alert-warning {
         background: #fef3c7;
         border: 1px solid #f59e0b;
@@ -426,16 +402,24 @@
     .alert-warning h4 {
         color: #92400e;
         margin: 0 0 5px;
-        font-size: 1rem;
     }
 
     .alert-warning p {
         color: #92400e;
         margin: 0;
+    }
+
+    .btn-warning {
+        display: inline-block;
+        background: #f59e0b;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        margin-top: 10px;
         font-size: 0.85rem;
     }
 
-    /* Responsive */
     @media (max-width: 900px) {
         .profile-layout {
             grid-template-columns: 1fr;
@@ -456,14 +440,11 @@
 </style>
 {% endblock %}
 
-
 {% block content %}
 <div class="profile-wrapper">
-    <!-- Breadcrumb Navigation -->
+    <!-- Breadcrumb -->
     <div class="breadcrumb">
-        <a href="{% url 'search_caretakers' %}">
-            <i class="fas fa-search"></i> Find Caretakers
-        </a>
+        <a href="{% url 'search_caretakers' %}"><i class="fas fa-search"></i> Find Caretakers</a>
         <i class="fas fa-chevron-right"></i>
         <span>{{ caretaker.get_full_name|default:caretaker.username }}</span>
     </div>
@@ -492,11 +473,11 @@
                 {% endif %}
                 
                 {% if caretaker.is_verified %}
-                    <div class="verified-badge verified">
+                    <div class="verified-badge">
                         <i class="fas fa-check-circle"></i> Verified Caretaker
                     </div>
                 {% else %}
-                    <div class="verified-badge pending">
+                    <div class="verified-badge" style="background: #fef3c7; color: #92400e;">
                         <i class="fas fa-clock"></i> Verification Pending
                     </div>
                 {% endif %}
@@ -550,7 +531,7 @@
                     </div>
                 </div>
 
-                <!-- Professional Information -->
+                <!-- Professional Info -->
                 <div class="info-card">
                     <div class="card-title">
                         <i class="fas fa-user-md"></i>
@@ -600,7 +581,7 @@
 
                     {% if profile.languages %}
                     <div style="margin-top: 20px;">
-                        <span class="info-label">Languages Spoken</span>
+                        <span class="info-label">Languages</span>
                         <div class="skills-list">
                             {% for lang in profile.languages.split %}
                                 <span class="skill-badge">{{ lang }}</span>
@@ -617,7 +598,7 @@
                     {% endif %}
                 </div>
 
-                <!-- Location Information -->
+                <!-- Location Info -->
                 <div class="info-card">
                     <div class="card-title">
                         <i class="fas fa-map-marker-alt"></i>
@@ -663,7 +644,7 @@
                     </div>
                 </div>
 
-                <!-- Documents & Certifications -->
+                <!-- Documents -->
                 <div class="info-card">
                     <div class="card-title">
                         <i class="fas fa-file-alt"></i>
@@ -735,7 +716,7 @@
                 <!-- Booking Button -->
                 {% if user.role == 'family' %}
                 <div class="booking-section">
-                    <a href="/requests/caretaker/{{ caretaker.id }}/availability/" class="btn-book">
+                    <a href="{% url 'view_caretaker_availability' caretaker.id %}" class="btn-book">
                         <i class="fas fa-calendar-alt"></i>
                         Check Availability & Book
                     </a>
