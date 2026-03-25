@@ -14,142 +14,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        .footer {
-            background: #03162e;
-            color: white;
-            padding-top: 20px;
-        }
-
-        .footer a {
-            color: #ffffff;
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        .footer h4 {
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .footer-bottom {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .footer-section ul {
-            list-style: none;
-            padding: 0;
-            margin-top: 15px;
-        }
-
-        .footer-section ul li {
-            margin-bottom: 10px;
-            font-size: 0.95rem;
-        }
-
-        .footer-section p {
-            margin-top: 15px;
-            line-height: 1.6;
-            opacity: 0.9;
-        }
-
-        .social-links {
-            margin-top: 15px;
-            display: flex;
-            gap: 15px;
-        }
-
-        /* Footer row layout */
-        .footer-row {
-            display: flex;
-            flex-direction: row;
-            gap: 40px;
-            justify-content: space-between;
-        }
-
-        .footer-col {
-            flex: 1;
-            min-width: 120px;
-        }
-
-        .footer-col h4 {
-            white-space: nowrap;
-        }
-
-        .footer-col ul {
-            margin-top: 10px;
-        }
-
-        .footer-col ul li {
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        /* Adjust the main footer grid */
-        .footer-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 2fr;
-            /* Adjust column widths */
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-            align-items: start;
-        }
-
-        /* Make first section wider */
-        .footer-section:first-child {
-            max-width: 300px;
-        }
-
-        /* Responsive */
-        @media (max-width: 992px) {
-            .footer-content {
-                grid-template-columns: 1fr 1fr;
-                gap: 30px;
-            }
-
-            .footer-row {
-                grid-column: span 2;
-                justify-content: flex-start;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .footer-content {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-row {
-                flex-direction: column;
-                gap: 20px;
-                grid-column: span 1;
-            }
-
-            .footer-col {
-                width: 100%;
-            }
-        }
-
-
-        :root {
-            --brand-color: #0f3460;
-            --hover-color: #1e4a7a;
-            --button-gradient: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -195,13 +59,13 @@
 
         .logo i {
             font-size: 1.8rem;
-            color: var(--brand-color);
+            color: #0f3460;
         }
 
         .logo h2 {
             font-size: 1.8rem;
             font-weight: 700;
-            color: var(--brand-color);
+            color: #0f3460;
             margin: 0;
         }
 
@@ -221,12 +85,12 @@
         }
 
         .nav-links a:hover {
-            color: var(--hover-color);
+            color: #1e4a7a;
         }
 
         /* LOGIN BUTTON */
         .nav-links .btn-nav {
-            background: var(--button-gradient);
+            background: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);
             color: white !important;
             padding: 8px 25px;
             border-radius: 50px;
@@ -251,6 +115,153 @@
             padding-top: 80px;
             min-height: calc(100vh - 300px);
         }
+
+        /* ================= FOOTER ================= */
+        .footer {
+            background: #03162e;
+            color: white;
+            padding: 40px 50px 20px;
+            margin-top: 50px;
+        }
+
+        .footer a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer h4 {
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 2fr;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            align-items: start;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .footer-section p {
+            margin-top: 15px;
+            line-height: 1.6;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .social-links {
+            margin-top: 15px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-links a {
+            width: 35px;
+            height: 35px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .social-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .footer-row {
+            display: flex;
+            flex-direction: row;
+            gap: 40px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .navbar {
+                padding: 12px 20px;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                background: white;
+                width: 100%;
+                flex-direction: column;
+                padding: 20px;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+                transition: 0.3s;
+                gap: 15px;
+            }
+
+            .nav-links.active {
+                left: 0;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+
+            .footer-row {
+                grid-column: span 2;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding-top: 70px;
+            }
+
+            .footer {
+                padding: 30px 20px 15px;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-row {
+                flex-direction: column;
+                gap: 20px;
+                grid-column: span 1;
+            }
+
+            .footer-section:first-child {
+                max-width: 100%;
+            }
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -268,22 +279,18 @@
         </div>
 
         <div class="nav-links" id="navLinks">
-            <a href="{% url 'index' %}">Home</a>
+            <a href="{% url 'users:index' %}">Home</a>
 
             {% if user.is_authenticated %}
             {% if user.role == "family" %}
-            <a href="{% url 'dashboard:family_dashboard' %}">Dashboard</a> <!-- Using namespace -->
+            <a href="{% url 'dashboard:family_dashboard' %}">Dashboard</a>
             {% elif user.role == "caretaker" %}
-            <a href="{% url 'dashboard:caretaker_dashboard' %}">Dashboard</a> <!-- Using namespace -->
+            <a href="{% url 'dashboard:caretaker_dashboard' %}">Dashboard</a>
             {% endif %}
-            <a href="{% url 'logout' %}">Logout</a>
+            <a href="{% url 'users:logout' %}">Logout</a>
             {% else %}
-            <!-- Login button with btn-nav class for visibility -->
-            <a href="{% url 'login' %}" class="btn-nav">Login</a>
-
+            <a href="{% url 'users:login' %}" class="btn-nav">Login</a>
             {% endif %}
-
-
         </div>
     </div>
 
@@ -309,7 +316,7 @@
             <div class="footer-section">
                 <h4>Quick Links</h4>
                 <ul>
-                    <li><a href="{% url 'index' %}"><i class="fas fa-chevron-right"></i> Home</a></li>
+                    <li><a href="{% url 'users:index' %}"><i class="fas fa-chevron-right"></i> Home</a></li>
                     <li><a href="#features"><i class="fas fa-chevron-right"></i> Features</a></li>
                     <li><a href="#how-it-works"><i class="fas fa-chevron-right"></i> How It Works</a></li>
                 </ul>
@@ -318,26 +325,26 @@
             <div class="footer-section">
                 <h4>For Families</h4>
                 <ul>
-                    <li><a href="{% url 'family_register' %}"><i class="fas fa-chevron-right"></i> Register</a></li>
-                    <li><a href="{% url 'login' %}"><i class="fas fa-chevron-right"></i> Login</a></li>
+                    <li><a href="{% url 'users:family_register' %}"><i class="fas fa-chevron-right"></i> Register</a></li>
+                    <li><a href="{% url 'users:login' %}"><i class="fas fa-chevron-right"></i> Login</a></li>
                 </ul>
             </div>
 
-            <div class="footer-section" style="display: flex; flex-direction: row; gap: 40px;">
-                <div>
+            <div class="footer-row">
+                <div class="footer-col">
                     <h4>For Caretakers</h4>
                     <ul>
-                        <li><a href="{% url 'caretaker_register' %}"><i class="fas fa-chevron-right"></i> Register</a>
-                        </li>
-                        <li><a href="{% url 'login' %}"><i class="fas fa-chevron-right"></i> Login</a></li>
+                        <li><a href="{% url 'users:caretaker_register' %}"><i class="fas fa-chevron-right"></i> Register</a></li>
+                        <li><a href="{% url 'users:login' %}"><i class="fas fa-chevron-right"></i> Login</a></li>
                     </ul>
                 </div>
 
-                <div>
+                <div class="footer-col">
                     <h4>Contact</h4>
                     <ul>
                         <li><i class="fas fa-map-marker-alt"></i> Bangalore, India</li>
                         <li><i class="fas fa-envelope"></i> support@carelink.com</li>
+                        <li><i class="fas fa-phone"></i> +91 1234567890</li>
                     </ul>
                 </div>
             </div>
@@ -347,8 +354,6 @@
             <p>&copy; 2026 CareLink. All rights reserved. | MCA Main Project</p>
         </div>
     </div>
-
-
 
     <!-- Scripts -->
     <script>

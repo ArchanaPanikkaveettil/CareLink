@@ -10,11 +10,19 @@
     <!-- Filters Card -->
     <div class="filters-card">
         <form method="GET" class="row g-3">
-            <div class="col-md-6">
+            <div class="col-md-5">
                 <label class="form-label">Search</label>
                 <input type="text" class="form-control" name="q" placeholder="Name, email, city..." value="{{ search_query }}">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" name="status">
+                    <option value="">All Status</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-2">
                 <label class="form-label">&nbsp;</label>
                 <button type="submit" class="btn btn-primary d-block w-100">
                     <i class="fas fa-search me-2"></i>Search
@@ -22,7 +30,7 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label">&nbsp;</label>
-                <a href="{% url 'admin_families_list' %}" class="btn btn-secondary d-block w-100">
+                <a href="{% url 'users:admin_families_list' %}" class="btn btn-secondary d-block w-100">
                     <i class="fas fa-undo me-2"></i>Reset
                 </a>
             </div>
@@ -33,20 +41,30 @@
     <div class="table-container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h5 class="mb-0">All Families ({{ families.paginator.count }})</h5>
-            <button class="btn btn-success" onclick="exportTableToCSV('families.csv')">
-                <i class="fas fa-download me-2"></i>Export
-            </button>
+            <div class="btn-group">
+                <button class="btn btn-success" onclick="exportTableToCSV('families.csv')">
+                    <i class="fas fa-download me-2"></i>Export
+                </button>
+                <button class="btn btn-warning" onclick="bulkDisable()" id="bulkDisableBtn" style="display: none;">
+                    <i class="fas fa-ban me-2"></i>Disable Selected
+                </button>
+                <button class="btn btn-success" onclick="bulkEnable()" id="bulkEnableBtn" style="display: none;">
+                    <i class="fas fa-check-circle me-2"></i>Enable Selected
+                </button>
+            </div>
         </div>
 
         <div class="table-responsive">
             <table class="table table-hover" id="familiesTable">
                 <thead>
                     <tr>
+                        <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
                         <th>Family Member</th>
                         <th>Contact</th>
                         <th>Patient Name</th>
                         <th>Location</th>
                         <th>Care Required</th>
+                        <th>Account Status</th>
                         <th>Joined</th>
                         <th>Actions</th>
                     </tr>
@@ -54,10 +72,15 @@
                 <tbody>
                     {% for family in families %}
                     <tr>
+                        <td><input type="checkbox" class="family-checkbox" value="{{ family.user.id }}"></td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <div class="user-avatar me-2" style="width: 40px; height: 40px; background: #0f3460; color: white;">
+                                <div class="user-avatar me-2" style="width: 40px; height: 40px; background: #0f3460; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    {% if family.user.profile_picture %}
+                                    <img src="{{ family.user.profile_picture.url }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                    {% else %}
                                     {{ family.user.first_name|first|upper }}{{ family.user.last_name|first|upper }}
+                                    {% endif %}
                                 </div>
                                 <div>
                                     <h6 class="mb-0">{{ family.user.get_full_name }}</h6>
@@ -72,21 +95,41 @@
                         <td>{{ family.patient_name|default:'Not specified' }}</td>
                         <td>{{ family.city|default:'N/A' }}, {{ family.state|default:'N/A' }}</td>
                         <td>{{ family.care_required|truncatechars:30|default:'Not specified' }}</td>
+                        <td>
+                            {% if family.user.is_active %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i>Active
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-ban me-1"></i>Inactive
+                            </span>
+                            {% endif %}
+                        </td>
                         <td>{{ family.user.date_joined|date:'d M Y' }}</td>
                         <td>
                             <div class="btn-group">
-                                <a href="{% url 'admin_user_detail' family.user.id %}" class="btn btn-sm btn-outline-primary" title="View">
+                                <a href="{% url 'users:admin_user_detail' family.user.id %}" class="btn btn-sm btn-outline-primary" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <button type="button" class="btn btn-sm btn-outline-danger" title="Delete" onclick="confirmDelete({{ family.user.id }})">
-                                    <i class="fas fa-trash"></i>
+                                <a href="{% url 'users:admin_user_edit' family.user.id %}" class="btn btn-sm btn-outline-info" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if family.user.is_active %}
+                                <button type="button" class="btn btn-sm btn-outline-warning" title="Disable Account" onclick="toggleUserStatus('{{ family.user.id }}', 'disable')">
+                                    <i class="fas fa-ban"></i>
                                 </button>
+                                {% else %}
+                                <button type="button" class="btn btn-sm btn-outline-success" title="Enable Account" onclick="toggleUserStatus('{{ family.user.id }}', 'enable')">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center py-4">
+                        <td colspan="9" class="text-center py-4">
                             <i class="fas fa-home fa-3x text-muted mb-3"></i>
                             <p class="text-muted">No families found</p>
                         </td>
@@ -102,7 +145,7 @@
             <ul class="pagination justify-content-center">
                 {% if families.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ families.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                    <a class="page-link" href="?page={{ families.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
                         <i class="fas fa-chevron-left"></i>
                     </a>
                 </li>
@@ -113,14 +156,14 @@
                     <li class="page-item active"><span class="page-link">{{ num }}</span></li>
                     {% elif num > families.number|add:'-3' and num < families.number|add:'3' %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a>
+                        <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
                     </li>
                     {% endif %}
                 {% endfor %}
 
                 {% if families.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ families.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                    <a class="page-link" href="?page={{ families.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
                         <i class="fas fa-chevron-right"></i>
                     </a>
                 </li>
@@ -134,10 +177,97 @@
 
 {% block extra_js %}
 <script>
-    function confirmDelete(userId) {
-        if(confirm('Are you sure you want to delete this family account? This action cannot be undone.')) {
-            window.location.href = '/admin-panel/user/' + userId + '/delete/';
+    function toggleUserStatus(userId, action) {
+        const message = action === 'disable' ? 'disable' : 'enable';
+        const confirmMsg = action === 'disable' ? 
+            'Are you sure you want to disable this family account? They will not be able to login or post care requests.' :
+            'Are you sure you want to enable this family account? They will be able to login and post care requests again.';
+        
+        if(confirm(confirmMsg)) {
+            fetch(`/admin-panel/user/${userId}/toggle-status/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=${action}`
+            }).then(response => {
+                if(response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error updating user status. Please try again.');
+                }
+            }).catch(error => {
+                alert('Error: ' + error);
+            });
         }
+    }
+
+    // Bulk actions
+    function toggleSelectAll() {
+        const selectAll = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.family-checkbox');
+        checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
+        updateBulkButtons();
+    }
+
+    function updateBulkButtons() {
+        const checkboxes = document.querySelectorAll('.family-checkbox:checked');
+        const bulkDisableBtn = document.getElementById('bulkDisableBtn');
+        const bulkEnableBtn = document.getElementById('bulkEnableBtn');
+        
+        if(checkboxes.length > 0) {
+            bulkDisableBtn.style.display = 'inline-block';
+            bulkEnableBtn.style.display = 'inline-block';
+        } else {
+            bulkDisableBtn.style.display = 'none';
+            bulkEnableBtn.style.display = 'none';
+        }
+    }
+
+    function bulkDisable() {
+        const selected = document.querySelectorAll('.family-checkbox:checked');
+        if(selected.length === 0) {
+            alert('Please select at least one family.');
+            return;
+        }
+        
+        if(confirm(`Are you sure you want to disable ${selected.length} family account(s)? They will not be able to login.`)) {
+            const userIds = Array.from(selected).map(cb => cb.value);
+            performBulkAction(userIds, 'disable');
+        }
+    }
+
+    function bulkEnable() {
+        const selected = document.querySelectorAll('.family-checkbox:checked');
+        if(selected.length === 0) {
+            alert('Please select at least one family.');
+            return;
+        }
+        
+        if(confirm(`Are you sure you want to enable ${selected.length} family account(s)? They will be able to login again.`)) {
+            const userIds = Array.from(selected).map(cb => cb.value);
+            performBulkAction(userIds, 'enable');
+        }
+    }
+
+    function performBulkAction(userIds, action) {
+        let completed = 0;
+        userIds.forEach(userId => {
+            fetch(`/admin-panel/user/${userId}/toggle-status/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=${action}`
+            }).then(response => {
+                completed++;
+                if(completed === userIds.length) {
+                    location.reload();
+                }
+            });
+        });
     }
 
     function exportTableToCSV(filename) {
@@ -163,5 +293,10 @@
         document.body.appendChild(downloadLink);
         downloadLink.click();
     }
+
+    // Add event listeners to checkboxes
+    document.querySelectorAll('.family-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkButtons);
+    });
 </script>
 {% endblock %}

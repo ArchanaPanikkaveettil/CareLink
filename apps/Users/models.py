@@ -258,6 +258,42 @@ class ElderProfile(models.Model):
         return badge_map.get(self.cognitive_status, "secondary")
 
 
+# ------------------------------------
+# audit logging
+# --------------------------------------
+
+
+class AuditLog(models.Model):
+    """System audit log for admin actions"""
+
+    ACTION_TYPES = (
+        ("login", "Login"),
+        ("logout", "Logout"),
+        ("create", "Create"),
+        ("update", "Update"),
+        ("delete", "Delete"),
+        ("verify", "Verify"),
+        ("reject", "Reject"),
+        ("export", "Export"),
+        ("settings", "Settings Change"),
+    )
+
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="audit_logs"
+    )
+    action = models.CharField(max_length=20, choices=ACTION_TYPES)
+    resource = models.CharField(max_length=100)
+    resource_id = models.IntegerField(null=True, blank=True)
+    details = models.TextField(blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    status = models.CharField(max_length=20, default="success")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
 # ---------------------------
 # Caretaker Profile
 # ---------------------------
@@ -570,9 +606,9 @@ class FamilyProfile(models.Model):
     # Elders under this family's care - ManyToMany to ElderProfile
     elders = models.ManyToManyField(
         ElderProfile,
-        related_name='family_profiles',
+        related_name="family_profiles",
         blank=True,
-        help_text="Elderly persons under this family's care"
+        help_text="Elderly persons under this family's care",
     )
 
     # Family Information

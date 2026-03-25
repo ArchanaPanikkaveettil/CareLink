@@ -290,147 +290,9 @@
             font-size: 1.2rem;
         }
 
-        /* Notification Dropdown Styles (from includes) */
-        .notifications-dropdown {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .notifications-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .notifications-header h3 {
-            color: #0a2a38;
-            font-size: 1.1rem;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .notifications-header a {
-            color: #0a2a38;
-            font-size: 0.85rem;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .notifications-header a:hover {
-            text-decoration: underline;
-        }
-
-        .notifications-list {
-            max-height: 350px;
-            overflow-y: auto;
-        }
-
-        .notification-item {
-            padding: 12px 15px;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            transition: background 0.2s;
-        }
-
-        .notification-item:hover {
-            background: #f8fafc;
-        }
-
-        .notification-item.unread {
-            background: #f0f9ff;
-            border-left: 3px solid #0a2a38;
-        }
-
-        .notification-icon {
-            width: 35px;
-            height: 35px;
-            background: #e2e8f0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #0a2a38;
-            flex-shrink: 0;
-        }
-
-        .notification-content {
-            flex: 1;
-        }
-
-        .notification-message {
-            color: #1e293b;
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-        }
-
-        .notification-time {
-            color: #64748b;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .mark-read-btn {
-            background: none;
-            border: none;
-            color: #0a2a38;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: all 0.2s;
-        }
-
-        .mark-read-btn:hover {
-            background: #e2e8f0;
-        }
-
-        .notification-empty {
-            padding: 40px 20px;
-            text-align: center;
-            color: #94a3b8;
-        }
-
-        .notifications-footer {
-            padding: 12px 20px;
-            text-align: center;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .notifications-footer a {
-            color: #0a2a38;
-            text-decoration: none;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
-        .notifications-footer a:hover {
-            text-decoration: underline;
-        }
-
         .nav-section-title {
             padding: 12px 18px 6px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #8ba9b5;
@@ -463,6 +325,7 @@
 </head>
 
 <body>
+
     <!-- ================= SIDEBAR ================= -->
     <div class="sidebar">
         <div class="sidebar-header">
@@ -476,64 +339,54 @@
         </div>
 
         <div class="nav-menu">
-            {% block sidebar_links %}
             <!-- Dashboard -->
-            <a href="{% url 'dashboard:caretaker_dashboard' %}"
-                class="nav-item {% if request.resolver_match.url_name == 'caretaker_dashboard' %}active{% endif %}">
+            <a href="{% url 'dashboard:caretaker_dashboard' %}" class="nav-item">
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
             </a>
 
             <!-- Profile Section -->
-            <div class="nav-section-title">Profile</div>
+            <div class="nav-section-title">PROFILE</div>
 
-            <a href="{% url 'update_caretaker_profile' %}"
-                class="nav-item {% if request.resolver_match.url_name == 'update_caretaker_profile' %}active{% endif %}">
-                <i class="fas fa-user-edit"></i>
-                <span>Complete Profile</span>
-                {% if profile_incomplete %}
-                <span class="nav-badge" style="background: #ef4444;">!</span>
-                {% endif %}
+            <!-- View Profile (read-only) -->
+            <a href="{% url 'users:caretaker_profile' %}" class="nav-item">
+                <i class="fas fa-id-card"></i>
+                <span>My Profile</span>
             </a>
 
-            <!-- Jobs & Applications Section -->
-            <div class="nav-section-title">Jobs & Applications</div>
+            <!-- Edit Profile (update form) -->
+            <a href="{% url 'users:update_caretaker_profile' %}" class="nav-item">
+                <i class="fas fa-user-edit"></i>
+                <span>Edit Profile</span>
+            </a>
 
-            <a href="{% url 'requests:browse_requests' %}"
-                class="nav-item {% if request.resolver_match.url_name == 'browse_requests' %}active{% endif %}">
+            <!-- Jobs Section -->
+            <div class="nav-section-title">JOBS</div>
+
+            <a href="{% url 'requests:browse_requests' %}" class="nav-item">
                 <i class="fas fa-search"></i>
                 <span>Browse Requests</span>
             </a>
 
-            <a href="{% url 'applications:my_applications' %}"
-                class="nav-item {% if request.resolver_match.url_name == 'my_applications' %}active{% endif %}">
+            <a href="{% url 'applications:my_applications' %}" class="nav-item">
                 <i class="fas fa-file-alt"></i>
                 <span>My Applications</span>
-                {% if pending_applications_count %}
-                <span class="nav-badge">{{ pending_applications_count }}</span>
-                {% endif %}
             </a>
 
-            <a href="{% url 'requests:my_bookings' %}"
-                class="nav-item {% if request.resolver_match.url_name == 'my_bookings' %}active{% endif %}">
-                <i class="fas fa-calendar-check"></i>
+            <a href="{% url 'requests:my_bookings' %}" class="nav-item">
+                <i class="fas fa-briefcase"></i>
                 <span>My Assignments</span>
-                {% if active_assignments_count %}
-                <span class="nav-badge">{{ active_assignments_count }}</span>
-                {% endif %}
             </a>
 
             <!-- Availability Section -->
-            <div class="nav-section-title">Availability</div>
+            <div class="nav-section-title">AVAILABILITY</div>
 
-            <a href="{% url 'requests:set_availability' %}"
-                class="nav-item {% if request.resolver_match.url_name == 'set_availability' %}active{% endif %}">
+            <a href="{% url 'requests:set_availability' %}" class="nav-item">
                 <i class="fas fa-calendar-plus"></i>
                 <span>Set Availability</span>
             </a>
 
-            <a href="{% url 'requests:availability_list' %}"
-                class="nav-item {% if request.resolver_match.url_name == 'availability_list' %}active{% endif %}">
+            <a href="{% url 'requests:availability_list' %}" class="nav-item">
                 <i class="fas fa-list"></i>
                 <span>My Schedule</span>
             </a>
@@ -545,13 +398,10 @@
                     <span>Logout</span>
                 </a>
             </div>
-            {% endblock %}
         </div>
-
-
-
-
     </div>
+
+
 
     <!-- ================= MAIN CONTENT ================= -->
     <div class="main-content">
@@ -581,19 +431,19 @@
         </div>
 
         <!-- Profile Incomplete Warning -->
-        {% if profile_incomplete %}
+
         <div class="alert" style="background: #fff3e0; border-left-color: #f59e0b; margin-bottom: 20px;">
             <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
             <div>
                 <strong>Complete Your Profile</strong><br>
                 Your profile is incomplete. Please complete your profile to start receiving care requests.
-                <a href="{% url 'update_caretaker_profile' %}"
+                <a href="{% url 'users:update_caretaker_profile' %}"
                     style="color: #0f3460; text-decoration: underline; margin-left: 10px;">
                     Complete Profile Now <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
         </div>
-        {% endif %}
+
 
         <!-- Messages -->
         {% if messages %}
@@ -647,8 +497,7 @@
             }
         }
 
-
-        // Load notifications via AJAX - FIXED URL
+        // Load notifications via AJAX
         function loadNotifications() {
             const panel = document.getElementById('notifications-panel');
             if (!panel) return;
@@ -664,7 +513,6 @@
                     } else {
                         panel.innerHTML = '<div class="notification-empty"><i class="fas fa-bell-slash"></i><p>No notifications</p></div>';
                     }
-                    // Update count
                     if (data.count !== undefined) {
                         const badge = document.getElementById('notification-count');
                         if (badge) {
@@ -680,7 +528,6 @@
         }
 
         function attachNotificationEventHandlers() {
-            // Mark individual notification as read
             document.querySelectorAll('.mark-read-btn').forEach(btn => {
                 btn.addEventListener('click', function (e) {
                     e.stopPropagation();
@@ -691,7 +538,6 @@
                 });
             });
 
-            // Delete individual notification
             document.querySelectorAll('.delete-btn').forEach(btn => {
                 btn.addEventListener('click', function (e) {
                     e.stopPropagation();
@@ -702,7 +548,6 @@
                 });
             });
 
-            // Mark all as read button
             const markAllBtn = document.querySelector('.mark-all-read-btn');
             if (markAllBtn) {
                 markAllBtn.addEventListener('click', function (e) {
@@ -712,7 +557,6 @@
                 });
             }
 
-            // Clear read notifications button
             const clearReadBtn = document.querySelector('.clear-read-btn');
             if (clearReadBtn) {
                 clearReadBtn.addEventListener('click', function (e) {
@@ -722,7 +566,6 @@
                 });
             }
 
-            // Clear all notifications button
             const clearAllBtn = document.querySelector('.clear-all-btn');
             if (clearAllBtn) {
                 clearAllBtn.addEventListener('click', function (e) {
@@ -733,7 +576,6 @@
             }
         }
 
-        // Mark individual notification as read
         function markNotificationRead(notificationId) {
             fetch(`/notifications/${notificationId}/mark-read/`, {
                 method: 'POST',
@@ -746,7 +588,6 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        // Reload notifications to update the list
                         loadNotifications();
                         updateNotificationCount();
                     }
@@ -754,7 +595,6 @@
                 .catch(error => console.error('Error marking notification as read:', error));
         }
 
-        // Mark all notifications as read
         function markAllNotificationsRead() {
             fetch('/notifications/mark-all-read/', {
                 method: 'POST',
@@ -774,7 +614,6 @@
                 .catch(error => console.error('Error marking all as read:', error));
         }
 
-        // Delete a single notification
         function deleteNotification(notificationId) {
             if (confirm('Delete this notification?')) {
                 fetch(`/notifications/${notificationId}/delete/`, {
@@ -796,15 +635,8 @@
             }
         }
 
-        // Delete only read notifications
         function deleteReadNotifications() {
-            const readCount = document.querySelectorAll('.notification-item:not(.unread)').length;
-            if (readCount === 0) {
-                alert('No read notifications to delete');
-                return;
-            }
-
-            if (confirm(`Delete ${readCount} read notification(s)?`)) {
+            if (confirm('Delete all read notifications?')) {
                 fetch('/notifications/delete-read/', {
                     method: 'POST',
                     headers: {
@@ -824,10 +656,8 @@
             }
         }
 
-        // Delete all notifications
         function deleteAllNotifications() {
-            const totalCount = document.querySelectorAll('.notification-item').length;
-            if (confirm(`Delete ALL ${totalCount} notifications? This action cannot be undone.`)) {
+            if (confirm('Delete ALL notifications? This action cannot be undone.')) {
                 fetch('/notifications/delete-all/', {
                     method: 'POST',
                     headers: {
@@ -871,22 +701,6 @@
                 .catch(error => console.error('Error updating count:', error));
         }
 
-        // Helper function to get CSRF token
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
         // Auto-refresh notifications every 60 seconds
         setInterval(updateNotificationCount, 60000);
 
@@ -894,9 +708,6 @@
         document.addEventListener('DOMContentLoaded', function () {
             updateNotificationCount();
         });
-
-
-
     </script>
 
     {% block extra_js %}{% endblock %}

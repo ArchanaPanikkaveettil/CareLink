@@ -61,6 +61,9 @@ urlpatterns = [
     # Reject application
     path('reject/<int:application_id>/', views.reject_application, name='reject_application'),
 
+ 
+    
+
     # ============================================================================
     # SHARED URLS
     # ============================================================================

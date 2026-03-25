@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block title %}Audit Logs - CareLink Admin{% endblock %}
-
 {% block page_title %}System Audit Logs{% endblock %}
 
 {% block content %}
@@ -12,32 +11,32 @@
         <form method="GET" class="row g-3">
             <div class="col-md-3">
                 <label class="form-label">User</label>
-                <input type="text" class="form-control" name="user" placeholder="Username or email">
+                <input type="text" class="form-control" name="user" placeholder="Username or email" value="{{ user_filter }}">
             </div>
             <div class="col-md-3">
                 <label class="form-label">Action</label>
                 <select class="form-select" name="action">
                     <option value="">All Actions</option>
-                    <option value="login">Login</option>
-                    <option value="logout">Logout</option>
-                    <option value="create">Create</option>
-                    <option value="update">Update</option>
-                    <option value="delete">Delete</option>
-                    <option value="verify">Verify</option>
+                    <option value="login" {% if action_filter == 'login' %}selected{% endif %}>Login</option>
+                    <option value="logout" {% if action_filter == 'logout' %}selected{% endif %}>Logout</option>
+                    <option value="create" {% if action_filter == 'create' %}selected{% endif %}>Create</option>
+                    <option value="update" {% if action_filter == 'update' %}selected{% endif %}>Update</option>
+                    <option value="delete" {% if action_filter == 'delete' %}selected{% endif %}>Delete</option>
+                    <option value="verify" {% if action_filter == 'verify' %}selected{% endif %}>Verify</option>
                 </select>
             </div>
             <div class="col-md-2">
                 <label class="form-label">From Date</label>
-                <input type="date" class="form-control" name="from_date">
+                <input type="date" class="form-control" name="from_date" value="{{ from_date }}">
             </div>
             <div class="col-md-2">
                 <label class="form-label">To Date</label>
-                <input type="date" class="form-control" name="to_date">
+                <input type="date" class="form-control" name="to_date" value="{{ to_date }}">
             </div>
             <div class="col-md-2">
                 <label class="form-label">&nbsp;</label>
-                <button type="submit" class="btn btn-primary d-block w-100">
-                    <i class="fas fa-filter me-2"></i>Filter
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-1"></i>Filter
                 </button>
             </div>
         </form>
@@ -45,20 +44,20 @@
 
     <!-- Logs Table -->
     <div class="table-container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="mb-0">Audit Logs ({{ total_logs|default:'0' }})</h5>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Audit Logs ({{ total_logs|default:0 }})</h5>
             <div>
-                <button class="btn btn-success" onclick="exportLogs()">
-                    <i class="fas fa-download me-2"></i>Export Logs
+                <button class="btn btn-success btn-sm" onclick="exportLogs()">
+                    <i class="fas fa-download me-1"></i>Export
                 </button>
-                <button class="btn btn-danger" onclick="clearLogs()">
-                    <i class="fas fa-trash me-2"></i>Clear Old Logs
+                <button class="btn btn-danger btn-sm" onclick="clearLogs()">
+                    <i class="fas fa-trash me-1"></i>Clear Old
                 </button>
             </div>
         </div>
 
         <div class="table-responsive">
-            <table class="table">
+            <table class="table table-hover">
                 <thead>
                     <tr>
                         <th>Timestamp</th>
@@ -68,100 +67,119 @@
                         <th>Details</th>
                         <th>IP Address</th>
                         <th>Status</th>
-                    </tr>
-                </thead>
+                    </thead>
                 <tbody>
-                    <!-- Sample log entries - Replace with actual data -->
+                    {% for log in logs %}
                     <tr>
-                        <td>2024-03-03 10:30:25</td>
-                        <td>admin@carelink.com</td>
-                        <td><span class="badge bg-primary">LOGIN</span></td>
-                        <td>Authentication</td>
-                        <td>Successful login from Chrome on Windows</td>
-                        <td>192.168.1.100</td>
-                        <td><span class="badge bg-success">Success</span></td>
-                    </tr>
-                    <tr>
-                        <td>2024-03-03 09:15:10</td>
-                        <td>john@example.com</td>
-                        <td><span class="badge bg-success">CREATE</span></td>
-                        <td>Caretaker Profile</td>
-                        <td>Created new caretaker profile</td>
-                        <td>192.168.1.101</td>
-                        <td><span class="badge bg-success">Success</span></td>
-                    </tr>
-                    <tr>
-                        <td>2024-03-03 08:45:30</td>
-                        <td>sarah@example.com</td>
-                        <td><span class="badge bg-warning">UPDATE</span></td>
-                        <td>Family Profile</td>
-                        <td>Updated contact information</td>
-                        <td>192.168.1.102</td>
-                        <td><span class="badge bg-success">Success</span></td>
-                    </tr>
-                    <tr>
-                        <td>2024-03-02 23:20:15</td>
-                        <td>unknown</td>
-                        <td><span class="badge bg-danger">FAILED_LOGIN</span></td>
-                        <td>Authentication</td>
-                        <td>Failed login attempt - invalid password</td>
-                        <td>203.0.113.45</td>
-                        <td><span class="badge bg-danger">Failed</span></td>
-                    </tr>
-                    <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">
-                            <i class="fas fa-history fa-3x mb-3"></i>
-                            <p>Full audit log functionality requires an AuditLog model.</p>
-                            <p class="small">This is a placeholder with sample data.</p>
+                        <td style="white-space: nowrap;">{{ log.created_at|date:'Y-m-d H:i:s' }}</td>
+                        <td>
+                            {% if log.user %}
+                            <div class="fw-semibold">{{ log.user.get_full_name|default:log.user.username }}</div>
+                            <small class="text-muted">{{ log.user.email }}</small>
+                            {% else %}
+                            <span class="text-muted">System</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if log.action == 'login' %}
+                            <span class="badge bg-primary">LOGIN</span>
+                            {% elif log.action == 'logout' %}
+                            <span class="badge bg-secondary">LOGOUT</span>
+                            {% elif log.action == 'create' %}
+                            <span class="badge bg-success">CREATE</span>
+                            {% elif log.action == 'update' %}
+                            <span class="badge bg-info">UPDATE</span>
+                            {% elif log.action == 'delete' %}
+                            <span class="badge bg-danger">DELETE</span>
+                            {% elif log.action == 'verify' %}
+                            <span class="badge bg-warning text-dark">VERIFY</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ log.action|upper }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ log.resource }}</td>
+                        <td style="max-width: 250px;">{{ log.details|truncatechars:60 }}</td>
+                        <td>{{ log.ip_address|default:'-' }}</td>
+                        <td>
+                            {% if log.status == 'success' %}
+                            <span class="badge bg-success">Success</span>
+                            {% else %}
+                            <span class="badge bg-danger">Failed</span>
+                            {% endif %}
                         </td>
                     </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <i class="fas fa-history fa-3x text-muted mb-3 d-block"></i>
+                            <p class="text-muted mb-0">No audit logs found</p>
+                            <small class="text-muted">Try adjusting your filters</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
 
         <!-- Pagination -->
-        <nav class="mt-4">
+        {% if logs.has_other_pages %}
+        <nav class="mt-3">
             <ul class="pagination justify-content-center">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a>
-                </li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item"><a class="page-link" href="#">4</a></li>
-                <li class="page-item"><a class="page-link" href="#">5</a></li>
+                {% if logs.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a>
+                    <a class="page-link" href="?page={{ logs.previous_page_number }}{% if user_filter %}&user={{ user_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if from_date %}&from_date={{ from_date }}{% endif %}{% if to_date %}&to_date={{ to_date }}{% endif %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
                 </li>
+                {% endif %}
+
+                {% for num in logs.paginator.page_range %}
+                    {% if logs.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > logs.number|add:'-3' and num < logs.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if user_filter %}&user={{ user_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if from_date %}&from_date={{ from_date }}{% endif %}{% if to_date %}&to_date={{ to_date }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if logs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ logs.next_page_number }}{% if user_filter %}&user={{ user_filter }}{% endif %}{% if action_filter %}&action={{ action_filter }}{% endif %}{% if from_date %}&from_date={{ from_date }}{% endif %}{% if to_date %}&to_date={{ to_date }}{% endif %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
             </ul>
         </nav>
+        {% endif %}
     </div>
 
-    <!-- Log Summary -->
+    <!-- Log Summary Cards -->
     <div class="row g-4 mt-2">
         <div class="col-md-3">
             <div class="stat-card">
                 <h6 class="text-muted mb-2">Today's Logs</h6>
-                <h3 class="mb-0">24</h3>
+                <h2 class="mb-0">{{ today_logs|default:0 }}</h2>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card">
                 <h6 class="text-muted mb-2">This Week</h6>
-                <h3 class="mb-0">156</h3>
+                <h2 class="mb-0">{{ week_logs|default:0 }}</h2>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card">
                 <h6 class="text-muted mb-2">Failed Attempts</h6>
-                <h3 class="mb-0">12</h3>
+                <h2 class="mb-0">{{ failed_attempts|default:0 }}</h2>
                 <small class="text-danger">Last 7 days</small>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card">
                 <h6 class="text-muted mb-2">Unique Users</h6>
-                <h3 class="mb-0">45</h3>
+                <h2 class="mb-0">{{ unique_users|default:0 }}</h2>
                 <small class="text-success">Active today</small>
             </div>
         </div>
@@ -172,12 +190,33 @@
 {% block extra_js %}
 <script>
     function exportLogs() {
-        alert('Exporting logs... This will download a CSV file with all audit logs.');
+        if(confirm('Export all audit logs?')) {
+            window.location.href = "{% url 'users:admin_export_data' %}?type=audit_logs";
+        }
     }
     
     function clearLogs() {
         if(confirm('Are you sure you want to clear logs older than 30 days? This action cannot be undone.')) {
-            alert('Clearing old logs...');
+            fetch('{% url "users:admin_clear_old_logs" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'days=30'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Could not clear logs'));
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
         }
     }
 </script>

@@ -13,23 +13,25 @@
             <div class="table-container text-center">
                 <div class="profile-avatar-wrapper mb-4">
                     {% if admin_user.profile_picture %}
-                        <img src="{{ admin_user.profile_picture.url }}" alt="Profile" class="profile-avatar" id="profileAvatar">
+                    <img src="{{ admin_user.profile_picture.url }}" alt="Profile" class="profile-avatar"
+                        id="profileAvatar">
                     {% else %}
-                        <div class="profile-avatar-placeholder" id="profileAvatar">
-                            {{ admin_user.first_name|first|upper }}{{ admin_user.last_name|first|upper }}
-                        </div>
+                    <div class="profile-avatar-placeholder" id="profileAvatar">
+                        {{ admin_user.first_name|first|upper }}{{ admin_user.last_name|first|upper }}
+                    </div>
                     {% endif %}
                     <button class="avatar-upload-btn" onclick="document.getElementById('avatarInput').click();">
                         <i class="fas fa-camera"></i>
                     </button>
-                    <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="uploadAvatar(this)">
+                    <input type="file" id="avatarInput" accept="image/*" style="display: none;"
+                        onchange="uploadAvatar(this)">
                 </div>
-                
+
                 <h4 class="mb-1">{{ admin_user.get_full_name|default:admin_user.username }}</h4>
                 <p class="text-muted mb-3">
                     <i class="fas fa-envelope me-2"></i>{{ admin_user.email }}
                 </p>
-                
+
                 <div class="d-flex justify-content-center gap-3 mb-3">
                     <span class="badge bg-primary px-3 py-2">
                         <i class="fas fa-shield-alt me-1"></i>
@@ -39,9 +41,9 @@
                         <i class="fas fa-check-circle me-1"></i>Active
                     </span>
                 </div>
-                
+
                 <hr>
-                
+
                 <div class="text-start">
                     <p class="mb-2">
                         <i class="fas fa-calendar me-2 text-muted"></i>
@@ -56,11 +58,12 @@
                         <strong>Phone:</strong> {{ admin_user.phone|default:'Not added' }}
                     </p>
                 </div>
-                
+
                 <hr>
-                
+
                 <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary" onclick="document.getElementById('profileForm').scrollIntoView({behavior: 'smooth'})">
+                    <button class="btn btn-outline-primary"
+                        onclick="document.getElementById('profileForm').scrollIntoView({behavior: 'smooth'})">
                         <i class="fas fa-edit me-2"></i>Edit Profile
                     </button>
                     <button class="btn btn-outline-warning" onclick="showChangePassword()">
@@ -68,7 +71,7 @@
                     </button>
                 </div>
             </div>
-            
+
             <!-- Activity Summary -->
             <div class="table-container mt-4">
                 <h5 class="mb-3">Recent Activity</h5>
@@ -111,51 +114,55 @@
                     </div>
                 </div>
                 <div class="text-center mt-3">
-                    <a href="{% url 'admin_audit_logs' %}" class="btn btn-sm btn-link">View all activity</a>
+                    <a href="{% url 'users:admin_audit_logs' %}" class="btn btn-sm btn-link">View all activity</a>
                 </div>
             </div>
         </div>
-        
+
         <!-- Profile Edit Form -->
         <div class="col-md-8">
             <div class="table-container" id="profileForm">
                 <h5 class="mb-4">Edit Profile Information</h5>
-                
+
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">First Name</label>
-                            <input type="text" class="form-control" name="first_name" value="{{ admin_user.first_name }}" required>
+                            <input type="text" class="form-control" name="first_name"
+                                value="{{ admin_user.first_name }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Last Name</label>
-                            <input type="text" class="form-control" name="last_name" value="{{ admin_user.last_name }}" required>
+                            <input type="text" class="form-control" name="last_name" value="{{ admin_user.last_name }}"
+                                required>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control" name="email" value="{{ admin_user.email }}" required>
+                            <input type="email" class="form-control" name="email" value="{{ admin_user.email }}"
+                                required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" name="phone" value="{{ admin_user.phone|default:'' }}" placeholder="+91 98765 43210">
+                            <input type="tel" class="form-control" name="phone"
+                                value="{{ admin_user.phone|default:'' }}" placeholder="+91 98765 43210">
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Username</label>
                         <input type="text" class="form-control" value="{{ admin_user.username }}" disabled readonly>
                         <small class="text-muted">Username cannot be changed</small>
                     </div>
-                    
+
                     <hr>
-                    
+
                     <h6 class="mb-3">Profile Settings</h6>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="form-check form-switch">
@@ -172,7 +179,7 @@
                             <small class="text-muted d-block mt-1">Enhance account security</small>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Language Preference</label>
                         <select class="form-select" name="language">
@@ -181,11 +188,11 @@
                             <option value="ml">Malayalam</option>
                         </select>
                     </div>
-                    
+
                     <hr>
-                    
+
                     <h6 class="mb-3">Theme Settings</h6>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <div class="theme-option active" onclick="selectTheme('light')">
@@ -201,12 +208,13 @@
                         </div>
                         <div class="col-md-4">
                             <div class="theme-option" onclick="selectTheme('auto')">
-                                <div class="theme-preview" style="background: linear-gradient(45deg, #f8f9fa 50%, #343a40 50%);"></div>
+                                <div class="theme-preview"
+                                    style="background: linear-gradient(45deg, #f8f9fa 50%, #343a40 50%);"></div>
                                 <span>Auto (System)</span>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="d-flex justify-content-end gap-2 mt-4">
                         <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset</button>
                         <button type="submit" class="btn btn-primary">
@@ -215,37 +223,39 @@
                     </div>
                 </form>
             </div>
-            
+
             <!-- Password Change Form (Hidden by default) -->
             <div class="table-container mt-4" id="passwordForm" style="display: none;">
                 <h5 class="mb-4">Change Password</h5>
-                
-                <form method="POST" action="{% url 'admin_change_password' %}">
+
+                <form method="POST" action="{% url 'users:admin_change_password' %}">
                     {% csrf_token %}
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Current Password</label>
                         <input type="password" class="form-control" name="current_password" required>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">New Password</label>
                         <input type="password" class="form-control" name="new_password" required>
-                        <small class="text-muted">Minimum 8 characters with at least one number and one special character</small>
+                        <small class="text-muted">Minimum 8 characters with at least one number and one special
+                            character</small>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Confirm New Password</label>
                         <input type="password" class="form-control" name="confirm_password" required>
                     </div>
-                    
+
                     <div class="password-strength mb-3">
                         <div class="progress" style="height: 5px;">
-                            <div class="progress-bar bg-danger" role="progressbar" style="width: 0%" id="passwordStrength"></div>
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: 0%"
+                                id="passwordStrength"></div>
                         </div>
                         <small class="text-muted" id="passwordStrengthText">Enter a password</small>
                     </div>
-                    
+
                     <div class="d-flex justify-content-end gap-2">
                         <button type="button" class="btn btn-secondary" onclick="hideChangePassword()">Cancel</button>
                         <button type="submit" class="btn btn-warning">
@@ -254,11 +264,11 @@
                     </div>
                 </form>
             </div>
-            
+
             <!-- Session Management -->
             <div class="table-container mt-4">
                 <h5 class="mb-3">Active Sessions</h5>
-                
+
                 <div class="session-item d-flex align-items-center justify-content-between p-3 bg-light rounded mb-2">
                     <div class="d-flex align-items-center">
                         <div class="session-icon me-3">
@@ -275,7 +285,7 @@
                     </div>
                     <span class="badge bg-success">Active Now</span>
                 </div>
-                
+
                 <div class="session-item d-flex align-items-center justify-content-between p-3 bg-light rounded mb-2">
                     <div class="d-flex align-items-center">
                         <div class="session-icon me-3">
@@ -294,7 +304,7 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
+
                 <div class="text-end mt-3">
                     <button class="btn btn-outline-danger btn-sm" onclick="logoutAllSessions()">
                         <i class="fas fa-sign-out-alt me-2"></i>Logout All Other Sessions
@@ -312,61 +322,61 @@
     function uploadAvatar(input) {
         if (input.files && input.files[0]) {
             var reader = new FileReader();
-            
-            reader.onload = function(e) {
+
+            reader.onload = function (e) {
                 document.getElementById('profileAvatar').src = e.target.result;
             }
-            
+
             reader.readAsDataURL(input.files[0]);
-            
+
             // Auto upload via AJAX
             var formData = new FormData();
             formData.append('profile_picture', input.files[0]);
             formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-            
-            fetch('{% url "admin_profile" %}', {
+
+            fetch('{% url "users:admin_profile" %}', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if(data.success) {
-                    showNotification('Profile picture updated successfully', 'success');
-                }
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Profile picture updated successfully', 'success');
+                    }
+                });
         }
     }
-    
+
     // Show/Hide Password Form
     function showChangePassword() {
         document.getElementById('passwordForm').style.display = 'block';
-        document.getElementById('passwordForm').scrollIntoView({behavior: 'smooth'});
+        document.getElementById('passwordForm').scrollIntoView({ behavior: 'smooth' });
     }
-    
+
     function hideChangePassword() {
         document.getElementById('passwordForm').style.display = 'none';
     }
-    
+
     // Password Strength Meter
-    document.querySelector('input[name="new_password"]')?.addEventListener('input', function() {
+    document.querySelector('input[name="new_password"]')?.addEventListener('input', function () {
         const password = this.value;
         const strengthBar = document.getElementById('passwordStrength');
         const strengthText = document.getElementById('passwordStrengthText');
-        
+
         let strength = 0;
-        
-        if(password.length >= 8) strength += 25;
-        if(password.match(/[a-z]+/)) strength += 25;
-        if(password.match(/[A-Z]+/)) strength += 25;
-        if(password.match(/[0-9]+/)) strength += 15;
-        if(password.match(/[$@#&!]+/)) strength += 10;
-        
+
+        if (password.length >= 8) strength += 25;
+        if (password.match(/[a-z]+/)) strength += 25;
+        if (password.match(/[A-Z]+/)) strength += 25;
+        if (password.match(/[0-9]+/)) strength += 15;
+        if (password.match(/[$@#&!]+/)) strength += 10;
+
         strengthBar.style.width = strength + '%';
-        
-        if(strength < 30) {
+
+        if (strength < 30) {
             strengthBar.className = 'progress-bar bg-danger';
             strengthText.textContent = 'Weak password';
-        } else if(strength < 60) {
+        } else if (strength < 60) {
             strengthBar.className = 'progress-bar bg-warning';
             strengthText.textContent = 'Medium password';
         } else {
@@ -374,56 +384,56 @@
             strengthText.textContent = 'Strong password';
         }
     });
-    
+
     // Theme Selection
     function selectTheme(theme) {
         document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
         event.currentTarget.classList.add('active');
-        
+
         // Here you would implement theme switching logic
         document.body.setAttribute('data-theme', theme);
         localStorage.setItem('adminTheme', theme);
-        
+
         showNotification('Theme preference saved', 'success');
     }
-    
+
     // Load saved theme
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const savedTheme = localStorage.getItem('adminTheme') || 'light';
         selectTheme(savedTheme);
     });
-    
+
     // Session Management
     function terminateSession() {
-        if(confirm('Terminate this session?')) {
+        if (confirm('Terminate this session?')) {
             showNotification('Session terminated', 'success');
         }
     }
-    
+
     function logoutAllSessions() {
-        if(confirm('This will log out all other devices. Continue?')) {
-            fetch('{% url "admin_logout_all_sessions" %}', {
+        if (confirm('This will log out all other devices. Continue?')) {
+            fetch('{% url "users:admin_logout_all_sessions" %}', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': '{{ csrf_token }}'
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                if(data.success) {
-                    showNotification('All other sessions logged out', 'success');
-                }
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('All other sessions logged out', 'success');
+                    }
+                });
         }
     }
-    
+
     // Reset Form
     function resetForm() {
-        if(confirm('Reset all changes?')) {
+        if (confirm('Reset all changes?')) {
             location.reload();
         }
     }
-    
+
     // Notification Function
     function showNotification(message, type) {
         const alertDiv = document.createElement('div');
@@ -434,7 +444,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         document.body.appendChild(alertDiv);
-        
+
         setTimeout(() => {
             alertDiv.remove();
         }, 3000);
@@ -449,16 +459,17 @@
         height: 150px;
         margin: 0 auto;
     }
-    
-    .profile-avatar, .profile-avatar-placeholder {
+
+    .profile-avatar,
+    .profile-avatar-placeholder {
         width: 100%;
         height: 100%;
         border-radius: 50%;
         object-fit: cover;
         border: 4px solid #fff;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
-    
+
     .profile-avatar-placeholder {
         background: linear-gradient(135deg, #0f3460, #1a4a7a);
         color: white;
@@ -468,7 +479,7 @@
         font-size: 3rem;
         font-weight: 600;
     }
-    
+
     .avatar-upload-btn {
         position: absolute;
         bottom: 10px;
@@ -486,18 +497,18 @@
         transition: all 0.3s;
         border: 2px solid white;
     }
-    
+
     .avatar-upload-btn:hover {
         background: #1a4a7a;
         transform: scale(1.1);
     }
-    
+
     /* Activity Timeline */
     .activity-timeline {
         position: relative;
         padding-left: 20px;
     }
-    
+
     .activity-timeline::before {
         content: '';
         position: absolute;
@@ -507,14 +518,14 @@
         width: 2px;
         background: #e2e8f0;
     }
-    
+
     .activity-item {
         position: relative;
         display: flex;
         gap: 15px;
         margin-bottom: 20px;
     }
-    
+
     .activity-icon {
         width: 35px;
         height: 35px;
@@ -525,15 +536,15 @@
         z-index: 1;
         background: white;
     }
-    
+
     .activity-content {
         flex: 1;
     }
-    
+
     .activity-content p {
         margin-bottom: 5px;
     }
-    
+
     /* Theme Options */
     .theme-option {
         cursor: pointer;
@@ -542,16 +553,16 @@
         border-radius: 10px;
         transition: all 0.3s;
     }
-    
+
     .theme-option:hover {
         background: #f1f5f9;
     }
-    
+
     .theme-option.active {
         background: #e2e8f0;
         border: 2px solid #0f3460;
     }
-    
+
     .theme-preview {
         width: 100%;
         height: 80px;
@@ -559,17 +570,17 @@
         margin-bottom: 8px;
         border: 2px solid #e2e8f0;
     }
-    
+
     /* Sessions */
     .session-item {
         transition: all 0.3s;
     }
-    
+
     .session-item:hover {
         transform: translateX(5px);
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
-    
+
     .session-icon {
         width: 45px;
         height: 45px;
@@ -579,18 +590,18 @@
         align-items: center;
         justify-content: center;
     }
-    
+
     /* Dark Mode Styles */
     [data-theme="dark"] {
         background: #1a1a1a;
         color: #fff;
     }
-    
+
     [data-theme="dark"] .table-container {
         background: #2d2d2d;
         border-color: #404040;
     }
-    
+
     [data-theme="dark"] .form-control,
     [data-theme="dark"] .form-select {
         background: #404040;

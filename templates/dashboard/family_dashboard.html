@@ -265,7 +265,7 @@
     /* Applications Grid */
     .applications-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: 1.5rem;
     }
 
@@ -448,7 +448,6 @@
 
 <!-- Quick Actions - 4 cards in a single row -->
 <div class="action-grid">
-    <!-- FIXED: Added requests: namespace -->
     <a href="{% url 'requests:post_request' %}" class="action-card">
         <div class="action-icon">
             <i class="fas fa-plus-circle"></i>
@@ -457,7 +456,6 @@
         <p>Create a new care request for your loved one.</p>
     </a>
 
-    <!-- FIXED: Changed to browse_requests since that exists in your URLs -->
     <a href="{% url 'requests:browse_requests' %}" class="action-card">
         <div class="action-icon">
             <i class="fas fa-search"></i>
@@ -466,7 +464,6 @@
         <p>Find qualified caretakers based on experience and qualifications.</p>
     </a>
 
-    <!-- FIXED: Added requests: namespace -->
     <a href="{% url 'requests:my_requests' %}" class="action-card">
         <div class="action-icon">
             <i class="fas fa-clipboard-list"></i>
@@ -475,15 +472,14 @@
         <p>View and manage all your care requests.</p>
     </a>
 
-    <!-- FIXED: This URL needs to exist in your applications app -->
     <a href="{% url 'applications:family_applications' %}" class="action-card">
         <div class="action-icon">
             <i class="fas fa-file-alt"></i>
         </div>
         <h3>View All Applications</h3>
         <p>Review all applications received for your care requests.</p>
-        {% if pending_applications %}
-        <span class="pending-badge">{{ pending_applications }} pending</span>
+        {% if pending_applications_count %}
+        <span class="pending-badge">{{ pending_applications_count }} pending</span>
         {% endif %}
     </a>
 </div>
@@ -500,6 +496,7 @@
     </div>
 
     <div class="table-responsive">
+        {% if recent_requests %}
         <table>
             <thead>
                 <tr>
@@ -520,37 +517,24 @@
                     <td>{{ request.duration_days }} days</td>
                     <td>
                         <span class="status-badge status-{{ request.status }}">
-                            {% if request.status == 'open' %}
-                            Open
-                            {% elif request.status == 'assigned' %}
-                            Assigned
-                            {% elif request.status == 'closed' %}
-                            Closed
-                            {% else %}
-                            {{ request.status|title }}
-                            {% endif %}
+                            {{ request.get_status_display }}
                         </span>
                     </td>
                     <td>
-                        <!-- FIXED: Added requests: namespace -->
                         <a href="{% url 'requests:request_detail' request.id %}" class="view-btn">
                             <i class="fas fa-eye"></i> View
                         </a>
                     </td>
                 </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="empty-state">
-                        <i class="fas fa-inbox"></i>
-                        <p>No care requests yet.
-                            <!-- FIXED: Added requests: namespace -->
-                            <a href="{% url 'requests:post_request' %}">Post your first request!</a>
-                        </p>
-                    </td>
-                </tr>
                 {% endfor %}
             </tbody>
         </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No care requests yet. <a href="{% url 'requests:post_request' %}">Post your first request!</a></p>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -573,59 +557,41 @@
                 <div class="caretaker-info">
                     <i class="fas fa-user-circle"></i>
                     <div>
-                        <strong>{{ application.caretaker.get_full_name|default:application.caretaker.username
-                            }}</strong>
+                        <strong>{% firstof application.caretaker.get_full_name application.caretaker.username %}</strong>
                         <small>{{ application.caretaker.email }}</small>
                     </div>
                 </div>
                 <span class="status-badge status-{{ application.status }}">
-                    {% if application.status == 'pending' %}
-                    Pending
-                    {% elif application.status == 'accepted' %}
-                    Accepted
-                    {% elif application.status == 'rejected' %}
-                    Rejected
-                    {% elif application.status == 'withdrawn' %}
-                    Withdrawn
-                    {% elif application.status == 'offer_sent' %}
-                    Offer Sent
-                    {% elif application.status == 'offer_accepted' %}
-                    Offer Accepted
-                    {% else %}
-                    {{ application.status|title }}
-                    {% endif %}
+                    {{ application.get_status_display }}
                 </span>
             </div>
 
             <div class="card-body">
                 <div class="request-detail">
-                    <i class="fas fa-user"></i>
+                    <i class="fas fa-user-injured"></i>
                     <span><strong>Patient:</strong> {{ application.request.patient_name }}</span>
                 </div>
                 <div class="request-detail">
                     <i class="fas fa-calendar-alt"></i>
-                    <span><strong>Applied:</strong> {{ application.applied_at|date:"M d, Y" }}</span>
+                    <span><strong>Applied:</strong> {{ application.created_at|date:"M d, Y" }}</span>
                 </div>
                 <div class="request-detail">
-                    <i class="fas fa-tag"></i>
+                    <i class="fas fa-briefcase"></i>
                     <span><strong>Care Type:</strong> {{ application.request.get_care_type_display }}</span>
                 </div>
                 <div class="request-detail">
                     <i class="fas fa-clock"></i>
                     <span><strong>Duration:</strong> {{ application.request.duration_days }} days</span>
                 </div>
-                {% if application.proposed_rate %}
                 <div class="request-detail">
                     <i class="fas fa-rupee-sign"></i>
-                    <span><strong>Proposed Rate:</strong> ₹{{ application.proposed_rate }}/day</span>
+                    <span><strong>Proposed Rate:</strong> ₹{{ application.proposed_rate|default:application.request.salary_offered }}/{{ application.request.get_payment_frequency_display }}</span>
                 </div>
-                {% endif %}
             </div>
 
             <div class="card-footer">
-                <!-- FIXED: Added applications: namespace -->
                 <a href="{% url 'applications:application_detail' application.id %}" class="view-btn">
-                    <i class="fas fa-search"></i> Review
+                    <i class="fas fa-search"></i> Review Application
                 </a>
                 <span class="application-id">#{{ application.id }}</span>
             </div>

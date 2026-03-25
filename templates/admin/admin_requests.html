@@ -1,0 +1,168 @@
+{% extends 'admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Care Requests - CareLink Admin{% endblock %}
+{% block page_title %}Care Requests{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Filters Card -->
+    <div class="filters-card">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input type="text" class="form-control" name="q" placeholder="Title, family name, description..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select class="form-select" name="status">
+                    <option value="">All Status</option>
+                    <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open</option>
+                    <option value="assigned" {% if status_filter == 'assigned' %}selected{% endif %}>Assigned</option>
+                    <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
+                    <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                    <i class="fas fa-search me-2"></i>Apply Filters
+                </button>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <a href="{% url 'users:admin_requests' %}" class="btn btn-secondary d-block w-100">
+                    <i class="fas fa-undo me-2"></i>Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h6 class="text-muted mb-2">Total Requests</h6>
+                <h3 class="mb-0">{{ total_requests|default:0 }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h6 class="text-muted mb-2">Open Requests</h6>
+                <h3 class="mb-0 text-warning">{{ open_requests|default:0 }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h6 class="text-muted mb-2">Assigned</h6>
+                <h3 class="mb-0 text-info">{{ assigned_requests|default:0 }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h6 class="text-muted mb-2">Completed</h6>
+                <h3 class="mb-0 text-success">{{ completed_requests|default:0 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Requests Table -->
+    <div class="table-container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Care Requests</h5>
+            <button class="btn btn-success btn-sm" onclick="exportToCSV()">
+                <i class="fas fa-download me-1"></i>Export
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Family</th>
+                        <th>Care Type</th>
+                        <th>Location</th>
+                        <th>Start Date</th>
+                        <th>Status</th>
+                        <th>Applications</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in requests %}
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">{{ request.title|truncatechars:40 }}</div>
+                            <small class="text-muted">{{ request.created_at|date:'d M Y' }}</small>
+                        </td>
+                        <td>
+                            <div>{{ request.family.get_full_name|default:request.family.username }}</div>
+                            <small class="text-muted">{{ request.family.email }}</small>
+                        </td>
+                        <td>{{ request.care_type|default:'General Care' }}</td>
+                        <td>{{ request.location|default:'Not specified' }}</td>
+                        <td>{{ request.start_date|date:'d M Y'|default:'Flexible' }}</td>
+                        <td>
+                            {% if request.status == 'open' %}
+                            <span class="badge bg-success">Open</span>
+                            {% elif request.status == 'assigned' %}
+                            <span class="badge bg-info">Assigned</span>
+                            {% elif request.status == 'closed' %}
+                            <span class="badge bg-secondary">Closed</span>
+                            {% else %}
+                            <span class="badge bg-warning">Draft</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">{{ request.applications_count|default:0 }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'users:admin_request_detail' request.id %}" class="btn btn-outline-primary" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <i class="fas fa-clipboard-list fa-2x text-muted mb-2 d-block"></i>
+                            <p class="text-muted mb-0">No care requests found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if requests.has_other_pages %}
+        <nav class="mt-3">
+            <ul class="pagination pagination-sm justify-content-center">
+                {% if requests.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ requests.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="fas fa-chevron-left"></i></a></li>
+                {% endif %}
+                {% for num in requests.paginator.page_range %}
+                    {% if requests.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > requests.number|add:'-3' and num < requests.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if requests.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ requests.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"><i class="fas fa-chevron-right"></i></a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function exportToCSV() {
+        alert('Export functionality coming soon');
+    }
+</script>
+{% endblock %}

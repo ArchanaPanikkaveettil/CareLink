@@ -74,7 +74,7 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label">&nbsp;</label>
-                <a href="{% url 'admin_verifications' %}" class="btn btn-secondary d-block w-100">
+                <a href="{% url 'users:admin_verifications' %}" class="btn btn-secondary d-block w-100">
                     <i class="fas fa-undo me-2"></i>Reset
                 </a>
             </div>
@@ -148,7 +148,7 @@
                         <!-- Actions -->
                         <div class="col-md-3">
                             <div class="d-flex flex-column gap-2">
-                                <a href="{% url 'admin_verify_caretaker' caretaker.id %}" class="btn btn-success">
+                               <a href="{% url 'users:admin_verify_caretaker' caretaker.id %}" class="btn btn-success">
                                     <i class="fas fa-check-circle me-2"></i>Review & Verify
                                 </a>
                                 <button type="button" class="btn btn-outline-primary" onclick="viewDetails({{ caretaker.id }})">
@@ -237,7 +237,7 @@
                         <td>{{ verified.verified_date|date:'d M Y H:i' }}</td>
                         <td>{{ verified.verification_remarks|default:'-'|truncatechars:30 }}</td>
                         <td>
-                            <a href="{% url 'admin_user_detail' verified.user.id %}" class="btn btn-sm btn-outline-primary">
+                           <a href="{% url 'users:admin_user_detail' verified.user.id %}" class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-eye"></i>
                             </a>
                         </td>

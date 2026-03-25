@@ -10,6 +10,65 @@
 
 {% block extra_css %}
 <style>
+    /* Statistics Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(15, 52, 96, 0.1);
+    }
+
+    .stat-icon {
+        width: 55px;
+        height: 55px;
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stat-icon i {
+        font-size: 1.8rem;
+        color: #0f3460;
+    }
+
+    .stat-info {
+        flex: 1;
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #0f3460;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin: 0;
+        font-weight: 500;
+    }
+
     .filters-section {
         background: white;
         border-radius: 20px;
@@ -251,6 +310,8 @@
         font-weight: 500;
         text-decoration: none;
         transition: all 0.3s;
+        border: none;
+        cursor: pointer;
     }
 
     .btn-primary {
@@ -305,8 +366,17 @@
         margin-bottom: 20px;
     }
 
+    @media (max-width: 1024px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
 
     @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
         .filters-section {
             flex-direction: column;
             align-items: stretch;
@@ -332,13 +402,58 @@
             width: 100%;
             justify-content: center;
         }
+
+        .stats-row {
+            flex-direction: column;
+            gap: 10px;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Statistics Summary -->
+<!-- Statistics Summary Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-clipboard-list"></i>
+        </div>
+        <div class="stat-info">
+            <h3 class="stat-number">{{ total_requests|default:"0" }}</h3>
+            <p class="stat-label">Total Requests</p>
+        </div>
+    </div>
 
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-info">
+            <h3 class="stat-number">{{ pending_requests|default:"0" }}</h3>
+            <p class="stat-label">Pending</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-star"></i>
+        </div>
+        <div class="stat-info">
+            <h3 class="stat-number">{{ shortlisted_applications|default:"0" }}</h3>
+            <p class="stat-label">Shortlisted</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-file-signature"></i>
+        </div>
+        <div class="stat-info">
+            <h3 class="stat-number">{{ offers_sent|default:"0" }}</h3>
+            <p class="stat-label">Offers Sent</p>
+        </div>
+    </div>
+</div>
 
 <!-- Filters -->
 <div class="filters-section">
@@ -375,7 +490,8 @@
                 </p>
             </div>
             <span class="status-badge status-{{ request.status }}">
-                <i class="fas fa-{% if request.status == 'open' %}lock-open{% elif request.status == 'draft' %}pen{% elif request.status == 'assigned' %}check-circle{% else %}lock{% endif %}"></i>
+                <i
+                    class="fas fa-{% if request.status == 'open' %}lock-open{% elif request.status == 'draft' %}pen{% elif request.status == 'assigned' %}check-circle{% else %}lock{% endif %}"></i>
                 {{ request.get_status_display }}
             </span>
         </div>
@@ -429,12 +545,18 @@
             </div>
         </div>
 
+
         <!-- Assigned Caretaker Info -->
         {% if request.assigned_caretaker %}
         <div class="assigned-info">
             <i class="fas fa-user-check" style="color: #0f3460;"></i>
             <div>
-                <strong>Assigned to:</strong> {{ request.assigned_caretaker.get_full_name|default:request.assigned_caretaker.username }}
+                <strong>Assigned to:</strong>
+                {% if request.assigned_caretaker.get_full_name %}
+                {{ request.assigned_caretaker.get_full_name }}
+                {% else %}
+                {{ request.assigned_caretaker.username }}
+                {% endif %}
                 {% if request.assigned_date %}
                 <br><small>on {{ request.assigned_date|date:"M d, Y" }}</small>
                 {% endif %}
@@ -442,10 +564,10 @@
         </div>
         {% endif %}
 
+
+
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <a href="{% url 'requests:request_detail' request.id %}" class="btn btn-outline">
-
             {% if request.status == 'draft' %}
             <a href="{% url 'requests:edit_request' request.id %}" class="btn btn-warning">
                 <i class="fas fa-edit"></i> Edit Draft
@@ -456,8 +578,7 @@
             {% endif %}
 
             {% if request.status == 'open' %}
-            <!-- FIXED: Added applications namespace -->
-            <a href="{% url 'applications:request_applications' request.id %}" class="btn btn-primary">
+            <a href="{% url 'requests:request_detail' request.id %}" class="btn btn-primary">
                 <i class="fas fa-users"></i> View Applications ({{ request.total_applications|default:"0" }})
             </a>
             <a href="{% url 'requests:close_request' request.id %}" class="btn btn-warning">
@@ -470,6 +591,13 @@
                 <i class="fas fa-info-circle"></i> Details
             </a>
             {% endif %}
+
+            <!-- Always show view details for any status -->
+            {% if request.status != 'draft' and request.status != 'open' %}
+            <a href="{% url 'requests:request_detail' request.id %}" class="btn btn-outline">
+                <i class="fas fa-eye"></i> View Details
+            </a>
+            {% endif %}
         </div>
     </div>
     {% empty %}
@@ -478,15 +606,15 @@
         <h3>No Care Requests Found</h3>
 
         {% if request.GET.search or request.GET.status %}
-        <!-- Search/filter returned no results -->
         <p>No requests match your search criteria.</p>
-        <a href="{% url 'requests:my_requests' %}" class="btn btn-outline" style="display: inline-block; padding: 5px 20px; margin-top: 25px;">
+        <a href="{% url 'requests:my_requests' %}" class="btn btn-outline"
+            style="display: inline-block; padding: 5px 20px; margin-top: 25px;">
             <i class="fas fa-undo"></i> Clear Filters
         </a>
         {% else %}
-        <!-- No requests at all -->
         <p>You haven't posted any care requests yet.</p>
-        <a href="{% url 'requests:post_request' %}" class="btn btn-primary" style="display: inline-block; padding: 12px 30px;">
+        <a href="{% url 'requests:post_request' %}" class="btn btn-primary"
+            style="display: inline-block; padding: 12px 30px;">
             <i class="fas fa-plus-circle"></i> Post Your First Request
         </a>
         {% endif %}

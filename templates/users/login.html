@@ -268,7 +268,7 @@
             {% endfor %}
             {% endif %}
 
-            <form method="POST" action="{% url 'login' %}">
+            <form method="POST" action="{% url 'users:login' %}">
                 {% csrf_token %}
 
                 <div class="form-group">
@@ -297,16 +297,16 @@
             </div>
 
             <div class="register-links">
-                <a href="{% url 'family_register' %}" class="register-btn">
+                <a href="{% url 'users:family_register' %}" class="register-btn">
                     <i class="fas fa-user-friends"></i> Register as Family
                 </a>
-                <a href="{% url 'caretaker_register' %}" class="register-btn">
+                <a href="{% url 'users:caretaker_register' %}" class="register-btn">
                     <i class="fas fa-user-nurse"></i> Register as Caretaker
                 </a>
             </div>
 
             <div class="back-home">
-                <a href="{% url 'index' %}">
+                <a href="{% url 'users:index' %}">
                     <i class="fas fa-arrow-left"></i> Back to Home
                 </a>
             </div>

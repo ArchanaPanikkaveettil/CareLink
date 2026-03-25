@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block title %}Reports - CareLink Admin{% endblock %}
-
 {% block page_title %}Reports & Analytics{% endblock %}
 
 {% block content %}
@@ -42,45 +41,29 @@
         <div class="col-md-3">
             <div class="stat-card">
                 <h6 class="text-muted mb-2">Total Users</h6>
-                <h2 class="mb-0">{{ total_users|default:'0' }}</h2>
-                <small class="text-success"><i class="fas fa-arrow-up"></i> 12% vs last period</small>
+                <h2 class="mb-0">{{ total_users|default:0 }}</h2>
+                <small class="text-success"><i class="fas fa-arrow-up"></i> {{ user_growth|default:0 }}% vs last period</small>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card">
                 <h6 class="text-muted mb-2">Active Caretakers</h6>
-                <h2 class="mb-0">{{ total_caretakers|default:'0' }}</h2>
-                <small class="text-success"><i class="fas fa-arrow-up"></i> 8% vs last period</small>
+                <h2 class="mb-0">{{ active_caretakers|default:0 }}</h2>
+                <small class="text-success"><i class="fas fa-arrow-up"></i> {{ caretaker_growth|default:0 }}% vs last period</small>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card">
                 <h6 class="text-muted mb-2">Active Families</h6>
-                <h2 class="mb-0">{{ total_families|default:'0' }}</h2>
-                <small class="text-success"><i class="fas fa-arrow-up"></i> 15% vs last period</small>
+                <h2 class="mb-0">{{ active_families|default:0 }}</h2>
+                <small class="text-success"><i class="fas fa-arrow-up"></i> {{ family_growth|default:0 }}% vs last period</small>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card">
                 <h6 class="text-muted mb-2">Open Requests</h6>
-                <h2 class="mb-0">{{ open_requests|default:'0' }}</h2>
-                <small class="text-warning"><i class="fas fa-minus"></i> 0% change</small>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts Row -->
-    <div class="row g-4 mb-4">
-        <div class="col-lg-8">
-            <div class="table-container">
-                <h5 class="mb-4">User Growth Trends</h5>
-                <canvas id="userGrowthChart" height="300"></canvas>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="table-container">
-                <h5 class="mb-4">User Distribution</h5>
-                <canvas id="userDistributionChart" height="300"></canvas>
+                <h2 class="mb-0">{{ open_requests|default:0 }}</h2>
+                <small class="text-muted"><i class="fas fa-minus"></i> {{ request_change|default:0 }}% change</small>
             </div>
         </div>
     </div>
@@ -89,7 +72,7 @@
     <div class="table-container">
         <h5 class="mb-4">Summary Report</h5>
         <div class="table-responsive">
-            <table class="table">
+            <table class="table table-sm">
                 <thead>
                     <tr>
                         <th>Metric</th>
@@ -101,44 +84,44 @@
                 <tbody>
                     <tr>
                         <td>Total Registered Users</td>
-                        <td>{{ total_users|default:'0' }}</td>
+                        <td>{{ total_users|default:0 }}</td>
                         <td>100%</td>
-                        <td class="text-success">+12%</td>
+                        <td class="text-success">+{{ user_growth|default:0 }}%</td>
                     </tr>
                     <tr>
                         <td>Verified Caretakers</td>
-                        <td>{{ verified_caretakers|default:'0' }}</td>
+                        <td>{{ verified_caretakers|default:0 }}</td>
                         <td>{% widthratio verified_caretakers|default:0 total_users|default:1 100 %}%</td>
-                        <td class="text-success">+8%</td>
+                        <td class="text-success">+{{ verified_growth|default:0 }}%</td>
                     </tr>
                     <tr>
                         <td>Pending Verifications</td>
-                        <td>{{ pending_verifications|default:'0' }}</td>
+                        <td>{{ pending_verifications|default:0 }}</td>
                         <td>{% widthratio pending_verifications|default:0 total_users|default:1 100 %}%</td>
-                        <td class="text-danger">+5%</td>
+                        <td class="text-danger">+{{ pending_growth|default:0 }}%</td>
                     </tr>
                     <tr>
                         <td>Active Families</td>
-                        <td>{{ active_families|default:'0' }}</td>
+                        <td>{{ active_families|default:0 }}</td>
                         <td>{% widthratio active_families|default:0 total_users|default:1 100 %}%</td>
-                        <td class="text-success">+15%</td>
+                        <td class="text-success">+{{ family_growth|default:0 }}%</td>
                     </tr>
                     <tr>
                         <td>Care Requests (This Month)</td>
-                        <td>{{ monthly_requests|default:'0' }}</td>
+                        <td>{{ monthly_requests|default:0 }}</td>
                         <td>-</td>
-                        <td class="text-success">+25%</td>
+                        <td class="text-success">+{{ request_growth|default:0 }}%</td>
                     </tr>
                 </tbody>
             </table>
         </div>
         
-        <div class="mt-4">
-            <button class="btn btn-success" onclick="downloadReport()">
-                <i class="fas fa-download me-2"></i>Download Report (PDF)
+        <div class="mt-3 d-flex gap-2">
+            <button class="btn btn-success btn-sm" onclick="downloadReport('pdf')">
+                <i class="fas fa-download me-1"></i>Download PDF
             </button>
-            <button class="btn btn-primary" onclick="exportToExcel()">
-                <i class="fas fa-file-excel me-2"></i>Export to Excel
+            <button class="btn btn-primary btn-sm" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-1"></i>Export Excel
             </button>
         </div>
     </div>
@@ -146,63 +129,12 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // User Growth Chart
-    const ctx1 = document.getElementById('userGrowthChart').getContext('2d');
-    new Chart(ctx1, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            datasets: [{
-                label: 'New Users',
-                data: [65, 59, 80, 81, 56, 55, 40, 45, 60, 75, 85, 95],
-                borderColor: '#0f3460',
-                backgroundColor: 'rgba(15, 52, 96, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
-        }
-    });
-
-    // User Distribution Chart
-    const ctx2 = document.getElementById('userDistributionChart').getContext('2d');
-    new Chart(ctx2, {
-        type: 'doughnut',
-        data: {
-            labels: ['Caretakers', 'Families'],
-            datasets: [{
-                data: [{{ total_caretakers|default:0 }}, {{ total_families|default:0 }}],
-                backgroundColor: ['#28a745', '#17a2b8'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
-
-    function downloadReport() {
-        alert('PDF download functionality will be implemented here.');
+    function downloadReport(format) {
+        alert('Downloading ' + format.toUpperCase() + ' report...');
     }
-
     function exportToExcel() {
-        alert('Excel export functionality will be implemented here.');
+        alert('Exporting to Excel...');
     }
 </script>
 {% endblock %}

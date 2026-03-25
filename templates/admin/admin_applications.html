@@ -1,38 +1,283 @@
 {% extends 'admin/admin_base.html' %}
 {% load static %}
 
-{% block title %}Applications - CareLink Admin{% endblock %}
+{% block title %}Dashboard - CareLink Admin{% endblock %}
 
-{% block page_title %}Job Applications{% endblock %}
+{% block page_title %}Dashboard Overview{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-0">
-    <div class="row">
-        <div class="col-12">
-            <div class="table-container">
-                <div class="text-center py-5">
-                    <i class="fas fa-file-alt fa-4x text-muted mb-3"></i>
-                    <h4>Applications Module</h4>
-                    <p class="text-muted">This section is under development. Check back soon!</p>
-                    <div class="mt-4">
-                        <div class="row justify-content-center">
-                            <div class="col-md-4">
-                                <div class="card border-0 bg-light">
-                                    <div class="card-body">
-                                        <h5>Quick Stats</h5>
-                                        <hr>
-                                        <p><strong>Total Applications:</strong> 0</p>
-                                        <p><strong>Pending Review:</strong> 0</p>
-                                        <p><strong>Accepted:</strong> 0</p>
-                                        <p><strong>Rejected:</strong> 0</p>
-                                    </div>
-                                </div>
-                            </div>
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-users text-primary fa-2x"></i>
                         </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Total Users</h6>
+                            <h2 class="mb-0">{{ total_users|default:0 }}</h2>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-success"><i class="fas fa-arrow-up me-1"></i>12% vs last month</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-success bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-user-nurse text-success fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Caretakers</h6>
+                            <h2 class="mb-0">{{ total_caretakers|default:0 }}</h2>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-success"><i class="fas fa-arrow-up me-1"></i>8% vs last month</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-info bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-home text-info fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Families</h6>
+                            <h2 class="mb-0">{{ total_families|default:0 }}</h2>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-success"><i class="fas fa-arrow-up me-1"></i>15% vs last month</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-warning bg-opacity-10 p-3 rounded-circle">
+                            <i class="fas fa-clock text-warning fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Pending Verifications</h6>
+                            <h2 class="mb-0">{{ pending_verifications|default:0 }}</h2>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <a href="{% url 'users:admin_verifications' %}" class="small text-primary">View All →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Users Section -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Users</h5>
+                    <a href="{% url 'users:admin_users_list' %}" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                 </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2" style="width: 35px; height: 35px; background: #0f3460; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{ user.get_full_name|default:user.username }}</div>
+                                                <small class="text-muted">{{ user.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if user.role == 'caretaker' %}bg-success{% else %}bg-info{% endif %}">
+                                            {{ user.role|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if user.is_verified %}
+                                        <span class="badge bg-success">Verified</span>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.date_joined|date:'d M Y' }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">No users found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Pending Verifications</h5>
+                    <a href="{% url 'users:admin_verifications' %}" class="btn btn-sm btn-warning">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Caretaker</th>
+                                    <th>Experience</th>
+                                    <th>Location</th>
+                                    <th>Action</th>
+                                 </thead>
+                            <tbody>
+                                {% for caretaker in pending_caretakers %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2" style="width: 35px; height: 35px; background: #0f3460; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                                {{ caretaker.user.first_name|first|upper }}{{ caretaker.user.last_name|first|upper }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{ caretaker.user.get_full_name }}</div>
+                                                <small class="text-muted">{{ caretaker.user.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ caretaker.experience_years }} yrs</td>
+                                    <td>{{ caretaker.city|default:'Not set' }}</td>
+                                    <td>
+                                        <a href="{% url 'users:admin_verify_caretaker' caretaker.id %}" class="btn btn-sm btn-success">
+                                            Verify
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">
+                                        <i class="fas fa-check-circle text-success mb-2" style="font-size: 2rem;"></i>
+                                        <p class="text-muted mb-0">No pending verifications</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-3">Quick Actions</h5>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{% url 'users:admin_users_list' %}?role=caretaker" class="btn btn-outline-primary">
+                            <i class="fas fa-user-nurse me-1"></i> Manage Caretakers
+                        </a>
+                        <a href="{% url 'users:admin_users_list' %}?role=family" class="btn btn-outline-info">
+                            <i class="fas fa-home me-1"></i> Manage Families
+                        </a>
+                        <a href="{% url 'users:admin_verifications' %}" class="btn btn-outline-warning">
+                            <i class="fas fa-check-circle me-1"></i> Verifications
+                        </a>
+                        <a href="{% url 'users:admin_reports' %}" class="btn btn-outline-success">
+                            <i class="fas fa-chart-bar me-1"></i> Reports
+                        </a>
+                        <a href="{% url 'users:admin_settings' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-cog me-1"></i> Settings
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .avatar-circle {
+        width: 35px;
+        height: 35px;
+        background: #0f3460;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+    
+    .table th {
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: #64748b;
+        padding: 0.75rem;
+    }
+    
+    .table td {
+        padding: 0.75rem;
+        vertical-align: middle;
+    }
+    
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 1.25rem;
+    }
+    
+    .card-header h5 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .badge {
+        padding: 0.35rem 0.65rem;
+        font-weight: 500;
+    }
+    
+    @media (max-width: 768px) {
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .table th, .table td {
+            white-space: nowrap;
+        }
+    }
+</style>
 {% endblock %}

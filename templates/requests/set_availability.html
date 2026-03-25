@@ -1,6 +1,4 @@
-<!-- templates/requests/set_availability.html -->
-{% extends 'users/caretaker_base.html' %}
-
+{% extends 'users/nurse_base.html' %}
 {% load static %}
 
 {% block title %}Set Availability - CareLink{% endblock %}
@@ -12,178 +10,590 @@
 <style>
     .availability-form {
         background: white;
-        border-radius: 15px;
-        padding: 25px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        max-width: 800px;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        max-width: 1000px;
         margin: 0 auto;
+        border: 1px solid #e2e8f0;
     }
-    
+
     .form-group {
-        margin-bottom: 20px;
+        margin-bottom: 25px;
     }
-    
+
     .form-group label {
         display: block;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: #0f3460;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #0f3460;
+        box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
+    }
+
+    /* Date Selection Tabs */
+    .selection-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 10px;
+        flex-wrap: wrap;
+    }
+
+    .selection-tab {
+        padding: 10px 24px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #64748b;
+        border-radius: 30px;
+        transition: all 0.3s;
+    }
+
+    .selection-tab.active {
+        background: #0f3460;
+        color: white;
+    }
+
+    .selection-tab:hover:not(.active) {
+        background: #f1f5f9;
+        color: #0f3460;
+    }
+
+    /* Date Range Section */
+    .date-range-section,
+    .multiple-dates-section,
+    .weekly-section {
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .date-range-row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .date-range-row .form-group {
+        flex: 1;
+        min-width: 200px;
+        margin-bottom: 0;
+    }
+
+    /* Date Grid for Multiple Dates */
+    .date-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        margin: 15px 0;
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #ffffff;
+    }
+
+    .date-card {
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: white;
+    }
+
+    .date-card:hover {
+        border-color: #0f3460;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .date-card.selected {
+        background: #0f3460;
+        border-color: #0f3460;
+        color: white;
+    }
+
+    .date-card.selected .date-day,
+    .date-card.selected .date-num {
+        color: white;
+    }
+
+    .date-day {
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .date-num {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #0f3460;
+        margin-top: 5px;
+    }
+
+    .date-card.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f8fafc;
+    }
+
+    .date-card.disabled:hover {
+        transform: none;
+        border-color: #e2e8f0;
+    }
+
+    .selected-dates-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 15px;
+        padding: 15px;
+        background: #f8fafc;
+        border-radius: 12px;
+        min-height: 70px;
+        border: 1px dashed #cbd5e1;
+    }
+
+    .date-tag {
+        background: #0f3460;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .date-tag .remove-date {
+        cursor: pointer;
+        color: #ff9f9f;
+        font-weight: bold;
+        width: 20px;
+        height: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .date-tag .remove-date:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    /* Week Day Cards */
+    .weekday-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        margin: 15px 0;
+    }
+
+    .weekday-card {
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: white;
+    }
+
+    .weekday-card.selected {
+        background: #0f3460;
+        border-color: #0f3460;
+        color: white;
+    }
+
+    .weekday-card.selected .weekday-name {
+        color: white;
+    }
+
+    .weekday-name {
+        font-size: 0.9rem;
         font-weight: 500;
         color: #0f3460;
     }
-    
-    .form-control {
-        width: 100%;
-        padding: 10px 12px;
+
+    /* Time Slots */
+    .time-slots-container {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 20px;
         border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        font-size: 14px;
     }
-    
-    .form-control:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    
-    .date-selector {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 10px;
-        margin-top: 10px;
-    }
-    
-    .date-checkbox {
+
+    .time-slot-row {
         display: flex;
+        gap: 15px;
+        align-items: flex-end;
+        margin: 15px 0;
+        flex-wrap: wrap;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .time-slot-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .time-slot-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+        min-width: 120px;
+    }
+
+    .btn-remove-slot {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-bottom: 0;
+    }
+
+    .btn-remove-slot:hover {
+        background: #dc2626;
+    }
+
+    .btn-add-slot {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 15px;
+        display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 8px;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+    .btn-add-slot:hover {
+        background: #059669;
+    }
+
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+        padding: 14px 30px;
+        border: none;
+        border-radius: 12px;
         cursor: pointer;
-        transition: all 0.2s;
+        font-size: 1rem;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s;
+        margin-top: 20px;
     }
-    
-    .date-checkbox:hover {
-        background: #f8fafc;
-        border-color: #667eea;
+
+    .btn-primary:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
     }
-    
-    .date-checkbox input {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
+
+    .info-box {
+        background: #f0f9ff;
+        border-left: 4px solid #0f3460;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        border-radius: 12px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
     }
-    
-    .date-checkbox label {
-        margin: 0;
-        cursor: pointer;
-        font-weight: normal;
-        font-size: 14px;
+
+    .info-box i {
+        font-size: 1.2rem;
+        color: #0f3460;
+        margin-top: 2px;
     }
-    
+
+    .help-text {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 5px;
+    }
+
     .checkbox-group {
         display: flex;
         align-items: center;
         gap: 10px;
-        margin-top: 10px;
+        margin: 20px 0;
+        padding: 10px;
+        background: #f8fafc;
+        border-radius: 10px;
     }
-    
+
     .checkbox-group input {
         width: 18px;
         height: 18px;
-    }
-    
-    .btn-primary {
-        background: #0f3460;
-        color: white;
-        padding: 12px 30px;
-        border: none;
-        border-radius: 10px;
         cursor: pointer;
-        font-size: 16px;
-        font-weight: 500;
-        width: 100%;
     }
-    
-    .btn-primary:hover {
-        background: #1e4a7a;
-    }
-    
-    .info-box {
-        background: #f0f9ff;
-        border-left: 4px solid #667eea;
-        padding: 15px;
-        margin-bottom: 20px;
-        border-radius: 8px;
-    }
-    
-    .day-badge {
+
+    .badge {
         display: inline-block;
         padding: 2px 8px;
         background: #e2e8f0;
         border-radius: 12px;
-        font-size: 12px;
-        margin-left: 5px;
+        font-size: 11px;
+        margin-left: 8px;
+        font-weight: normal;
+    }
+
+    .existing-slots-info {
+        margin-top: 20px;
+        padding: 15px;
+        background: #fef3c7;
+        border-radius: 12px;
+        border-left: 4px solid #f59e0b;
+    }
+
+    .existing-slots-info h4 {
+        color: #92400e;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+    }
+
+    .existing-slots-info ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .existing-slots-info li {
+        color: #78350f;
+        font-size: 0.85rem;
+        margin: 5px 0;
+    }
+
+    @media (max-width: 768px) {
+        .availability-form {
+            padding: 20px;
+        }
+
+        .date-range-row {
+            flex-direction: column;
+        }
+
+        .date-range-row .form-group {
+            width: 100%;
+        }
+
+        .time-slot-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .time-slot-row .form-group {
+            width: 100%;
+        }
+
+        .btn-remove-slot {
+            align-self: flex-start;
+        }
+
+        .date-grid {
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="availability-form">
-    <h2>Set Your Availability</h2>
-    <p>Select dates and times when you're available for care sessions.</p>
-    
+    <h2><i class="fas fa-calendar-alt"></i> Set Your Availability</h2>
+    <p style="margin: 15px 0;">Select dates and times when you're available for care sessions.</p>
+
     <div class="info-box">
         <i class="fas fa-info-circle"></i>
-        <strong>Tip:</strong> You can select multiple dates at once. Family members will be able to book you for the time slots you set as available.
+        <div>
+            <strong>Tip:</strong> You can set availability using date ranges, select multiple dates, or set a recurring
+            weekly schedule.
+            Family members will be able to book you for the time slots you set as available.
+        </div>
     </div>
-    
-    <form method="post">
+
+    <!-- Show existing availability if any -->
+    {% if existing_availability %}
+    <div class="existing-slots-info">
+        <h4><i class="fas fa-clock"></i> Existing Availability (Next 30 Days)</h4>
+        <ul>
+            {% for slot in existing_availability|slice:":5" %}
+            <li>{{ slot.date|date:"M d, Y" }}: {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}</li>
+            {% endfor %}
+            {% if existing_availability.count > 5 %}
+            <li><em>...and {{ existing_availability.count|add:"-5" }} more slots</em></li>
+            {% endif %}
+        </ul>
+        <small><i class="fas fa-info-circle"></i> Adding new slots will update existing ones if they overlap</small>
+    </div>
+    {% endif %}
+
+    <form method="post" id="availabilityForm">
         {% csrf_token %}
-        
-        <div class="form-group">
-            <label>Select Dates *</label>
-            <div class="date-selector">
-                {% for day in next_7_days %}
-                <div class="date-checkbox">
-                    <input type="checkbox" name="dates" value="{{ day|date:'Y-m-d' }}" id="date_{{ day|date:'Y-m-d' }}">
-                    <label for="date_{{ day|date:'Y-m-d' }}">
-                        {{ day|date:"D, M d" }}
-                    </label>
+
+        <!-- Selection Tabs -->
+        <div class="selection-tabs">
+            <button type="button" class="selection-tab active" id="tabDateRange" onclick="showTab('dateRange')">📅 Date
+                Range</button>
+            <button type="button" class="selection-tab" id="tabMultipleDates" onclick="showTab('multipleDates')">📆
+                Multiple Dates</button>
+            <button type="button" class="selection-tab" id="tabWeekly" onclick="showTab('weekly')">🔄 Weekly
+                Schedule</button>
+        </div>
+
+        <!-- Date Range Mode -->
+        <div id="dateRangeMode" class="date-range-section">
+            <div class="date-range-row">
+                <div class="form-group">
+                    <label>From Date <span class="badge">Start</span></label>
+                    <input type="date" name="range_start" id="range_start" class="form-control" required>
                 </div>
-                {% endfor %}
+                <div class="form-group">
+                    <label>To Date <span class="badge">End</span></label>
+                    <input type="date" name="range_end" id="range_end" class="form-control" required>
+                </div>
+            </div>
+            <div class="help-text">All dates between from and to will be marked as available with the selected time
+                slots</div>
+        </div>
+
+        <!-- Multiple Dates Mode -->
+        <div id="multipleDatesMode" style="display: none;">
+            <div class="form-group">
+                <label>Select Dates <span class="badge">Click to select/unselect</span></label>
+                <div class="date-grid" id="dateGrid">
+                    {% for day in next_30_days %}
+                    <div class="date-card {% if day|date:'Y-m-d' < tomorrow %}disabled{% endif %}" 
+                         data-date="{{ day|date:'Y-m-d' }}" 
+                         onclick="{% if day|date:'Y-m-d' >= tomorrow %}toggleDate(this){% endif %}">
+                        <div class="date-day">{{ day|date:"D" }}</div>
+                        <div class="date-num">{{ day|date:"M d" }}</div>
+                    </div>
+                    {% empty %}
+                    <div style="grid-column: 1/-1; text-align: center; padding: 20px;">Loading dates...</div>
+                    {% endfor %}
+                </div>
+                <div class="help-text">Past dates are disabled. Click on future dates to select them.</div>
+            </div>
+
+            <div class="form-group">
+                <label>Selected Dates (<span id="selectedCount">0</span>)</label>
+                <div id="selectedDatesList" class="selected-dates-list">
+                    <div style="color: #94a3b8; width: 100%; text-align: center;">No dates selected yet. Click on dates
+                        above to select.</div>
+                </div>
             </div>
         </div>
-        
-        <div class="form-group">
-            <label>Select More Dates</label>
-            <input type="date" name="additional_date" class="form-control" id="additional-date">
-            <button type="button" class="btn-sm" onclick="addDate()" style="margin-top: 5px;">+ Add Date</button>
-            <div id="additional-dates-list"></div>
-        </div>
-        
-        <div class="form-group">
-            <label>Start Time *</label>
-            <input type="time" name="start_time" class="form-control" required>
-        </div>
-        
-        <div class="form-group">
-            <label>End Time *</label>
-            <input type="time" name="end_time" class="form-control" required>
-        </div>
-        
-        <div class="form-group">
-            <div class="checkbox-group">
-                <input type="checkbox" name="is_recurring" id="is_recurring">
-                <label for="is_recurring">Repeat weekly</label>
+
+        <!-- Weekly Schedule Mode -->
+        <div id="weeklyMode" style="display: none;">
+            <div class="form-group">
+                <label>Select Days of Week <span class="badge">Repeat weekly</span></label>
+                <div class="weekday-grid">
+                    <div class="weekday-card" data-day="monday" onclick="toggleWeekDay(this)">
+                        <div class="weekday-name">Monday</div>
+                    </div>
+                    <div class="weekday-card" data-day="tuesday" onclick="toggleWeekDay(this)">
+                        <div class="weekday-name">Tuesday</div>
+                    </div>
+                    <div class="weekday-card" data-day="wednesday" onclick="toggleWeekDay(this)">
+                        <div class="weekday-name">Wednesday</div>
+                    </div>
+                    <div class="weekday-card" data-day="thursday" onclick="toggleWeekDay(this)">
+                        <div class="weekday-name">Thursday</div>
+                    </div>
+                    <div class="weekday-card" data-day="friday" onclick="toggleWeekDay(this)">
+                        <div class="weekday-name">Friday</div>
+                    </div>
+                    <div class="weekday-card" data-day="saturday" onclick="toggleWeekDay(this)">
+                        <div class="weekday-name">Saturday</div>
+                    </div>
+                    <div class="weekday-card" data-day="sunday" onclick="toggleWeekDay(this)">
+                        <div class="weekday-name">Sunday</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" id="recurring-until-group" style="display: none;">
+                <label>Repeat until <span class="badge">End date</span></label>
+                <input type="date" name="recurring_until" id="recurring_until" class="form-control">
+                <small class="help-text">The pattern will repeat every week until this date (inclusive)</small>
             </div>
         </div>
-        
-        <div class="form-group" id="recurring-until-group" style="display: none;">
-            <label>Repeat until</label>
-            <input type="date" name="recurring_until" class="form-control">
-            <small class="help-text">The pattern will repeat every week until this date</small>
+
+        <!-- Time Slots Section (Common for all modes) -->
+        <div class="time-slots-container">
+            <label><strong>⏰ Time Slots</strong> <span class="badge">Add one or more time slots</span></label>
+            <div id="timeSlotsList">
+                <div class="time-slot-row">
+                    <div class="form-group">
+                        <label>Start Time</label>
+                        <input type="time" name="start_time_0" class="form-control time-start" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Time</label>
+                        <input type="time" name="end_time_0" class="form-control time-end" required>
+                    </div>
+                    <button type="button" class="btn-remove-slot" onclick="removeTimeSlot(this)"
+                        style="display: none;">Remove</button>
+                </div>
+            </div>
+            <button type="button" class="btn-add-slot" onclick="addTimeSlot()">
+                <i class="fas fa-plus"></i> Add Another Time Slot
+            </button>
         </div>
-        
+
+        <!-- Hidden fields to store selected data -->
+        <input type="hidden" name="selected_dates" id="selected_dates_hidden">
+        <input type="hidden" name="selected_weekdays" id="selected_weekdays_hidden">
+        <input type="hidden" name="mode" id="mode_hidden" value="dateRange">
+
+        <div class="checkbox-group">
+            <input type="checkbox" name="is_recurring" id="is_recurring">
+            <label for="is_recurring"><strong>Repeat weekly</strong> <span class="badge">For date range and multiple
+                    dates mode</span></label>
+        </div>
+
         <button type="submit" class="btn-primary">
             <i class="fas fa-save"></i> Set Availability
         </button>
@@ -191,62 +601,305 @@
 </div>
 
 <script>
-    const recurringCheckbox = document.getElementById('is_recurring');
-    const recurringUntilGroup = document.getElementById('recurring-until-group');
-    
-    recurringCheckbox.addEventListener('change', function() {
-        recurringUntilGroup.style.display = this.checked ? 'block' : 'none';
-    });
-    
-    const additionalDates = [];
-    
-    function addDate() {
-        const dateInput = document.getElementById('additional-date');
-        const date = dateInput.value;
-        
-        if (!date) {
-            alert('Please select a date');
-            return;
-        }
-        
-        if (additionalDates.includes(date)) {
-            alert('Date already added');
-            return;
-        }
-        
-        additionalDates.push(date);
-        
-        const listDiv = document.getElementById('additional-dates-list');
-        const dateDiv = document.createElement('div');
-        dateDiv.className = 'date-checkbox';
-        dateDiv.style.marginTop = '5px';
-        dateDiv.innerHTML = `
-            <input type="checkbox" name="dates" value="${date}" checked disabled>
-            <label>${new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</label>
-            <button type="button" onclick="removeDate('${date}')" style="margin-left: auto; background: none; border: none; color: #ef4444; cursor: pointer;">✖</button>
-        `;
-        listDiv.appendChild(dateDiv);
-        dateInput.value = '';
+    let selectedDates = [];
+    let selectedWeekDays = [];
+    let timeSlotCount = 1;
+
+    // Get tomorrow's date
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+    // Set min dates and default values for date inputs
+    const rangeStart = document.getElementById('range_start');
+    const rangeEnd = document.getElementById('range_end');
+    const recurringUntil = document.getElementById('recurring_until');
+
+    if (rangeStart) {
+        rangeStart.min = tomorrowStr;
+        // Set default start date to tomorrow
+        rangeStart.value = tomorrowStr;
     }
-    
-    function removeDate(date) {
-        const index = additionalDates.indexOf(date);
-        if (index > -1) {
-            additionalDates.splice(index, 1);
+    if (rangeEnd) {
+        rangeEnd.min = tomorrowStr;
+        // Set default end date to tomorrow + 6 days (one week)
+        const nextWeek = new Date(tomorrow);
+        nextWeek.setDate(nextWeek.getDate() + 6);
+        rangeEnd.value = nextWeek.toISOString().split('T')[0];
+    }
+    if (recurringUntil) {
+        recurringUntil.min = tomorrowStr;
+        // Set default recurring until date to tomorrow + 30 days
+        const nextMonth = new Date(tomorrow);
+        nextMonth.setDate(nextMonth.getDate() + 30);
+        recurringUntil.value = nextMonth.toISOString().split('T')[0];
+    }
+
+    function showTab(tab) {
+        // Hide all sections
+        const dateRangeMode = document.getElementById('dateRangeMode');
+        const multipleDatesMode = document.getElementById('multipleDatesMode');
+        const weeklyMode = document.getElementById('weeklyMode');
+
+        if (dateRangeMode) dateRangeMode.style.display = 'none';
+        if (multipleDatesMode) multipleDatesMode.style.display = 'none';
+        if (weeklyMode) weeklyMode.style.display = 'none';
+
+        // Show selected section
+        if (tab === 'dateRange' && dateRangeMode) {
+            dateRangeMode.style.display = 'block';
+            // Set range inputs to required
+            if (rangeStart) rangeStart.required = true;
+            if (rangeEnd) rangeEnd.required = true;
+            // Clear other selections
+            selectedDates = [];
+            selectedWeekDays = [];
+            updateSelectedDatesDisplay();
+        } else if (tab === 'multipleDates' && multipleDatesMode) {
+            multipleDatesMode.style.display = 'block';
+            if (rangeStart) rangeStart.required = false;
+            if (rangeEnd) rangeEnd.required = false;
+        } else if (tab === 'weekly' && weeklyMode) {
+            weeklyMode.style.display = 'block';
+            if (rangeStart) rangeStart.required = false;
+            if (rangeEnd) rangeEnd.required = false;
         }
-        
-        const listDiv = document.getElementById('additional-dates-list');
-        listDiv.innerHTML = '';
-        additionalDates.forEach(d => {
-            const dateDiv = document.createElement('div');
-            dateDiv.className = 'date-checkbox';
-            dateDiv.style.marginTop = '5px';
-            dateDiv.innerHTML = `
-                <input type="checkbox" name="dates" value="${d}" checked disabled>
-                <label>${new Date(d).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</label>
-                <button type="button" onclick="removeDate('${d}')" style="margin-left: auto; background: none; border: none; color: #ef4444; cursor: pointer;">✖</button>
-            `;
-            listDiv.appendChild(dateDiv);
+
+        // Update active tab styling
+        document.querySelectorAll('.selection-tab').forEach((tabEl) => {
+            tabEl.classList.remove('active');
+        });
+
+        // Get the clicked button and add active class
+        let activeTab = document.getElementById('tabDateRange');
+        if (tab === 'multipleDates') activeTab = document.getElementById('tabMultipleDates');
+        if (tab === 'weekly') activeTab = document.getElementById('tabWeekly');
+        if (activeTab) activeTab.classList.add('active');
+
+        // Update hidden mode
+        const modeHidden = document.getElementById('mode_hidden');
+        if (modeHidden) modeHidden.value = tab;
+    }
+
+    function toggleDate(element) {
+        const date = element.dataset.date;
+        const index = selectedDates.indexOf(date);
+
+        if (index === -1) {
+            selectedDates.push(date);
+            element.classList.add('selected');
+        } else {
+            selectedDates.splice(index, 1);
+            element.classList.remove('selected');
+        }
+
+        updateSelectedDatesDisplay();
+    }
+
+    function toggleWeekDay(element) {
+        const day = element.dataset.day;
+        const index = selectedWeekDays.indexOf(day);
+
+        if (index === -1) {
+            selectedWeekDays.push(day);
+            element.classList.add('selected');
+        } else {
+            selectedWeekDays.splice(index, 1);
+            element.classList.remove('selected');
+        }
+
+        const weekdaysHidden = document.getElementById('selected_weekdays_hidden');
+        if (weekdaysHidden) weekdaysHidden.value = JSON.stringify(selectedWeekDays);
+
+        // Show recurring until field if days are selected
+        const recurringGroup = document.getElementById('recurring-until-group');
+        if (recurringGroup) {
+            recurringGroup.style.display = selectedWeekDays.length > 0 ? 'block' : 'none';
+        }
+    }
+
+    function updateSelectedDatesDisplay() {
+        const container = document.getElementById('selectedDatesList');
+        const countSpan = document.getElementById('selectedCount');
+
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        if (selectedDates.length === 0) {
+            container.innerHTML = '<div style="color: #94a3b8; width: 100%; text-align: center;">No dates selected yet. Click on dates above to select.</div>';
+            if (countSpan) countSpan.textContent = '0';
+            return;
+        }
+
+        if (countSpan) countSpan.textContent = selectedDates.length;
+
+        selectedDates.sort().forEach(date => {
+            const dateObj = new Date(date);
+            const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            const tag = document.createElement('div');
+            tag.className = 'date-tag';
+            tag.innerHTML = `${formattedDate} <span class="remove-date" onclick="removeDate('${date}')">×</span>`;
+            container.appendChild(tag);
+        });
+
+        const datesHidden = document.getElementById('selected_dates_hidden');
+        if (datesHidden) datesHidden.value = JSON.stringify(selectedDates);
+    }
+
+    function removeDate(date) {
+        selectedDates = selectedDates.filter(d => d !== date);
+        updateSelectedDatesDisplay();
+
+        // Also unselect the date card
+        const cards = document.querySelectorAll('.date-card');
+        cards.forEach(card => {
+            if (card.dataset.date === date) {
+                card.classList.remove('selected');
+            }
+        });
+    }
+
+    function addTimeSlot() {
+        const container = document.getElementById('timeSlotsList');
+        if (!container) return;
+
+        const slotCount = container.children.length;
+
+        const newSlot = document.createElement('div');
+        newSlot.className = 'time-slot-row';
+        newSlot.innerHTML = `
+            <div class="form-group">
+                <label>Start Time</label>
+                <input type="time" name="start_time_${slotCount}" class="form-control time-start" required>
+            </div>
+            <div class="form-group">
+                <label>End Time</label>
+                <input type="time" name="end_time_${slotCount}" class="form-control time-end" required>
+            </div>
+            <button type="button" class="btn-remove-slot" onclick="removeTimeSlot(this)">Remove</button>
+        `;
+        container.appendChild(newSlot);
+        timeSlotCount++;
+    }
+
+    function removeTimeSlot(button) {
+        const container = document.getElementById('timeSlotsList');
+        if (container && container.children.length > 1) {
+            button.parentElement.remove();
+        } else {
+            alert('At least one time slot is required');
+        }
+    }
+
+    // Validate form before submit
+    const form = document.getElementById('availabilityForm');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            const mode = document.getElementById('mode_hidden').value;
+
+            if (mode === 'dateRange') {
+                const startDate = document.getElementById('range_start').value;
+                const endDate = document.getElementById('range_end').value;
+                if (!startDate || !endDate) {
+                    alert('Please select start and end dates');
+                    e.preventDefault();
+                    return false;
+                }
+                if (startDate > endDate) {
+                    alert('Start date cannot be after end date');
+                    e.preventDefault();
+                    return false;
+                }
+                if (startDate < tomorrowStr) {
+                    alert('Cannot set availability for past dates');
+                    e.preventDefault();
+                    return false;
+                }
+                // Generate dates for range and add to selected dates
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const dateRange = [];
+                const currentDate = new Date(start);
+                while (currentDate <= end) {
+                    dateRange.push(currentDate.toISOString().split('T')[0]);
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                document.getElementById('selected_dates_hidden').value = JSON.stringify(dateRange);
+            } else if (mode === 'multipleDates') {
+                if (selectedDates.length === 0) {
+                    alert('Please select at least one date');
+                    e.preventDefault();
+                    return false;
+                }
+            } else if (mode === 'weekly') {
+                if (selectedWeekDays.length === 0) {
+                    alert('Please select at least one day of the week');
+                    e.preventDefault();
+                    return false;
+                }
+                const recurringUntilInput = document.getElementById('recurring_until');
+                if (recurringUntilInput && !recurringUntilInput.value && selectedWeekDays.length > 0) {
+                    alert('Please select an end date for the recurring schedule');
+                    e.preventDefault();
+                    return false;
+                }
+                if (recurringUntilInput && recurringUntilInput.value < tomorrowStr) {
+                    alert('End date must be in the future');
+                    e.preventDefault();
+                    return false;
+                }
+            }
+
+            // Check time slots
+            const timeStarts = document.querySelectorAll('.time-start');
+            const timeEnds = document.querySelectorAll('.time-end');
+            let valid = true;
+
+            for (let i = 0; i < timeStarts.length; i++) {
+                if (!timeStarts[i].value || !timeEnds[i].value) {
+                    alert(`Please fill in all time slots`);
+                    valid = false;
+                    break;
+                }
+                if (timeStarts[i].value >= timeEnds[i].value) {
+                    alert(`Start time must be before end time in slot ${i + 1}`);
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (!valid) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // Update end date min when start date changes
+    if (rangeStart) {
+        rangeStart.addEventListener('change', function () {
+            if (rangeEnd) {
+                rangeEnd.min = this.value;
+                if (rangeEnd.value < this.value) {
+                    rangeEnd.value = this.value;
+                }
+            }
+        });
+    }
+
+    // Show warning for weekly recurring
+    const recurringCheckbox = document.getElementById('is_recurring');
+    if (recurringCheckbox) {
+        recurringCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                if (confirm('Setting this as recurring will repeat these time slots weekly. Make sure to set an end date in the weekly schedule mode if you want it to stop.')) {
+                    // Switch to weekly mode for better UX
+                    showTab('weekly');
+                } else {
+                    this.checked = false;
+                }
+            }
         });
     }
 </script>

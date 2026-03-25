@@ -34,7 +34,7 @@
     <span>Update availability</span>
 </a>
 
-<a href="{% url 'caretaker_profile' %}" class="nav-item">
+<a href="{% url 'users:caretaker_profile' %}" class="nav-item">
     <i class="fas fa-id-badge"></i>
     <span>My Profile</span>
 </a>
@@ -46,9 +46,6 @@
     </a>
 </div>
 {% endblock %}
-
-
-
 
 {% block extra_css %}
 <style>
@@ -228,6 +225,25 @@
         color: #0a2a38;
     }
 
+    .loading-placeholder {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 4px;
+        height: 2.6rem;
+        width: 80px;
+    }
+
+    @keyframes loading {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
     @media (max-width: 768px) {
         .stats-grid {
             grid-template-columns: 1fr;
@@ -242,54 +258,106 @@
 {% endblock %}
 
 {% block content %}
-<!-- OVERVIEW CARD -->
+<!-- OVERVIEW CARD - Dynamic -->
 <div class="card">
     <h3>
         <i class="fas fa-activity"></i> Overview
     </h3>
     <div class="stats-grid">
         <div class="stat-item">
-            <div class="stat-number">{{ total_applications|default:"14" }}</div>
+            <div class="stat-number" id="applications-count">
+                {% if total_applications is not None %}
+                {{ total_applications }}
+                {% else %}
+                <span class="loading-placeholder"></span>
+                {% endif %}
+            </div>
             <div class="stat-label"><i class="fas fa-paper-plane"></i> Applications sent</div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">{{ assigned_jobs|default:"3" }}</div>
+            <div class="stat-number">
+                {% if assigned_jobs is not None %}
+                {{ assigned_jobs }}
+                {% else %}
+                0
+                {% endif %}
+            </div>
             <div class="stat-label"><i class="fas fa-user-check"></i> Active assignments</div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">{{ pending_applications|default:"5" }}</div>
+            <div class="stat-number" id="pending-count">
+                {% if pending_applications is not None %}
+                {{ pending_applications }}
+                {% else %}
+                <span class="loading-placeholder"></span>
+                {% endif %}
+            </div>
             <div class="stat-label"><i class="fas fa-clock"></i> Pending applications</div>
         </div>
     </div>
 
-    <!-- subtle extra info -->
+    <!-- Dynamic extra info based on real data -->
     <div style="margin-top: 22px;">
-        <span class="pill-info"><i class="fas fa-bell"></i> 2 new care requests near you</span>
-        <span class="pill-info" style="margin-left: 12px;"><i class="fas fa-star"></i> 98% profile strength</span>
+        {% if nearby_requests_count %}
+        <span class="pill-info"><i class="fas fa-bell"></i> {{ nearby_requests_count }} new care requests near
+            you</span>
+        {% endif %}
+        {% if profile_strength %}
+        <span class="pill-info" style="margin-left: 12px;"><i class="fas fa-star"></i> {{ profile_strength }}% profile
+            strength</span>
+        {% endif %}
+        {% if not nearby_requests_count and not profile_strength %}
+        <span class="pill-info"><i class="fas fa-info-circle"></i> Complete your profile to get more matches</span>
+        {% endif %}
     </div>
 </div>
 
-<!-- JOB & WORK MANAGEMENT SECTION -->
+<!-- JOB & WORK MANAGEMENT SECTION - Dynamic -->
 <div class="card">
     <h3>
         <i class="fas fa-briefcase-clock"></i> Job & work
     </h3>
     <div style="display: flex; flex-direction: column; gap: 16px;">
-        <!-- assignment preview -->
+        <!-- Dynamic assignment preview -->
+        {% if today_assignment %}
         <div class="assignment-preview">
             <div>
                 <span style="font-weight: 600; font-size: 1.1rem; color: #0a2a38;">Today's assignment</span>
                 <div style="display: flex; gap: 15px; margin-top: 8px; color: #2c6d88; flex-wrap: wrap;">
-                    <span><i class="far fa-clock"></i> 09:30 – 12:30</span>
-                    <span><i class="fas fa-location-dot"></i> 4 km · Maple Ave</span>
+                    <span><i class="far fa-clock"></i> {{ today_assignment.start_time|time:"H:i" }} – {{
+                        today_assignment.end_time|time:"H:i" }}</span>
+                    <span><i class="fas fa-location-dot"></i> {{ today_assignment.distance_km|default:"4" }} km · {{
+                        today_assignment.location|default:"Maple Ave" }}</span>
                 </div>
             </div>
-            <span class="badge"><i class="fas fa-sun"></i> morning shift</span>
+            <span class="badge"><i class="fas fa-sun"></i> {{ today_assignment.shift_type|default:"morning shift"
+                }}</span>
         </div>
+        {% else %}
+        <div class="assignment-preview">
+            <div>
+                <span style="font-weight: 600; font-size: 1.1rem; color: #0a2a38;">No assignments today</span>
+                <div style="margin-top: 8px; color: #2c6d88;">
+                    <span><i class="fas fa-calendar-alt"></i> Browse available requests in your area</span>
+                </div>
+            </div>
+            <a href="{% url 'requests:browse_requests' %}" class="badge" style="text-decoration: none;">
+                <i class="fas fa-search"></i> Find work
+            </a>
+        </div>
+        {% endif %}
 
         <div class="info-row">
-            <span class="pill-info"><i class="fas fa-hourglass-half"></i> next pending: interview</span>
+            {% if next_pending_interview %}
+            <span class="pill-info"><i class="fas fa-hourglass-half"></i> next: interview with {{
+                next_pending_interview.client_name }}</span>
+            {% endif %}
+            {% if is_available_today %}
             <span class="pill-info success"><i class="fas fa-check-circle"></i> available today</span>
+            {% endif %}
+            {% if not next_pending_interview and not is_available_today %}
+            <span class="pill-info"><i class="fas fa-bell"></i> Update your availability to receive more matches</span>
+            {% endif %}
         </div>
 
         <!-- quick actions info -->
@@ -301,7 +369,7 @@
     </div>
 </div>
 
-<!-- ACCOUNT / PROFILE CARD -->
+<!-- ACCOUNT / PROFILE CARD - Dynamic -->
 <div class="card">
     <h3>
         <i class="fas fa-user-md"></i> Account & profile
@@ -313,18 +381,29 @@
             </div>
             <div>
                 <div class="profile-name">{{ request.user.get_full_name|default:request.user.username }}</div>
-                <div class="muted"><i class="fas fa-envelope"></i> {{ request.user.email|default:"nurse@carelink.com" }}
-                    · <i class="fas fa-check-circle" style="color: #28a745;"></i> verified</div>
+                <div class="muted">
+                    <i class="fas fa-envelope"></i> {{ request.user.email|default:"nurse@carelink.com" }}
+                    ·
+                    {% if is_verified %}
+                    <i class="fas fa-check-circle" style="color: #28a745;"></i> verified
+                    {% else %}
+                    <i class="fas fa-exclamation-circle" style="color: #ffc107;"></i> pending verification
+                    {% endif %}
+                </div>
             </div>
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            {% if credentials_updated %}
             <span class="pill-info"><i class="fas fa-shield"></i> credentials updated</span>
-            <span class="pill-info"><i class="fas fa-phone"></i> contact</span>
+            {% endif %}
+            {% if phone_number %}
+            <span class="pill-info"><i class="fas fa-phone"></i> {{ phone_number }}</span>
+            {% endif %}
         </div>
     </div>
     <hr>
     <div style="display: flex; justify-content: flex-end;">
-        <a href="{% url 'caretaker_profile' %}" class="muted"
+        <a href="{% url 'users:caretaker_profile' %}" class="muted"
             style="text-decoration: none; display: flex; align-items: center; gap: 5px;">
             <i class="fas fa-arrow-right" style="color: #4bc3a3;"></i> profile & settings
         </a>
@@ -339,18 +418,30 @@
 
 {% block extra_js %}
 <script>
-    // Update any stat numbers that might be using default values
+    // Optional: Add dynamic data fetching if needed
     document.addEventListener('DOMContentLoaded', function () {
-        // This ensures that if Django variables are empty, we still show numbers
-        const statNumbers = document.querySelectorAll('.stat-number');
-        statNumbers.forEach(el => {
-            if (el.innerText.trim() === '' || el.innerText.includes('{{')) {
-                // This is just a fallback for static viewing
-                if (el.closest('.stat-item')?.innerText.includes('Applications')) el.innerText = '14';
-                else if (el.closest('.stat-item')?.innerText.includes('Active')) el.innerText = '3';
-                else if (el.closest('.stat-item')?.innerText.includes('Pending')) el.innerText = '5';
-            }
-        });
+        // You can add AJAX calls here to fetch real-time data
+        // For example, to update stats without page reload:
+
+        function fetchDashboardStats() {
+            fetch('/api/nurse/dashboard-stats/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.total_applications !== undefined) {
+                        document.getElementById('applications-count').innerHTML = data.total_applications;
+                    }
+                    if (data.assigned_jobs !== undefined) {
+                        document.getElementById('assignments-count').innerHTML = data.assigned_jobs;
+                    }
+                    if (data.pending_applications !== undefined) {
+                        document.getElementById('pending-count').innerHTML = data.pending_applications;
+                    }
+                })
+                .catch(error => console.error('Error fetching dashboard stats:', error));
+        }
+
+        // Uncomment to enable auto-refresh every 30 seconds
+        // setInterval(fetchDashboardStats, 30000);
     });
 </script>
 {% endblock %}

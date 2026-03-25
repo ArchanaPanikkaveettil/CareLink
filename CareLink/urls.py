@@ -12,8 +12,11 @@ urlpatterns = [
     path("applications/", include("apps.Applications.urls")),  # Applications URLs
     path("notifications/", include("apps.Notifications.urls")),  # Notifications URLs
     # Logout URL
-    path("logout/", auth_views.LogoutView.as_view(next_page="index"), name="logout"),
+    path(
+        "logout/", auth_views.LogoutView.as_view(next_page="users:index"), name="logout"
+    ),
 ]
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

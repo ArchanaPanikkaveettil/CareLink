@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -6,10 +6,14 @@ from django.utils import timezone
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
-
 from apps.Applications.models import CareApplication
 from .models import CareRequest, CaretakerAvailability, CareBooking
 from apps.Users.models import User, CaretakerProfile
+from django.urls import reverse
+import calendar
+
+
+
 
 
 # ============================================================================
@@ -33,14 +37,14 @@ def find_caretakers(request):
     if q:
         # Search across multiple fields including location
         caretakers = caretakers.filter(
-            Q(user__first_name__icontains=q) |
-            Q(user__last_name__icontains=q) |
-            Q(qualification__icontains=q) |
-            Q(city__icontains=q) |
-            Q(state__icontains=q) |
-            Q(address__icontains=q) |
-            Q(skills__icontains=q) |
-            Q(pincode__icontains=q)
+            Q(user__first_name__icontains=q)
+            | Q(user__last_name__icontains=q)
+            | Q(qualification__icontains=q)
+            | Q(city__icontains=q)
+            | Q(state__icontains=q)
+            | Q(address__icontains=q)
+            | Q(skills__icontains=q)
+            | Q(pincode__icontains=q)
         )
 
     if experience:
@@ -53,11 +57,10 @@ def find_caretakers(request):
     return render(request, "users/search_caretakers.html", context)
 
 
-
-
 # ============================================================================
 # CARETAKER VIEWS - Browse & Apply to Requests
 # ============================================================================
+
 
 # ----------------------------------------------------------------------------
 # Browse open requests (for caretakers)
@@ -729,54 +732,44 @@ def edit_request(request, request_id):
 # ----------------------------------------------------------------------------
 # Close or reopen a care request (for families)
 # ----------------------------------------------------------------------------
+
+
 @login_required
 def close_request(request, request_id):
-    """Close or reopen a care request (for families)"""
-    if request.user.role != "family":
-        messages.error(
-            request, "❌ Access denied. Only family members can perform this action."
-        )
-        return redirect("index")
-
-    care_request = get_object_or_404(CareRequest, id=request_id, family=request.user)
-
-    if request.method == "POST":
-        try:
-            if care_request.status == "open":
-                care_request.status = "closed"
-                care_request.closed_at = timezone.now()
-                CareApplication.objects.filter(
-                    request=care_request, status="pending"
-                ).update(status="rejected", rejection_note="Request closed by family")
-                care_request.save()
-                messages.success(
-                    request,
-                    f"✅ Request for {care_request.patient_name} has been closed successfully.",
-                )
-            elif care_request.status == "closed":
-                if care_request.assigned_caretaker:
-                    messages.error(
-                        request,
-                        "❌ Cannot reopen a request that has an assigned caretaker.",
-                    )
-                    return redirect("request_detail", request_id=care_request.id)
-                care_request.status = "open"
-                care_request.closed_at = None
-                care_request.save()
-                messages.success(
-                    request,
-                    f"✅ Request for {care_request.patient_name} has been reopened successfully.",
-                )
-            else:
-                messages.error(
-                    request,
-                    f"❌ Cannot close a request with status: {care_request.get_status_display()}",
-                )
-                return redirect("request_detail", request_id=care_request.id)
-        except Exception as e:
-            messages.error(request, f"❌ Error closing request: {str(e)}")
-
-    return redirect("request_detail", request_id=care_request.id)
+    """Close a care request"""
+    # Check user role
+    if request.user.role != 'family':
+        messages.error(request, 'Only family members can close requests.')
+        return redirect('index')
+    
+    try:
+        # Since family field is a ForeignKey to User, use request.user directly
+        care_request = get_object_or_404(CareRequest, id=request_id, family=request.user)
+        
+        if care_request.status == 'open':
+            care_request.status = 'closed'
+            care_request.closed_at = timezone.now()
+            care_request.save()
+            
+            # Also reject all pending applications for this request
+            from apps.Applications.models import CareApplication
+            CareApplication.objects.filter(request=care_request, status='pending').update(
+                status='rejected', 
+                rejection_note='Request closed by family'
+            )
+            
+            messages.success(request, f'Care request for {care_request.patient_name} has been closed successfully.')
+        else:
+            messages.warning(request, f'Only open requests can be closed. Current status: {care_request.get_status_display()}')
+        
+        return redirect('requests:my_requests')
+        
+    except CareRequest.DoesNotExist:
+        messages.error(request, 'Care request not found or you do not have permission to close it.')
+        return redirect('requests:my_requests')
+    except AttributeError as e:
+        messages.error(request, f'Error: {str(e)}')
+        return redirect('requests:my_requests')
 
 
 # ----------------------------------------------------------------------------
@@ -849,29 +842,21 @@ def save_draft(request, request_id):
 @login_required
 def caretaker_detail(request, caretaker_id):
     """View detailed profile of a caretaker"""
-    from apps.Users.models import CaretakerProfile
+    # Get the caretaker user
+    caretaker = get_object_or_404(User, id=caretaker_id, role='caretaker')
     
-    caretaker = get_object_or_404(CaretakerProfile, id=caretaker_id)
-    
-    # Get upcoming bookings (if user is family)
-    upcoming_bookings = None
-    if request.user.role == 'family':
-        upcoming_bookings = CareBooking.objects.filter(
-            caretaker=caretaker.user,
-            family=request.user,
-            status__in=['pending', 'confirmed'],
-            booking_date__gte=timezone.now().date()
-        ).order_by('booking_date')[:5]
-    
-    # Get reviews/ratings
-    reviews = None  # Add your review model if you have one
+    # Get the caretaker profile
+    try:
+        profile = CaretakerProfile.objects.get(user=caretaker)
+    except CaretakerProfile.DoesNotExist:
+        profile = None
     
     context = {
         'caretaker': caretaker,
-        'upcoming_bookings': upcoming_bookings,
-        'reviews': reviews,
+        'profile': profile,
     }
-    return render(request, 'requests/caretaker_detail.html', context)
+    return render(request, 'users/caretaker_detail.html', context)
+
 
 
 # ============================================================================
@@ -879,65 +864,83 @@ def caretaker_detail(request, caretaker_id):
 # ============================================================================
 
 
+
 @login_required
 def view_caretaker_availability(request, caretaker_id):
     """View a caretaker's availability calendar"""
+    # Get the caretaker
     caretaker = get_object_or_404(User, id=caretaker_id, role="caretaker")
-    caretaker_profile = get_object_or_404(CaretakerProfile, user=caretaker)
-
+    
+    # Get caretaker profile
+    try:
+        caretaker_profile = CaretakerProfile.objects.get(user=caretaker)
+    except CaretakerProfile.DoesNotExist:
+        caretaker_profile = None
+    
+    # Get current month/year or from query params
+    today = timezone.now().date()
+    year = int(request.GET.get('year', today.year))
+    month = int(request.GET.get('month', today.month))
+    
+    # Get calendar for the month
     import calendar
-    from datetime import date, timedelta
-
-    year = int(request.GET.get("year", date.today().year))
-    month = int(request.GET.get("month", date.today().month))
-
-    first_day = date(year, month, 1)
-    if month == 12:
-        last_day = date(year + 1, 1, 1) - timedelta(days=1)
-    else:
-        last_day = date(year, month + 1, 1) - timedelta(days=1)
-
-    availabilities = CaretakerAvailability.objects.filter(
-        caretaker=caretaker, date__gte=first_day, date__lte=last_day, status="available"
-    ).order_by("date", "start_time")
-
+    cal = calendar.monthcalendar(year, month)
+    month_name = calendar.month_name[month]
+    
+    # Get availability slots for this month (only available slots, not booked)
+    from apps.Users.models import CaretakerAvailability
+    
+    availability_slots = CaretakerAvailability.objects.filter(
+        caretaker=caretaker,
+        date__year=year,
+        date__month=month,
+        status='available'  # Only show available slots
+    ).order_by('date', 'start_time')
+    
+    # Debug: Print to console
+    print(f"Found {availability_slots.count()} available slots for {caretaker.username} in {month_name} {year}")
+    for slot in availability_slots:
+        print(f"  - {slot.date}: {slot.start_time} to {slot.end_time}")
+    
+    # Create a dictionary of dates with their slots
     availability_by_date = {}
-    for avail in availabilities:
-        if avail.date not in availability_by_date:
-            availability_by_date[avail.date] = []
-        availability_by_date[avail.date].append(avail)
-
+    for slot in availability_slots:
+        date_key = slot.date.strftime('%Y-%m-%d')
+        if date_key not in availability_by_date:
+            availability_by_date[date_key] = []
+        availability_by_date[date_key].append(slot)
+    
+    # Calculate previous and next months
     if month == 1:
         prev_month = 12
         prev_year = year - 1
     else:
         prev_month = month - 1
         prev_year = year
-
+    
     if month == 12:
         next_month = 1
         next_year = year + 1
     else:
         next_month = month + 1
         next_year = year
-
-    cal = calendar.monthcalendar(year, month)
-    month_name = calendar.month_name[month]
-
+    
     context = {
-        "caretaker": caretaker,
-        "caretaker_profile": caretaker_profile,
-        "year": year,
-        "month": month,
-        "month_name": month_name,
-        "calendar": cal,
-        "availability_by_date": availability_by_date,
-        "prev_year": prev_year,
-        "prev_month": prev_month,
-        "next_year": next_year,
-        "next_month": next_month,
+        'caretaker': caretaker,
+        'caretaker_profile': caretaker_profile,
+        'calendar': cal,
+        'year': year,
+        'month': month,
+        'month_name': month_name,
+        'availability_by_date': availability_by_date,
+        'prev_year': prev_year,
+        'prev_month': prev_month,
+        'next_year': next_year,
+        'next_month': next_month,
     }
-    return render(request, "requests/caretaker_availability.html", context)
+    
+    return render(request, 'requests/caretaker_availability.html', context)
+
 
 
 @login_required
@@ -1167,39 +1170,6 @@ def cancel_booking(request, booking_id):
 
 
 @login_required
-def start_booking(request, booking_id):
-    """Start a booking (mark as in progress)"""
-    booking = get_object_or_404(CareBooking, id=booking_id)
-
-    if request.user != booking.caretaker:
-        messages.error(request, "Only the caretaker can start a booking")
-        return redirect("booking_detail", booking_id=booking.id)
-
-    if booking.status != "confirmed":
-        messages.error(request, "This booking cannot be started")
-        return redirect("booking_detail", booking_id=booking.id)
-
-    booking.status = "in_progress"
-    booking.save()
-
-    from apps.Notifications.models import Notification
-
-    Notification.objects.create(
-        recipient=booking.family,
-        sender=request.user,
-        notification_type="booking",
-        title="Care Session Started",
-        message=f"{request.user.get_full_name()} has started the care session",
-        icon="fa-play-circle",
-        link=f"/bookings/{booking.id}/",
-        is_read=False,
-    )
-
-    messages.success(request, "Care session started!")
-    return redirect("booking_detail", booking_id=booking.id)
-
-
-@login_required
 def complete_booking(request, booking_id):
     """Complete a booking"""
     booking = get_object_or_404(CareBooking, id=booking_id)
@@ -1231,116 +1201,308 @@ def complete_booking(request, booking_id):
 
     return redirect("booking_detail", booking_id=booking.id)
 
+@login_required
+def start_booking(request, booking_id):
+    """Start a booking (mark as in progress)"""
+    booking = get_object_or_404(CareBooking, id=booking_id)
+
+    if request.user != booking.caretaker:
+        messages.error(request, "Only the caretaker can start a booking")
+        return redirect("booking_detail", booking_id=booking.id)
+
+    if booking.status != "confirmed":
+        messages.error(request, "This booking cannot be started")
+        return redirect("booking_detail", booking_id=booking.id)
+
+    booking.status = "in_progress"
+    booking.save()
+
+    from apps.Notifications.models import Notification
+
+    Notification.objects.create(
+        recipient=booking.family,
+        sender=request.user,
+        notification_type="booking",
+        title="Care Session Started",
+        message=f"{request.user.get_full_name()} has started the care session",
+        icon="fa-play-circle",
+        link=f"/bookings/{booking.id}/",
+        is_read=False,
+    )
+
+    messages.success(request, "Care session started!")
+    return redirect("booking_detail", booking_id=booking.id)
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from datetime import datetime, timedelta
+import calendar
+import json
+
+# Import your models
+from apps.Users.models import CaretakerAvailability, CaretakerProfile, User
+from apps.Requests.models import CareRequest  # If you have this
+
 
 @login_required
 def caretaker_set_availability(request):
     """Set availability for caretaker"""
+    from apps.Users.models import CaretakerAvailability
+    from datetime import datetime, timedelta
+    
     if request.user.role != "caretaker":
         messages.error(request, "Only caretakers can set availability")
-        return redirect("index")
+        return redirect("users:index")
 
     if request.method == "POST":
-        dates = request.POST.getlist("dates")
-        start_time = request.POST.get("start_time")
-        end_time = request.POST.get("end_time")
-        is_recurring = request.POST.get("is_recurring") == "on"
-        recurring_until = request.POST.get("recurring_until")
+        # Get the mode
+        mode = request.POST.get("mode", "dateRange")
+        
+        # Initialize recurring_until variable
+        recurring_until = None
 
-        if not dates or not start_time or not end_time:
+        # Get dates based on mode
+        dates = []
+        if mode == "dateRange":
+            start_date = request.POST.get("range_start")
+            end_date = request.POST.get("range_end")
+            if start_date and end_date:
+                start = datetime.strptime(start_date, "%Y-%m-%d").date()
+                end = datetime.strptime(end_date, "%Y-%m-%d").date()
+                current = start
+                while current <= end:
+                    dates.append(current.strftime("%Y-%m-%d"))
+                    current += timedelta(days=1)
+        elif mode == "multipleDates":
+            selected_dates = request.POST.get("selected_dates", "[]")
+            import json
+            dates = json.loads(selected_dates)
+        elif mode == "weekly":
+            selected_weekdays = request.POST.get("selected_weekdays", "[]")
+            import json
+            weekdays = json.loads(selected_weekdays)
+            recurring_until = request.POST.get("recurring_until")
+            # Generate dates for weekly recurring
+            if weekdays and recurring_until:
+                today = datetime.now().date()
+                end_date = datetime.strptime(recurring_until, "%Y-%m-%d").date()
+                current = today + timedelta(days=1)
+                day_map = {
+                    'monday': 0, 'tuesday': 1, 'wednesday': 2, 
+                    'thursday': 3, 'friday': 4, 'saturday': 5, 'sunday': 6
+                }
+                while current <= end_date:
+                    if current.weekday() in [day_map[day] for day in weekdays]:
+                        dates.append(current.strftime("%Y-%m-%d"))
+                    current += timedelta(days=1)
+
+        # Get time slots
+        time_slots = []
+        i = 0
+        while True:
+            start = request.POST.get(f"start_time_{i}")
+            end = request.POST.get(f"end_time_{i}")
+            if start and end:
+                time_slots.append((start, end))
+                i += 1
+            else:
+                break
+
+        is_recurring = request.POST.get("is_recurring") == "on"
+
+        if not dates or not time_slots:
             messages.error(request, "Please fill all required fields")
-            return redirect("caretaker_set_availability")
+            return redirect("requests:set_availability")
 
         try:
-            start_time_obj = datetime.strptime(start_time, "%H:%M").time()
-            end_time_obj = datetime.strptime(end_time, "%H:%M").time()
-
-            recurring_until_date = None
-            if recurring_until and is_recurring:
-                recurring_until_date = datetime.strptime(
-                    recurring_until, "%Y-%m-%d"
-                ).date()
-
             created_count = 0
-
+            updated_count = 0
+            skipped_count = 0
+            today_date = datetime.now().date()
+            
+            # Loop through dates and create availability slots
             for date_str in dates:
                 date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+                
+                # Skip past dates
+                if date_obj < today_date:
+                    skipped_count += 1
+                    continue
 
-                existing = CaretakerAvailability.objects.filter(
-                    caretaker=request.user, date=date_obj, start_time=start_time_obj
-                ).first()
+                for slot_start, slot_end in time_slots:
+                    start_time_obj = datetime.strptime(slot_start, "%H:%M").time()
+                    end_time_obj = datetime.strptime(slot_end, "%H:%M").time()
+                    
+                    # Validate end time > start time
+                    if end_time_obj <= start_time_obj:
+                        messages.warning(request, f"End time must be after start time for slot {slot_start}-{slot_end}")
+                        continue
 
-                if existing:
-                    existing.end_time = end_time_obj
-                    existing.status = "available"
-                    existing.is_recurring = is_recurring
-                    existing.recurring_until = (
-                        recurring_until_date if is_recurring else None
-                    )
-                    existing.save()
-                else:
-                    CaretakerAvailability.objects.create(
-                        caretaker=request.user,
+                    # Check if slot already exists - using request.user (User instance)
+                    existing = CaretakerAvailability.objects.filter(
+                        caretaker=request.user,  # User instance
                         date=date_obj,
-                        start_time=start_time_obj,
-                        end_time=end_time_obj,
-                        status="available",
-                        is_recurring=is_recurring,
-                        recurring_until=recurring_until_date if is_recurring else None,
-                    )
-                created_count += 1
+                        start_time=start_time_obj
+                    ).first()
 
-            messages.success(
-                request, f"Successfully added {created_count} availability slots!"
-            )
-            return redirect("caretaker_availability_list")
+                    if existing:
+                        # Update existing slot
+                        existing.end_time = end_time_obj
+                        existing.status = "available"
+                        existing.is_recurring = is_recurring
+                        existing.recurring_until = recurring_until if is_recurring else None
+                        existing.booked_request = None
+                        existing.save()
+                        updated_count += 1
+                    else:
+                        # Create new slot - using request.user (User instance)
+                        CaretakerAvailability.objects.create(
+                            caretaker=request.user,  # User instance
+                            date=date_obj,
+                            start_time=start_time_obj,
+                            end_time=end_time_obj,
+                            status="available",
+                            is_recurring=is_recurring,
+                            recurring_until=recurring_until if is_recurring else None,
+                        )
+                        created_count += 1
+
+            # Show appropriate success message
+            if created_count > 0 and updated_count > 0:
+                messages.success(
+                    request, 
+                    f"Added {created_count} new slots and updated {updated_count} existing slots!"
+                )
+            elif created_count > 0:
+                messages.success(request, f"Successfully added {created_count} availability slots!")
+            elif updated_count > 0:
+                messages.success(request, f"Successfully updated {updated_count} availability slots!")
+            elif skipped_count > 0:
+                messages.warning(request, f"Skipped {skipped_count} past dates. Cannot set availability for past dates.")
+            else:
+                messages.info(request, "No changes were made.")
+            
+            return redirect("requests:availability_list")
 
         except Exception as e:
             messages.error(request, f"Error setting availability: {str(e)}")
+            return redirect("requests:set_availability")
 
+    # GET request - prepare context
+    from datetime import date, timedelta
+    from apps.Users.models import CaretakerAvailability
+    
+    today = date.today()
+    start_date = today + timedelta(days=1)
+    next_30_days = [(start_date + timedelta(days=i)) for i in range(30)]
+    
+    # Get existing availability for the next 30 days
+    existing_availability = CaretakerAvailability.objects.filter(
+        caretaker=request.user,  # User instance
+        date__gte=start_date,
+        date__lte=start_date + timedelta(days=30)
+    ).order_by('date', 'start_time')
+    
     context = {
-        "next_7_days": [(datetime.now().date() + timedelta(days=i)) for i in range(7)],
+        "next_30_days": next_30_days,
+        "today": today.strftime("%Y-%m-%d"),
+        "tomorrow": start_date.strftime("%Y-%m-%d"),
+        "existing_availability": existing_availability,
     }
     return render(request, "requests/set_availability.html", context)
 
 
 @login_required
 def caretaker_availability_list(request):
-    """View all availability slots for caretaker"""
+    """List all availability slots for caretaker"""
     if request.user.role != "caretaker":
-        messages.error(request, "Access denied")
-        return redirect("index")
-
-    availabilities = CaretakerAvailability.objects.filter(
-        caretaker=request.user
-    ).order_by("-date", "start_time")
-
-    status_filter = request.GET.get("status")
-    if status_filter and status_filter != "all":
-        availabilities = availabilities.filter(status=status_filter)
-
-    paginator = Paginator(availabilities, 20)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
+        messages.error(request, "Access denied.")
+        return redirect("users:index")
+    
+    from datetime import date, timedelta
+    from apps.Users.models import CaretakerAvailability
+    
+    today = date.today()
+    
+    # Get upcoming availability slots
+    upcoming_slots = CaretakerAvailability.objects.filter(
+        caretaker=request.user,
+        date__gte=today
+    ).order_by('date', 'start_time')
+    
+    # Separate available and booked slots
+    available_slots = upcoming_slots.filter(status='available')
+    booked_slots = upcoming_slots.filter(status='booked')
+    
     context = {
-        "availabilities": page_obj,
-        "status_filter": status_filter,
+        'available_slots': available_slots,
+        'booked_slots': booked_slots,
+        'today': today,
+        'total_slots': upcoming_slots.count(),
+        'available_count': available_slots.count(),
+        'booked_count': booked_slots.count(),
     }
-    return render(request, "requests/availability_list.html", context)
+    return render(request, 'requests/availability_list.html', context)
 
 
 @login_required
 @require_POST
 def delete_availability(request, availability_id):
     """Delete an availability slot"""
-    availability = get_object_or_404(
-        CaretakerAvailability, id=availability_id, caretaker=request.user
-    )
+    try:
+        availability = get_object_or_404(CaretakerAvailability, id=availability_id, caretaker=request.user)
+        
+        # Check if the slot is already booked
+        if availability.status == 'booked':
+            messages.error(request, "Cannot delete a booked slot. Please contact the family to cancel the booking first.")
+            return redirect('requests:availability_list')
+        
+        # Check if there are any bookings for this slot
+        existing_booking = CareBooking.objects.filter(
+            caretaker=request.user,
+            booking_date=availability.date,
+            start_time=availability.start_time,
+            status__in=['pending', 'confirmed', 'in_progress']
+        ).exists()
+        
+        if existing_booking:
+            messages.error(request, "Cannot delete a slot that has active bookings.")
+            return redirect('requests:availability_list')
+        
+        availability.delete()
+        messages.success(request, "Availability slot deleted successfully!")
+        
+    except Exception as e:
+        messages.error(request, f"Error deleting availability: {str(e)}")
+    
+    return redirect('requests:availability_list')
 
-    if availability.status == "booked":
-        messages.error(request, "Cannot delete a booked slot")
-        return redirect("caretaker_availability_list")
 
-    availability.delete()
-    messages.success(request, "Availability slot deleted successfully!")
-    return redirect("caretaker_availability_list")
+
+def clear_all_availability(request):
+    """Clear all availability slots for the current caretaker"""
+    if request.method == 'POST':
+        from apps.Requests.models import CaretakerAvailability
+        
+        # Get all available slots (not booked) for this caretaker
+        slots = CaretakerAvailability.objects.filter(
+            caretaker=request.user,
+            status='available'  # Only delete available slots, not booked ones
+        )
+        
+        count = slots.count()
+        
+        if count > 0:
+            slots.delete()
+            messages.success(request, f"Successfully cleared {count} availability slot(s).")
+        else:
+            messages.warning(request, "No available slots found to clear.")
+            
+    return redirect('requests:availability_list')
+
+
+
+
+

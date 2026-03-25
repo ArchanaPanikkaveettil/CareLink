@@ -470,7 +470,7 @@
             <!-- Find Caretakers Section -->
             <div class="nav-section-title">Find Care</div>
 
-            <a href="{% url 'requests:search_caretakers' %}"
+            <a href="{% url 'users:search_caretakers' %}"
                 class="nav-item {% if request.resolver_match.url_name == 'search_caretakers' %}active{% endif %}">
                 <i class="fas fa-search"></i>
                 <span>Find Caretakers</span>
@@ -488,7 +488,7 @@
             <!-- Profile Section -->
             <div class="nav-section-title">Profile</div>
 
-            <a href="{% url 'update_family_profile' %}"
+            <a href="{% url 'users:update_family_profile' %}"
                 class="nav-item {% if request.resolver_match.url_name == 'update_family_profile' %}active{% endif %}">
                 <i class="fas fa-user-circle"></i>
                 <span>My Profile</span>
@@ -496,7 +496,7 @@
 
             <!-- Logout -->
             <div class="logout-item">
-                <a href="{% url 'logout' %}" class="nav-item">
+                <a href="{% url 'users:logout' %}" class="nav-item">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </a>

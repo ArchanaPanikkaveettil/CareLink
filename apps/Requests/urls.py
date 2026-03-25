@@ -66,13 +66,20 @@ urlpatterns = [
     # Caretaker availability management
     path(
         "set-availability/", views.caretaker_set_availability, name="set_availability"
-    ),
+    ),  # Note the name
     path(
-        "my-availability/", views.caretaker_availability_list, name="availability_list"
+        "availability-list/",
+        views.caretaker_availability_list,
+        name="availability_list",
     ),
     path(
         "availability/<int:availability_id>/delete/",
         views.delete_availability,
         name="delete_availability",
+    ),
+    path(
+        "availability/clear-all/",
+        views.clear_all_availability,
+        name="clear_all_availability",
     ),
 ]
