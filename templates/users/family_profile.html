@@ -326,7 +326,7 @@
         .info-grid {
             grid-template-columns: 1fr;
         }
-        
+
         .elders-grid {
             grid-template-columns: 1fr;
         }
@@ -377,7 +377,7 @@
             <a href="{% url 'dashboard:family_dashboard' %}" class="btn btn-outline">
                 <i class="fas fa-tachometer-alt"></i> Dashboard
             </a>
-            <a href="{% url 'update_family_profile' %}" class="btn btn-primary">
+            <a href="{% url 'users:update_family_profile' %}" class="btn btn-primary">
                 <i class="fas fa-edit"></i> Edit Profile
             </a>
         </div>
@@ -435,81 +435,83 @@
         <div class="elders-section">
             <h3 class="section-title">
                 <i class="fas fa-users"></i> Elders in Your Care
-                <a href="{% url 'elder_add' %}" class="btn btn-primary btn-sm" style="margin-left: auto; font-size: 0.9rem; padding: 5px 15px;">
+                <a href="{% url 'users:elder_add' %}" class="btn btn-primary btn-sm"
+                    style="margin-left: auto; font-size: 0.9rem; padding: 5px 15px;">
                     <i class="fas fa-plus-circle"></i> Add Elder
                 </a>
             </h3>
 
             {% with elders=user.elder_profiles.all %}
-                {% if elders %}
-                    <div class="elders-grid">
-                        {% for elder in elders %}
-                        <div class="elder-card {% if elder.is_primary %}primary{% endif %}">
-                            {% if elder.is_primary %}
-                            <div class="primary-badge">
-                                <i class="fas fa-star"></i> Primary
-                            </div>
+            {% if elders %}
+            <div class="elders-grid">
+                {% for elder in elders %}
+                <div class="elder-card {% if elder.is_primary %}primary{% endif %}">
+                    {% if elder.is_primary %}
+                    <div class="primary-badge">
+                        <i class="fas fa-star"></i> Primary
+                    </div>
+                    {% endif %}
+
+                    <div class="elder-header">
+                        <div class="elder-avatar">
+                            {% if elder.profile_picture %}
+                            <img src="{{ elder.profile_picture.url }}" alt="{{ elder.name }}">
+                            {% else %}
+                            <i class="fas fa-user-circle"></i>
                             {% endif %}
-                            
-                            <div class="elder-header">
-                                <div class="elder-avatar">
-                                    {% if elder.profile_picture %}
-                                    <img src="{{ elder.profile_picture.url }}" alt="{{ elder.name }}">
-                                    {% else %}
-                                    <i class="fas fa-user-circle"></i>
-                                    {% endif %}
-                                </div>
-                                <div class="elder-info">
-                                    <h4>{{ elder.name }}</h4>
-                                    <p><i class="fas fa-heart"></i> {{ elder.get_relationship_display }}</p>
-                                </div>
-                            </div>
-                            
-                            <div class="elder-details">
-                                <div class="elder-detail-item">
-                                    <span class="elder-detail-label">Age/Gender:</span>
-                                    <span class="elder-detail-value">{{ elder.age }} yrs, {{ elder.get_gender_display }}</span>
-                                </div>
-                                <div class="elder-detail-item">
-                                    <span class="elder-detail-label">Mobility:</span>
-                                    <span class="elder-detail-value">{{ elder.get_mobility_status_display }}</span>
-                                </div>
-                                {% if elder.blood_group %}
-                                <div class="elder-detail-item">
-                                    <span class="elder-detail-label">Blood Group:</span>
-                                    <span class="elder-detail-value">{{ elder.blood_group }}</span>
-                                </div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="elder-actions">
-                                <a href="{% url 'elder_detail' elder.id %}" class="btn-outline-sm">
-                                    <i class="fas fa-eye"></i> View
-                                </a>
-                                <a href="{% url 'elder_edit' elder.id %}" class="btn-outline-sm">
-                                    <i class="fas fa-edit"></i> Edit
-                                </a>
-                                {% if not elder.is_primary %}
-                                <a href="{% url 'elder_set_primary' elder.id %}" class="btn-outline-sm" 
-                                   onclick="return confirm('Set {{ elder.name }} as primary elder?')">
-                                    <i class="fas fa-star"></i> Set Primary
-                                </a>
-                                {% endif %}
-                            </div>
                         </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="info-item" style="background: #f8fafc; margin-top: 20px;">
-                        <div class="info-value" style="color: #64748b; text-align: center; padding: 20px;">
-                            <i class="fas fa-users fa-2x mb-2" style="color: #cbd5e1;"></i>
-                            <p>No elders added yet.</p>
-                            <a href="{% url 'elder_add' %}" style="color: #0f3460; display: inline-block; margin-top: 10px; padding: 8px 20px; background: #0f3460; color: white; border-radius: 8px; text-decoration: none;">
-                                <i class="fas fa-plus-circle"></i> Add Your First Elder
-                            </a>
+                        <div class="elder-info">
+                            <h4>{{ elder.name }}</h4>
+                            <p><i class="fas fa-heart"></i> {{ elder.get_relationship_display }}</p>
                         </div>
                     </div>
-                {% endif %}
+
+                    <div class="elder-details">
+                        <div class="elder-detail-item">
+                            <span class="elder-detail-label">Age/Gender:</span>
+                            <span class="elder-detail-value">{{ elder.age }} yrs, {{ elder.get_gender_display }}</span>
+                        </div>
+                        <div class="elder-detail-item">
+                            <span class="elder-detail-label">Mobility:</span>
+                            <span class="elder-detail-value">{{ elder.get_mobility_status_display }}</span>
+                        </div>
+                        {% if elder.blood_group %}
+                        <div class="elder-detail-item">
+                            <span class="elder-detail-label">Blood Group:</span>
+                            <span class="elder-detail-value">{{ elder.blood_group }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="elder-actions">
+                        <a href="{% url 'users:elder_detail' elder.id %}" class="btn-outline-sm">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="{% url 'users:elder_edit' elder.id %}" class="btn-outline-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        {% if not elder.is_primary %}
+                        <a href="{% url 'users:elder_set_primary' elder.id %}" class="btn-outline-sm"
+                            onclick="return confirm('Set {{ elder.name }} as primary elder?')">
+                            <i class="fas fa-star"></i> Set Primary
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="info-item" style="background: #f8fafc; margin-top: 20px;">
+                <div class="info-value" style="color: #64748b; text-align: center; padding: 20px;">
+                    <i class="fas fa-users fa-2x mb-2" style="color: #cbd5e1;"></i>
+                    <p>No elders added yet.</p>
+                    <a href="{% url 'users:elder_add' %}"
+                        style="color: #0f3460; display: inline-block; margin-top: 10px; padding: 8px 20px; background: #0f3460; color: white; border-radius: 8px; text-decoration: none;">
+                        <i class="fas fa-plus-circle"></i> Add Your First Elder
+                    </a>
+                </div>
+            </div>
+            {% endif %}
             {% endwith %}
         </div>
         <!-- ========== END ELDERS SECTION ========== -->

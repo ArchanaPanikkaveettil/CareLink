@@ -20,11 +20,6 @@ urlpatterns = [
     path(
         "caretaker/<int:caretaker_id>/", views.caretaker_detail, name="caretaker_detail"
     ),
-    path(
-        "caretaker/<int:caretaker_id>/availability/",
-        views.view_caretaker_availability,
-        name="view_caretaker_availability",
-    ),
     # ============================================================================
     # CARETAKER URLs - Browse and Apply
     # ============================================================================

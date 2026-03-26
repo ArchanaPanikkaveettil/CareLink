@@ -780,7 +780,7 @@
                         <i class="fas fa-eye"></i> View Request
                     </a>
                     {% if application.status == 'pending' %}
-                    <a href="{% url 'withdraw_application' application.id %}" class="btn btn-danger-outline btn-sm">
+                    <a href="{% url 'applications:withdraw_application' application.id %}" class="btn btn-danger-outline btn-sm">
                         <i class="fas fa-times"></i> Withdraw
                     </a>
                     {% endif %}

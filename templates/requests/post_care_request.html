@@ -9,6 +9,7 @@
 
 {% block extra_css %}
 <style>
+    /* Keep your existing CSS */
     .form-card {
         background: white;
         border-radius: 20px;
@@ -205,6 +206,52 @@
         display: block;
     }
 
+    .elder-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 10px;
+        transition: all 0.3s;
+    }
+
+    .elder-card:hover {
+        border-color: #0f3460;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .elder-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .elder-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #0f3460;
+    }
+
+    .elder-details {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+
+    .no-elders {
+        text-align: center;
+        padding: 30px;
+        background: #f8fafc;
+        border-radius: 12px;
+        margin: 15px 0;
+    }
+
     @media (max-width: 768px) {
         .form-row {
             flex-direction: column;
@@ -240,13 +287,59 @@
     <form method="POST">
         {% csrf_token %}
 
+        <!-- Elder Selection Section -->
+        <h4 class="section-title"><i class="fas fa-user-astronaut me-2"></i>Select Elder</h4>
+        
+        <div class="form-group full-width">
+            <label>Select Elder Profile</label>
+            <select name="elder_id" id="elder_select" class="{% if errors.elder_id %}error-field{% endif %}">
+                <option value="">-- Select an elder --</option>
+                {% for elder in elders %}
+                <option value="{{ elder.id }}" 
+                        data-name="{{ elder.name }}"
+                        data-age="{{ elder.age }}"
+                        data-gender="{{ elder.gender }}"
+                        data-medical_conditions="{{ elder.medical_conditions }}"
+                        data-mobility="{{ elder.mobility_status }}"
+                        data-cognitive="{{ elder.cognitive_status }}"
+                        {% if request.POST.elder_id|add:"0" == elder.id %}selected{% endif %}>
+                    {{ elder.name }} ({{ elder.age }} years, {{ elder.get_gender_display }}) 
+                    {% if elder.is_primary %}- Primary{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+            {% if not elders %}
+            <div class="help-text">
+                <i class="fas fa-exclamation-triangle"></i> 
+                No elder profiles found. 
+                <a href="{% url 'users:elder_add' %}">Add an elder profile</a> first.
+            </div>
+            {% else %}
+            <div class="help-text">
+                <i class="fas fa-info-circle"></i> 
+                Select an elder to auto-fill patient information below
+            </div>
+            {% endif %}
+            {% if errors.elder_id %}
+            <span class="error-hint">{{ errors.elder_id }}</span>
+            {% endif %}
+        </div>
+
+        
+
         <!-- Patient Information Section -->
         <h4 class="section-title"><i class="fas fa-user me-2"></i>Patient Information</h4>
+        
+        <div class="checkbox-group">
+            <input type="checkbox" name="use_existing_elder" id="use_existing_elder" 
+                   {% if request.POST.use_existing_elder or request.POST.elder_id %}checked{% endif %}>
+            <label for="use_existing_elder">Use existing elder profile (optional - leave unchecked to enter new patient details)</label>
+        </div>
 
         <div class="form-row">
             <div class="form-group">
                 <label class="required-field">Patient Name</label>
-                <input type="text" name="patient_name" placeholder="Full name of patient" required
+                <input type="text" name="patient_name" id="patient_name" placeholder="Full name of patient" 
                     value="{{ request.POST.patient_name|default:'' }}"
                     class="{% if errors.patient_name %}error-field{% endif %}">
                 {% if errors.patient_name %}
@@ -255,7 +348,7 @@
             </div>
             <div class="form-group">
                 <label class="required-field">Patient Age</label>
-                <input type="number" name="patient_age" min="0" max="120" placeholder="Age in years" required
+                <input type="number" name="patient_age" id="patient_age" min="0" max="120" placeholder="Age in years" 
                     value="{{ request.POST.patient_age|default:'' }}"
                     class="{% if errors.patient_age %}error-field{% endif %}">
                 {% if errors.patient_age %}
@@ -267,7 +360,7 @@
         <div class="form-row">
             <div class="form-group">
                 <label class="required-field">Patient Gender</label>
-                <select name="patient_gender" required class="{% if errors.patient_gender %}error-field{% endif %}">
+                <select name="patient_gender" id="patient_gender" required class="{% if errors.patient_gender %}error-field{% endif %}">
                     <option value="">Select Gender</option>
                     {% for value, label in gender_choices %}
                     <option value="{{ value }}" {% if request.POST.patient_gender == value %}selected{% endif %}>
@@ -281,7 +374,7 @@
             </div>
             <div class="form-group">
                 <label class="required-field">Medical Condition</label>
-                <input type="text" name="medical_condition" placeholder="Primary diagnosis/condition" required
+                <input type="text" name="medical_condition" id="medical_condition" placeholder="Primary diagnosis/condition" 
                     value="{{ request.POST.medical_condition|default:'' }}"
                     class="{% if errors.medical_condition %}error-field{% endif %}">
                 {% if errors.medical_condition %}
@@ -293,7 +386,7 @@
         <div class="form-row">
             <div class="form-group">
                 <label>Mobility Status</label>
-                <select name="mobility_status">
+                <select name="mobility_status" id="mobility_status">
                     <option value="">Select Mobility Status</option>
                     {% for value, label in mobility_choices %}
                     <option value="{{ value }}" {% if request.POST.mobility_status == value %}selected{% endif %}>
@@ -304,7 +397,7 @@
             </div>
             <div class="form-group">
                 <label>Cognitive Status</label>
-                <select name="cognitive_status">
+                <select name="cognitive_status" id="cognitive_status">
                     <option value="">Select Cognitive Status</option>
                     {% for value, label in cognitive_choices %}
                     <option value="{{ value }}" {% if request.POST.cognitive_status == value %}selected{% endif %}>
@@ -315,6 +408,7 @@
             </div>
         </div>
 
+        <!-- Rest of your form remains the same -->
         <!-- Care Requirements Section -->
         <h4 class="section-title"><i class="fas fa-heartbeat me-2"></i>Care Requirements</h4>
 
@@ -531,31 +625,164 @@
 </div>
 
 <script>
+    // Elder selection and auto-fill functionality
+    const elderSelect = document.getElementById('elder_select');
+    const useExistingCheckbox = document.getElementById('use_existing_elder');
+    const selectedElderInfo = document.getElementById('selected_elder_info');
+    const elderNameDisplay = document.getElementById('elder_name_display');
+    const elderDetailsDisplay = document.getElementById('elder_details_display');
+    
+    // Patient info fields
+    const patientName = document.getElementById('patient_name');
+    const patientAge = document.getElementById('patient_age');
+    const patientGender = document.getElementById('patient_gender');
+    const medicalCondition = document.getElementById('medical_condition');
+    const mobilityStatus = document.getElementById('mobility_status');
+    const cognitiveStatus = document.getElementById('cognitive_status');
+    
+    let selectedElderData = null;
+    
+    function updateSelectedElderInfo() {
+        const selectedOption = elderSelect.options[elderSelect.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            selectedElderData = {
+                id: selectedOption.value,
+                name: selectedOption.dataset.name,
+                age: selectedOption.dataset.age,
+                gender: selectedOption.dataset.gender,
+                medical_conditions: selectedOption.dataset.medical_conditions,
+                mobility: selectedOption.dataset.mobility,
+                cognitive: selectedOption.dataset.cognitive
+            };
+            
+            elderNameDisplay.textContent = selectedElderData.name;
+            elderDetailsDisplay.innerHTML = `
+                Age: ${selectedElderData.age} years | 
+                Gender: ${getGenderDisplay(selectedElderData.gender)} | 
+                Medical: ${selectedElderData.medical_conditions || 'None specified'}
+            `;
+            selectedElderInfo.style.display = 'block';
+            
+            // Auto-fill if checkbox is checked
+            if (useExistingCheckbox.checked) {
+                fillPatientInfo();
+            }
+        } else {
+            selectedElderInfo.style.display = 'none';
+            selectedElderData = null;
+        }
+    }
+    
+    function getGenderDisplay(gender) {
+        const genderMap = {
+            'male': 'Male',
+            'female': 'Female',
+            'other': 'Other',
+            'M': 'Male',
+            'F': 'Female'
+        };
+        return genderMap[gender] || gender || 'Not specified';
+    }
+    
+    function fillPatientInfo() {
+        if (selectedElderData) {
+            patientName.value = selectedElderData.name || '';
+            patientAge.value = selectedElderData.age || '';
+            if (selectedElderData.gender) {
+                patientGender.value = selectedElderData.gender;
+            }
+            medicalCondition.value = selectedElderData.medical_conditions || '';
+            
+            if (selectedElderData.mobility) {
+                mobilityStatus.value = selectedElderData.mobility;
+            }
+            if (selectedElderData.cognitive) {
+                cognitiveStatus.value = selectedElderData.cognitive;
+            }
+            
+            // Show success message
+            showTemporaryMessage('Elder information auto-filled successfully!', 'success');
+        }
+    }
+    
+    function showTemporaryMessage(message, type) {
+        const messagesDiv = document.querySelector('.info-note');
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${message}`;
+        messagesDiv.parentNode.insertBefore(alertDiv, messagesDiv.nextSibling);
+        
+        setTimeout(() => {
+            alertDiv.style.transition = 'opacity 0.5s';
+            alertDiv.style.opacity = '0';
+            setTimeout(() => alertDiv.remove(), 500);
+        }, 3000);
+    }
+    
+    // Event listeners
+    elderSelect.addEventListener('change', updateSelectedElderInfo);
+    useExistingCheckbox.addEventListener('change', function() {
+        if (this.checked && selectedElderData) {
+            fillPatientInfo();
+        }
+    });
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSelectedElderInfo();
+        
+        // Make patient name optional if elder is selected
+        const patientNameField = document.getElementById('patient_name');
+        const requiredLabel = document.querySelector('label[for="patient_name"]');
+        
+        function updateRequiredFields() {
+            if (elderSelect.value && useExistingCheckbox.checked) {
+                patientNameField.removeAttribute('required');
+                patientAgeField.removeAttribute('required');
+                patientGenderField.removeAttribute('required');
+                if (requiredLabel) requiredLabel.classList.remove('required-field');
+            } else {
+                patientNameField.setAttribute('required', 'required');
+                patientAgeField.setAttribute('required', 'required');
+                patientGenderField.setAttribute('required', 'required');
+                if (requiredLabel) requiredLabel.classList.add('required-field');
+            }
+        }
+        
+        updateRequiredFields();
+        elderSelect.addEventListener('change', updateRequiredFields);
+        useExistingCheckbox.addEventListener('change', updateRequiredFields);
+    });
+    
     // Show/hide accommodation details
     document.getElementById('accommodation_provided').addEventListener('change', function () {
         document.getElementById('accommodation_details_group').style.display = this.checked ? 'block' : 'none';
     });
-
+    
     // Show/hide interview type
     document.getElementById('interview_required').addEventListener('change', function () {
         document.getElementById('interview_type_group').style.display = this.checked ? 'block' : 'none';
     });
-
-    // Initialize visibility on page load based on checkbox state
+    
+    // Initialize visibility on page load
     document.addEventListener('DOMContentLoaded', function () {
-        // Accommodation
         const accommodationCheckbox = document.getElementById('accommodation_provided');
         if (accommodationCheckbox) {
-            document.getElementById('accommodation_details_group').style.display = accommodationCheckbox.checked ? 'block' : 'none';
+            const accommodationGroup = document.getElementById('accommodation_details_group');
+            if (accommodationGroup) {
+                accommodationGroup.style.display = accommodationCheckbox.checked ? 'block' : 'none';
+            }
         }
-
-        // Interview
+        
         const interviewCheckbox = document.getElementById('interview_required');
         if (interviewCheckbox) {
-            document.getElementById('interview_type_group').style.display = interviewCheckbox.checked ? 'block' : 'none';
+            const interviewGroup = document.getElementById('interview_type_group');
+            if (interviewGroup) {
+                interviewGroup.style.display = interviewCheckbox.checked ? 'block' : 'none';
+            }
         }
     });
-
+    
     // Auto-hide alerts after 5 seconds
     setTimeout(function () {
         document.querySelectorAll('.alert').forEach(function (alert) {

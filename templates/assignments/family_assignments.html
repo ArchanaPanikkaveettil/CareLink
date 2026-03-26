@@ -1,0 +1,128 @@
+{% extends "users/family_base.html" %}
+
+{% block title %}My Caregivers - CareLink{% endblock %}
+
+{% block page_icon %}<i class="fas fa-hand-holding-heart"></i>{% endblock %}
+{% block page_title %}My Caregivers{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ assignments|length }}</div>
+        <div class="stat-label">Total Caregivers</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ assignments|length }}</div>
+        <div class="stat-label">Active Caregivers</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_tasks|default:0 }}</div>
+        <div class="stat-label">Pending Tasks</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ unread_reports|default:0 }}</div>
+        <div class="stat-label">Unread Reports</div>
+    </div>
+</div>
+
+<div class="cards-grid">
+    {% for assignment in assignments %}
+    <div class="caregiver-card">
+        <div class="card-header">
+            <h3>{{ assignment.caretaker.get_full_name }}</h3>
+            <span class="status-badge status-{{ assignment.status }}">
+                {{ assignment.get_status_display }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="info-row">
+                <span class="info-label">Shift Type:</span>
+                <span class="info-value">{{ assignment.get_shift_type_display }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Started:</span>
+                <span class="info-value">{{ assignment.start_date|date:"d M Y" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Rate:</span>
+                <span class="info-value">
+                    {% if assignment.monthly_salary %}
+                    ₹{{ assignment.monthly_salary }}/month
+                    {% else %}
+                    ₹{{ assignment.hourly_rate }}/hour
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Today's Status:</span>
+                <span class="info-value">
+                    {% if assignment.today_attendance %}
+                        {% if assignment.today_attendance.status == 'present' %}
+                            ✅ Checked In
+                        {% elif assignment.today_attendance.status == 'absent' %}
+                            ❌ Absent
+                        {% elif assignment.today_attendance.status == 'late' %}
+                            ⏰ Late
+                        {% else %}
+                            {{ assignment.today_attendance.get_status_display }}
+                        {% endif %}
+                    {% else %}
+                        ⏳ Not Marked
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Pending Tasks:</span>
+                <span class="info-value">
+                    {% if assignment.pending_tasks_count > 0 %}
+                    <span style="color: #ef4444;">{{ assignment.pending_tasks_count }}</span>
+                    {% else %}
+                    ✅ All Complete
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Unread Notes:</span>
+                <span class="info-value">
+                    {% if assignment.unread_notes_count > 0 %}
+                    <span style="color: #f59e0b;">{{ assignment.unread_notes_count }}</span>
+                    {% else %}
+                    ✓ No new notes
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Unread Reports:</span>
+                <span class="info-value">
+                    {% if assignment.unread_reports_count > 0 %}
+                    <span style="color: #ef4444;">{{ assignment.unread_reports_count }}</span>
+                    {% else %}
+                    ✓ All read
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="card-actions">
+            <a href="{% url 'assignments:family_assignment_detail' assignment.id %}" class="btn btn-primary">
+                <i class="fas fa-tasks"></i> Manage
+            </a>
+            <a href="{% url 'assignments:view_reports' assignment.id %}" class="btn btn-secondary">
+                <i class="fas fa-chart-line"></i> Reports
+            </a>
+            <a href="{% url 'assignments:manage_salary' assignment.id %}" class="btn btn-secondary">
+                <i class="fas fa-rupee-sign"></i> Salary
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <i class="fas fa-users-slash"></i>
+        <h3>No Caregivers Assigned Yet</h3>
+        <p>You haven't hired any caregivers yet. Post a care request to find qualified caregivers.</p>
+        <a href="{% url 'requests:post_request' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Post a Care Request
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

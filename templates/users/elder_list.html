@@ -266,7 +266,7 @@
             <i class="fas fa-users fa-2x" style="color: #0f3460;"></i>
             <h1>Elders in My Care</h1>
         </div>
-        <a href="{% url 'elder_add' %}" class="btn-add">
+        <a href="{% url 'users:elder_add' %}" class="btn-add">
             <i class="fas fa-plus-circle"></i> Add New Elder
         </a>
     </div>
@@ -325,14 +325,14 @@
             {% endif %}
             
             <div class="card-actions">
-                <a href="{% url 'elder_detail' elder.id %}" class="btn-action btn-view">
+                <a href="{% url 'users:elder_detail' elder.id %}" class="btn-action btn-view">
                     <i class="fas fa-eye"></i> View
                 </a>
-                <a href="{% url 'elder_edit' elder.id %}" class="btn-action btn-edit">
+                <a href="{% url 'users:elder_edit' elder.id %}" class="btn-action btn-edit">
                     <i class="fas fa-edit"></i> Edit
                 </a>
                 {% if not elder.is_primary %}
-                <a href="{% url 'elder_set_primary' elder.id %}" class="btn-action btn-primary-set" 
+                <a href="{% url 'users:elder_set_primary' elder.id %}" class="btn-action btn-primary-set" 
                    onclick="return confirm('Set {{ elder.name }} as primary elder?')">
                     <i class="fas fa-star"></i> Set Primary
                 </a>
@@ -346,7 +346,7 @@
         <i class="fas fa-users"></i>
         <h3>No Elders Added Yet</h3>
         <p>Add your first elder to start managing their care needs.</p>
-        <a href="{% url 'elder_add' %}" class="btn-add" style="display: inline-block;">
+        <a href="{% url 'users:elder_add' %}" class="btn-add" style="display: inline-block;">
             <i class="fas fa-plus-circle"></i> Add Your First Elder
         </a>
     </div>

@@ -248,34 +248,35 @@
     }
 
     @media (max-width: 768px) {
+
         table.calendar th,
         table.calendar td {
             padding: 6px;
             font-size: 0.7rem;
             height: auto;
         }
-        
+
         .slot {
             font-size: 0.6rem;
             padding: 4px 6px;
         }
-        
+
         .calendar-day {
             font-size: 0.8rem;
         }
-        
+
         .caretaker-info {
             padding: 15px;
         }
-        
+
         .caretaker-details h2 {
             font-size: 1.2rem;
         }
-        
+
         .stats-summary {
             gap: 10px;
         }
-        
+
         .stat-badge {
             font-size: 0.7rem;
             padding: 4px 10px;
@@ -288,9 +289,9 @@
 <div class="caretaker-info">
     <div class="caretaker-avatar">
         {% if caretaker.profile_picture %}
-            <img src="{{ caretaker.profile_picture.url }}" alt="{{ caretaker.get_full_name }}">
+        <img src="{{ caretaker.profile_picture.url }}" alt="{{ caretaker.get_full_name }}">
         {% else %}
-            <i class="fas fa-user-nurse"></i>
+        <i class="fas fa-user-nurse"></i>
         {% endif %}
     </div>
     <div class="caretaker-details">
@@ -325,12 +326,12 @@
             <i class="fas fa-calendar-week"></i> {{ availability_by_date|length }} days with availability
         </div>
         <div class="stat-badge">
-            <i class="fas fa-clock"></i> 
+            <i class="fas fa-clock"></i>
             {% with total_slots=0 %}
-                {% for date, slots in availability_by_date.items %}
-                    {% with total_slots=total_slots|add:slots|length %}{% endwith %}
-                {% endfor %}
-                {{ total_slots }} total slots
+            {% for date, slots in availability_by_date.items %}
+            {% with total_slots=total_slots|add:slots|length %}{% endwith %}
+            {% endfor %}
+            {{ total_slots }} total slots
             {% endwith %}
         </div>
     </div>
@@ -347,45 +348,55 @@
                 <th>Sat</th>
             </tr>
         </thead>
+
+
         <tbody>
             {% for week in calendar %}
             <tr>
                 {% for day in week %}
                 <td>
                     {% if day != 0 %}
-                        <div class="calendar-day">{{ day }}</div>
-                        <div class="availability-slots">
-                            {% with date_str=year|stringformat:"04d"|add:"-"|add:month|stringformat:"02d"|add:"-"|add:day|stringformat:"02d" %}
-                                {% if date_str in availability_by_date %}
-                                    {% for slot in availability_by_date|get_item:date_str %}
-                                        {% if slot.status == 'available' %}
-                                            <a href="{% url 'requests:book_caretaker' caretaker.id slot.id %}" 
-                                               class="slot"
-                                               data-date="{{ slot.date|date:'Y-m-d' }}"
-                                               data-start="{{ slot.start_time|time:'H:i' }}"
-                                               data-end="{{ slot.end_time|time:'H:i' }}">
-                                                <i class="fas fa-clock"></i> {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}
-                                            </a>
-                                        {% else %}
-                                            <div class="slot booked">
-                                                <i class="fas fa-lock"></i> {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}
-                                                <small>(Booked)</small>
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="no-slots">No slots</div>
-                                {% endif %}
-                            {% endwith %}
+                    <div class="calendar-day">{{ day }}</div>
+                    <div class="availability-slots">
+                        {% with day|stringformat:"02d" as day_str %}
+                        {% with month|stringformat:"02d" as month_str %}
+                        {% with year|stringformat:"04d" as year_str %}
+                        {% with date_key=year_str|add:"-"|add:month_str|add:"-"|add:day_str %}
+                        {% if date_key in availability_by_date %}
+                        {% for slot in availability_by_date|get_item:date_key %}
+                        {% if slot.status == 'available' %}
+                        <a href="{% url 'requests:book_caretaker' caretaker.id slot.id %}" class="slot"
+                            data-date="{{ slot.date|date:'Y-m-d' }}" data-start="{{ slot.start_time|time:'H:i' }}"
+                            data-end="{{ slot.end_time|time:'H:i' }}">
+                            <i class="fas fa-clock"></i> {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i
+                            A" }}
+                        </a>
+                        {% else %}
+                        <div class="slot booked">
+                            <i class="fas fa-lock"></i> {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i
+                            A" }}
+                            <small>(Booked)</small>
                         </div>
+                        {% endif %}
+                        {% endfor %}
+                        {% else %}
+                        <div class="no-slots">No slots</div>
+                        {% endif %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                    </div>
                     {% else %}
-                        &nbsp;
+                    &nbsp;
                     {% endif %}
                 </td>
                 {% endfor %}
             </tr>
             {% endfor %}
         </tbody>
+
+
     </table>
 
     {% if availability_by_date|length == 0 %}
@@ -398,15 +409,15 @@
 </div>
 
 <div class="booking-note">
-    <i class="fas fa-info-circle"></i> 
+    <i class="fas fa-info-circle"></i>
     <strong>How to book:</strong> Click on any green time slot to book an appointment with this caretaker.
     {% if availability_by_date|length > 0 %}
-        <br><small>Tip: You can click on any available slot to start the booking process.</small>
+    <br><small>Tip: You can click on any available slot to start the booking process.</small>
     {% endif %}
 </div>
 
 <div style="text-align: center; margin-top: 20px;">
-    <a href="{% url 'users:caretaker_detail' caretaker.id %}" class="btn-back">
+    <a href="{% url 'requests:caretaker_detail' caretaker.id %}" class="btn-back">
         <i class="fas fa-arrow-left"></i> Back to Profile
     </a>
 </div>
@@ -415,17 +426,17 @@
 {% block extra_js %}
 <script>
     // Add click tracking for debugging
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const slots = document.querySelectorAll('.slot:not(.booked)');
         console.log('Found', slots.length, 'available slots');
-        
+
         slots.forEach(slot => {
-            slot.addEventListener('click', function(e) {
+            slot.addEventListener('click', function (e) {
                 console.log('Slot clicked:', this.href);
                 // You can add analytics here if needed
             });
         });
-        
+
         // Add tooltip for booked slots
         const bookedSlots = document.querySelectorAll('.slot.booked');
         bookedSlots.forEach(slot => {

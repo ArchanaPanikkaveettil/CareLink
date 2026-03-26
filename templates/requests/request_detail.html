@@ -6,7 +6,7 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* All your existing styles remain the same */
+        /* Keep all your existing CSS styles */
         * {
             margin: 0;
             padding: 0;
@@ -130,6 +130,14 @@
             padding-top: 20px;
         }
 
+        .logout-item button.nav-item {
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+
         .logout-item .nav-item {
             color: #fbc1c1;
         }
@@ -156,7 +164,7 @@
             background: #f8fafc;
         }
 
-        /* top bar */
+        /* Keep all other existing styles */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -185,11 +193,6 @@
             gap: 8px;
         }
 
-        .date-badge i {
-            color: #0f3460;
-        }
-
-        /* cards */
         .card {
             background: white;
             border-radius: 26px;
@@ -209,26 +212,10 @@
             padding-bottom: 20px;
         }
 
-        .patient-title {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
         .patient-title h2 {
             margin: 0;
             color: #0f3460;
             font-size: 1.8rem;
-        }
-
-        .request-id {
-            color: #64748b;
-            font-size: 0.9rem;
-            font-family: monospace;
-            background: #f1f5f9;
-            padding: 5px 12px;
-            border-radius: 20px;
         }
 
         .status-badge {
@@ -237,12 +224,6 @@
             font-size: 14px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-draft {
-            background: #fef3c7;
-            color: #92400e;
         }
 
         .status-open {
@@ -250,14 +231,9 @@
             color: #166534;
         }
 
-        .status-under_review {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .status-interviewing {
-            background: #cffafe;
-            color: #0891b2;
+        .status-draft {
+            background: #fef3c7;
+            color: #92400e;
         }
 
         .status-assigned {
@@ -265,17 +241,6 @@
             color: #1e40af;
         }
 
-        .status-in_progress {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .status-completed {
-            background: #e2e8f0;
-            color: #334155;
-        }
-
-        .status-cancelled,
         .status-closed {
             background: #fee2e2;
             color: #991b1b;
@@ -290,10 +255,6 @@
             border-bottom: 2px solid #e2e8f0;
         }
 
-        .section-title i {
-            margin-right: 10px;
-        }
-
         .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -305,12 +266,6 @@
             background: #f8fafc;
             padding: 15px;
             border-radius: 10px;
-            transition: transform 0.2s;
-        }
-
-        .info-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
 
         .info-item .label {
@@ -319,143 +274,11 @@
             margin-bottom: 8px;
             font-size: 0.9rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .info-item .value {
             color: #0f3460;
             font-size: 1.1rem;
-        }
-
-        .info-item i {
-            color: #0f3460;
-            width: 25px;
-            margin-right: 8px;
-        }
-
-        .medical-section {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-
-        .medical-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .medical-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .medical-item i {
-            font-size: 1.2rem;
-            color: #0f3460;
-        }
-
-        .compensation-box {
-            background: #f8fafc;
-            border-left: 4px solid #0f3460;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .compensation-amount {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #0f3460;
-        }
-
-        .compensation-details {
-            color: #64748b;
-        }
-
-        .skills-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .skill-tag {
-            background: #e2e8f0;
-            color: #0f3460;
-            padding: 5px 15px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .location-details {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-
-        .location-row {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-            color: #475569;
-        }
-
-        .location-row i {
-            width: 25px;
-            color: #0f3460;
-        }
-
-        .assigned-caretaker-card {
-            background: #e2e8f0;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .caretaker-avatar {
-            width: 60px;
-            height: 60px;
-            background: #0f3460;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.8rem;
-        }
-
-        .caretaker-info h3 {
-            margin: 0 0 5px 0;
-            color: #0f3460;
-        }
-
-        .caretaker-info p {
-            margin: 5px 0;
-            color: #475569;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-            flex-wrap: wrap;
-            border-top: 2px solid #e2e8f0;
-            padding-top: 30px;
         }
 
         .btn {
@@ -474,234 +297,25 @@
             cursor: pointer;
         }
 
-        .btn i {
-            font-size: 1rem;
-        }
-
-        .btn:hover {
-            background: #1e4a7a;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(15, 52, 96, 0.2);
-        }
-
-        .btn-edit {
-            background: #f59e0b;
-        }
-
-        .btn-edit:hover {
-            background: #d97706;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-        }
-
-        .btn-danger:hover {
-            background: #b91c1c;
-        }
-
         .btn-secondary {
             background: #64748b;
-        }
-
-        .btn-secondary:hover {
-            background: #475569;
-        }
-
-        .btn-success {
-            background: #0f3460;
-        }
-
-        .btn-success:hover {
-            background: #1e4a7a;
         }
 
         .btn-warning {
             background: #f59e0b;
         }
 
-        .btn-warning:hover {
-            background: #d97706;
+        .btn-danger {
+            background: #dc3545;
         }
 
-        .btn-large {
-            padding: 15px 30px;
-            font-size: 1.1rem;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .statistics-row {
-            display: flex;
-            gap: 30px;
-            margin: 20px 0;
-            color: #64748b;
-            flex-wrap: wrap;
-        }
-
-        .statistic {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .statistic i {
-            color: #0f3460;
-        }
-
-        .apply-section {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: 16px;
-            padding: 30px;
-            margin: 30px 0;
-            border: 1px solid #e2e8f0;
-            text-align: center;
-        }
-
-        .apply-section i {
-            font-size: 3rem;
-            color: #0f3460;
-            margin-bottom: 15px;
-        }
-
-        .apply-section h3 {
-            color: #0f3460;
-            margin-bottom: 10px;
-        }
-
-        .apply-section p {
-            color: #475569;
-            margin-bottom: 20px;
-        }
-
-        .already-applied {
-            background: #fef3c7;
-            border-radius: 16px;
-            padding: 30px;
-            margin: 30px 0;
-            text-align: center;
-        }
-
-        .already-applied i {
-            font-size: 3rem;
-            color: #f59e0b;
-            margin-bottom: 15px;
-        }
-
-        .already-applied h3 {
-            color: #92400e;
-            margin-bottom: 10px;
-        }
-
-        .already-applied p {
-            color: #78350f;
-            margin-bottom: 20px;
-        }
-
-        /* Modal Styles */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 450px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.3s;
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            padding: 20px 25px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 20px 20px 0 0;
-        }
-
-        .modal-header.warning {
-            background: #fef3c7;
-            border-bottom-color: #f59e0b;
-        }
-
-        .modal-header h3 {
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.8rem;
-            cursor: pointer;
-            color: #64748b;
-            transition: color 0.2s;
-        }
-
-        .close-btn:hover {
-            color: #0f3460;
-        }
-
-        .modal-body {
-            padding: 25px;
-            text-align: center;
-        }
-
-        .modal-footer {
-            padding: 20px 25px;
-            border-top: 1px solid #e2e8f0;
+        .action-buttons {
             display: flex;
             gap: 15px;
-            justify-content: center;
-            background: #f8fafc;
-            border-radius: 0 0 20px 20px;
-        }
-
-        .modal-footer .btn {
-            flex: 1;
-            justify-content: center;
-        }
-
-        .draft-icon {
-            font-size: 4rem;
-            color: #f59e0b;
-            margin-bottom: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            border-top: 2px solid #e2e8f0;
+            padding-top: 30px;
         }
 
         @media (max-width: 768px) {
@@ -710,29 +324,9 @@
                 height: auto;
                 position: relative;
             }
-
             .main-content {
                 margin-left: 0;
                 padding: 20px;
-            }
-
-            .request-header {
-                flex-direction: column;
-                align-items: start;
-                gap: 15px;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .modal-footer {
-                flex-direction: column;
             }
         }
     </style>
@@ -758,19 +352,19 @@
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{% url 'post_request' %}" class="nav-item">
+            <a href="{% url 'requests:post_request' %}" class="nav-item">
                 <i class="fas fa-plus-circle"></i>
                 <span>Post Care Request</span>
             </a>
-            <a href="{% url 'my_requests' %}" class="nav-item active">
+            <a href="{% url 'requests:my_requests' %}" class="nav-item active">
                 <i class="fas fa-clipboard-list"></i>
                 <span>My Requests</span>
             </a>
-            <a href="{% url 'search_caretakers' %}" class="nav-item">
+            <a href="{% url 'requests:find_caretakers' %}" class="nav-item">
                 <i class="fas fa-search"></i>
                 <span>Find Caretakers</span>
             </a>
-            <a href="{% url 'family_profile' %}" class="nav-item">
+            <a href="{% url 'users:family_profile' %}" class="nav-item">
                 <i class="fas fa-id-badge"></i>
                 <span>My Profile</span>
             </a>
@@ -779,29 +373,28 @@
                 <i class="fas fa-chart-pie"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{% url 'browse_requests' %}" class="nav-item">
+            <a href="{% url 'requests:browse_requests' %}" class="nav-item">
                 <i class="fas fa-search"></i>
                 <span>Browse Requests</span>
             </a>
-            <a href="{% url 'my_applications' %}" class="nav-item">
+            <a href="{% url 'applications:my_applications' %}" class="nav-item">
                 <i class="fas fa-file-alt"></i>
                 <span>My Applications</span>
             </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-tasks"></i>
-                <span>My Assignments</span>
-            </a>
-            <a href="{% url 'caretaker_profile' %}" class="nav-item">
+            <a href="{% url 'users:caretaker_profile' %}" class="nav-item">
                 <i class="fas fa-id-badge"></i>
                 <span>My Profile</span>
             </a>
             {% endif %}
 
             <div class="logout-item">
-                <a href="{% url 'logout' %}" class="nav-item">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
+                <form method="POST" action="{% url 'users:logout' %}" style="margin: 0; width: 100%;">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -811,8 +404,7 @@
         <!-- Top Bar -->
         <div class="top-bar">
             <div class="page-title">
-                <i class="fas fa-file-medical" style="margin-right: 10px;"></i>
-                Care Request Details
+                <i class="fas fa-file-medical"></i> Care Request Details
             </div>
             <div class="date-badge">
                 <i class="far fa-calendar-alt"></i>
@@ -822,270 +414,124 @@
 
         <!-- Request Details Card -->
         <div class="card">
-            <!-- Header with Request ID and Status -->
             <div class="request-header">
                 <div class="patient-title">
                     <h2>
                         <i class="fas fa-user-circle"></i> {{ care_request.patient_name }}
-                        <span style="font-size: 1rem; color: #64748b; font-weight: normal;">
-                            ({{ care_request.patient_age }} years, {{ care_request.get_patient_gender_display }})
+                        <span style="font-size: 1rem; color: #64748b;">
+                            ({{ care_request.patient_age }} years)
                         </span>
                     </h2>
-                    <span class="request-id"><i class="fas fa-hashtag"></i> #{{ care_request.id }}</span>
+                    <span class="request-id">#{{ care_request.id }}</span>
                 </div>
-
                 <div>
-                    {% if care_request.status == "draft" %}
-                    <span class="status-badge status-draft"><i class="fas fa-pen"></i> Draft</span>
-                    {% elif care_request.status == "open" %}
-                    <span class="status-badge status-open"><i class="fas fa-lock-open"></i> Open</span>
+                    {% if care_request.status == "open" %}
+                    <span class="status-badge status-open">Open</span>
+                    {% elif care_request.status == "draft" %}
+                    <span class="status-badge status-draft">Draft</span>
                     {% elif care_request.status == "assigned" %}
-                    <span class="status-badge status-assigned"><i class="fas fa-check-circle"></i> Assigned</span>
-                    {% elif care_request.status == "closed" %}
-                    <span class="status-badge status-closed"><i class="fas fa-ban"></i> Closed</span>
+                    <span class="status-badge status-assigned">Assigned</span>
                     {% else %}
-                    <span class="status-badge status-closed">{{ care_request.get_status_display }}</span>
+                    <span class="status-badge status-closed">Closed</span>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Patient Information Section -->
+            <!-- Patient Information -->
             <div class="section-title">
                 <i class="fas fa-user"></i> Patient Information
             </div>
             <div class="info-grid">
                 <div class="info-item">
-                    <div class="label"><i class="fas fa-calendar-alt"></i> Age</div>
+                    <div class="label">Age</div>
                     <div class="value">{{ care_request.patient_age }} years</div>
                 </div>
                 <div class="info-item">
-                    <div class="label"><i class="fas fa-venus-mars"></i> Gender</div>
+                    <div class="label">Gender</div>
                     <div class="value">{{ care_request.get_patient_gender_display }}</div>
                 </div>
                 <div class="info-item">
-                    <div class="label"><i class="fas fa-heartbeat"></i> Medical Condition</div>
+                    <div class="label">Medical Condition</div>
                     <div class="value">{{ care_request.medical_condition }}</div>
                 </div>
             </div>
 
-            <!-- Medical Details Section -->
+            <!-- Care Requirements -->
             <div class="section-title">
-                <i class="fas fa-notes-medical"></i> Medical Details
-            </div>
-            <div class="medical-section">
-                <div class="medical-grid">
-                    <div class="medical-item">
-                        <i class="fas fa-wheelchair"></i>
-                        <div>
-                            <strong>Mobility Status:</strong><br>
-                            {{ care_request.get_mobility_status_display }}
-                        </div>
-                    </div>
-                    <div class="medical-item">
-                        <i class="fas fa-brain"></i>
-                        <div>
-                            <strong>Cognitive Status:</strong><br>
-                            {{ care_request.get_cognitive_status_display }}
-                        </div>
-                    </div>
-                    <div class="medical-item">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <div>
-                            <strong>Urgency Level:</strong><br>
-                            {{ care_request.get_urgency_level_display }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Care Requirements Section -->
-            <div class="section-title">
-                <i class="fas fa-clipboard-list"></i> Care Requirements
+                <i class="fas fa-heartbeat"></i> Care Requirements
             </div>
             <div class="info-grid">
                 <div class="info-item">
-                    <div class="label"><i class="fas fa-clock"></i> Care Type</div>
+                    <div class="label">Care Type</div>
                     <div class="value">{{ care_request.get_care_type_display }}</div>
                 </div>
                 <div class="info-item">
-                    <div class="label"><i class="fas fa-calendar-alt"></i> Start Date</div>
-                    <div class="value">{{ care_request.start_date|date:"l, d M Y" }}</div>
+                    <div class="label">Start Date</div>
+                    <div class="value">{{ care_request.start_date|date:"d M Y" }}</div>
                 </div>
                 <div class="info-item">
-                    <div class="label"><i class="fas fa-hourglass-half"></i> Duration</div>
+                    <div class="label">Duration</div>
                     <div class="value">{{ care_request.duration_days }} days</div>
                 </div>
                 <div class="info-item">
-                    <div class="label"><i class="fas fa-clock"></i> Hours per Day</div>
-                    <div class="value">{{ care_request.hours_per_day|default:"Not specified" }} hours</div>
-                </div>
-                <div class="info-item">
-                    <div class="label"><i class="fas fa-calendar-week"></i> Days per Week</div>
-                    <div class="value">{{ care_request.days_per_week }} days</div>
+                    <div class="label">Shift Timing</div>
+                    <div class="value">{{ care_request.shift_timing|default:"Flexible" }}</div>
                 </div>
             </div>
 
-            <!-- Shift Timing -->
-            <div class="info-item" style="margin-bottom: 20px;">
-                <div class="label"><i class="fas fa-clock"></i> Shift Timing</div>
-                <div class="value">{{ care_request.shift_timing|default:"Not specified" }}</div>
+            <!-- Location -->
+            <div class="section-title">
+                <i class="fas fa-map-marker-alt"></i> Location
             </div>
-
-            <!-- Required Skills -->
             <div class="info-item">
-                <div class="label"><i class="fas fa-tools"></i> Required Skills</div>
-                <div class="skills-tags">
-                    {% for skill in care_request.required_skills.split %}
-                    {% if skill|length > 0 %}
-                    <span class="skill-tag">{{ skill|cut:"," }}</span>
-                    {% endif %}
-                    {% endfor %}
-                </div>
+                <div class="value">{{ care_request.address }}, {{ care_request.city }}, {{ care_request.state }} - {{ care_request.pincode }}</div>
             </div>
 
-            {% if care_request.preferred_qualifications %}
-            <div class="info-item" style="margin-top: 15px;">
-                <div class="label"><i class="fas fa-graduation-cap"></i> Preferred Qualifications</div>
-                <div class="value">{{ care_request.preferred_qualifications }}</div>
-            </div>
-            {% endif %}
-
-            <!-- Compensation Section -->
+            <!-- Compensation -->
             <div class="section-title">
-                <i class="fas fa-rupee-sign"></i> Compensation Details
+                <i class="fas fa-rupee-sign"></i> Compensation
             </div>
-            <div class="compensation-box">
-                <div>
-                    <span class="compensation-amount">₹{{ care_request.salary_offered }}</span>
-                    <span class="compensation-details">/{{ care_request.get_payment_frequency_display }}</span>
-                    {% if care_request.negotiable %}
-                    <span style="margin-left: 15px; color: #0f3460;"><i class="fas fa-handshake"></i> Negotiable</span>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Preferences Section -->
-            <div class="section-title">
-                <i class="fas fa-user-tie"></i> Caretaker Preferences
-            </div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="label"><i class="fas fa-venus-mars"></i> Gender Preference</div>
-                    <div class="value">{{ care_request.get_gender_preference_display }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="label"><i class="fas fa-language"></i> Language Preference</div>
-                    <div class="value">{{ care_request.language_preference|default:"Not specified" }}</div>
-                </div>
-                {% if care_request.age_preference_min or care_request.age_preference_max %}
-                <div class="info-item">
-                    <div class="label"><i class="fas fa-calendar"></i> Age Preference</div>
-                    <div class="value">{{ care_request.age_preference_min|default:"18" }} - {{
-                        care_request.age_preference_max|default:"100" }} years</div>
-                </div>
+            <div class="info-item">
+                <div class="value">₹{{ care_request.salary_offered }}/{{ care_request.get_payment_frequency_display }}</div>
+                {% if care_request.negotiable %}
+                <div class="value" style="color: #10b981;">Negotiable</div>
                 {% endif %}
             </div>
 
-            <!-- Location Details -->
-            <div class="section-title">
-                <i class="fas fa-map-marker-alt"></i> Location Details
-            </div>
-            <div class="location-details">
-                <div class="location-row">
-                    <i class="fas fa-home"></i>
-                    <span>{{ care_request.address }}</span>
+            <!-- Assigned Caretaker Section - ONLY for Family -->
+            {% if user.role == 'family' %}
+                {% if care_request.assigned_caretaker %}
+                <div class="section-title">
+                    <i class="fas fa-user-check"></i> Assigned Caretaker
                 </div>
-                <div class="location-row">
-                    <i class="fas fa-city"></i>
-                    <span>{{ care_request.city }}, {{ care_request.state }} - {{ care_request.pincode }}</span>
-                </div>
-                {% if care_request.landmark %}
-                <div class="location-row">
-                    <i class="fas fa-landmark"></i>
-                    <span>Landmark: {{ care_request.landmark }}</span>
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- Interview Process Section -->
-            <div class="detail-card" style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; margin-bottom: 2rem;">
-                <h2 class="section-title" style="font-size: 1.3rem; color: #0f3460; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; padding-bottom: 0.5rem; border-bottom: 2px solid #0f3460;">
-                    <i class="fas fa-handshake"></i> Interview Process
-                </h2>
-
-                {% if care_request.interview_required %}
-                <div class="info-item" style="background: #f8fafc; padding: 1rem; border-radius: 10px;">
-                    <span style="display: flex; align-items: center; gap: 0.5rem; color: #166534;">
-                        <i class="fas fa-check-circle" style="color: #10b981;"></i>
-                        <strong>Interview Required:</strong>
-                    </span>
-                    <span style="color: #0f3460; margin-left: 2rem;">{{ care_request.get_interview_type_display|default:"Video Call" }}</span>
+                <div class="info-item">
+                    <div class="value">
+                        <strong>{{ care_request.assigned_caretaker.get_full_name|default:care_request.assigned_caretaker.username }}</strong>
+                        <br>
+                        <i class="fas fa-envelope"></i> {{ care_request.assigned_caretaker.email }}
+                        {% if care_request.assigned_caretaker.phone %}
+                        <br><i class="fas fa-phone"></i> {{ care_request.assigned_caretaker.phone }}
+                        {% endif %}
+                    </div>
                 </div>
                 {% else %}
-                <div class="info-item" style="background: #f8fafc; padding: 1rem; border-radius: 10px;">
-                    <span style="display: flex; align-items: center; gap: 0.5rem; color: #991b1b;">
-                        <i class="fas fa-times-circle" style="color: #ef4444;"></i>
-                        <strong>Interview:</strong>
-                    </span>
-                    <span style="color: #0f3460; margin-left: 2rem;">No Interview Required</span>
+                <div class="section-title">
+                    <i class="fas fa-user-check"></i> Assigned Caretaker
+                </div>
+                <div class="info-item" style="text-align: center; padding: 2rem;">
+                    <i class="fas fa-user-clock" style="font-size: 3rem; color: #64748b;"></i>
+                    <p style="margin-top: 1rem;">No caretaker assigned yet.</p>
+                    {% if care_request.status == "open" %}
+                    <p style="color: #64748b;">Applications are being reviewed. A caretaker will be assigned soon.</p>
+                    {% endif %}
                 </div>
                 {% endif %}
-            </div>
-
-            <!-- Assigned Caretaker Section -->
-            {% if care_request.assigned_caretaker %}
-            <div class="detail-card" style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; margin-bottom: 2rem;">
-                <h2 class="section-title" style="font-size: 1.3rem; color: #0f3460; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; padding-bottom: 0.5rem; border-bottom: 2px solid #0f3460;">
-                    <i class="fas fa-user-check"></i> Assigned Caretaker
-                </h2>
-
-                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-                    <div style="background: #f8fafc; padding: 1.5rem; border-radius: 16px; flex: 1;">
-                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                            <i class="fas fa-user-circle" style="font-size: 3rem; color: #0f3460;"></i>
-                            <div>
-                                <h3 style="color: #0f3460; margin-bottom: 0.3rem;">{{ care_request.assigned_caretaker.get_full_name|default:care_request.assigned_caretaker.username }}</h3>
-                                <p style="color: #64748b; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-envelope"></i> {{ care_request.assigned_caretaker.email }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                            {% if care_request.assigned_caretaker.phone %}
-                            <div>
-                                <span style="color: #64748b; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem;">
-                                    <i class="fas fa-phone"></i> Phone
-                                </span>
-                                <span style="color: #0f3460; font-weight: 500;">{{ care_request.assigned_caretaker.phone }}</span>
-                            </div>
-                            {% endif %}
-
-                            <div>
-                                <span style="color: #64748b; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem;">
-                                    <i class="fas fa-calendar-check"></i> Assigned on
-                                </span>
-                                <span style="color: #0f3460; font-weight: 500;">{{ care_request.assigned_date|date:"d M Y, h:i A" }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-                        <a href="{% url 'applications:caretaker_profile_detail' care_request.assigned_caretaker.id %}" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: transparent; border: 1.5px solid #0f3460; color: #0f3460; text-decoration: none; border-radius: 8px; font-weight: 500; transition: all 0.3s;">
-                            <i class="fas fa-user"></i> View Profile
-                        </a>
-                        <a href="tel:{{ care_request.assigned_caretaker.phone }}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #0f3460; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; transition: all 0.3s;">
-                            <i class="fas fa-phone-alt"></i> Contact
-                        </a>
-                    </div>
-                </div>
-            </div>
             {% endif %}
 
-            <!-- Action Buttons (Only for Family who owns the request) -->
-            {% if care_request.family == user %}
+            <!-- Action Buttons - ONLY for Family who owns the request -->
+            {% if care_request.family == user and user.role == 'family' %}
             <div class="action-buttons">
-                <a href="{% url 'my_requests' %}" class="btn btn-secondary">
+                <a href="{% url 'requests:my_requests' %}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back to List
                 </a>
 
@@ -1093,36 +539,51 @@
                 <a href="{% url 'applications:request_applications' care_request.id %}" class="btn">
                     <i class="fas fa-users"></i> View Applications
                 </a>
-                <a href="{% url 'close_request' care_request.id %}" class="btn btn-warning" onclick="return confirm('Are you sure you want to close this request?')">
+                <a href="{% url 'requests:close_request' care_request.id %}" class="btn btn-warning"
+                    onclick="return confirm('Are you sure you want to close this request?')">
                     <i class="fas fa-ban"></i> Close Request
                 </a>
                 {% endif %}
 
                 {% if care_request.status == "draft" %}
-                <a href="{% url 'publish_request' care_request.id %}" class="btn btn-success">
+                <a href="{% url 'requests:publish_request' care_request.id %}" class="btn btn-success">
                     <i class="fas fa-paper-plane"></i> Publish Request
                 </a>
-                <a href="{% url 'edit_request' care_request.id %}" class="btn btn-edit">
+                <a href="{% url 'requests:edit_request' care_request.id %}" class="btn btn-edit">
                     <i class="fas fa-edit"></i> Edit Request
                 </a>
                 {% endif %}
 
                 {% if care_request.status == "draft" or care_request.status == "open" %}
-                <a href="{% url 'delete_request' care_request.id %}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this request?')">
+                <a href="{% url 'requests:delete_request' care_request.id %}" class="btn btn-danger"
+                    onclick="return confirm('Are you sure you want to delete this request?')">
                     <i class="fas fa-trash"></i> Delete Request
                 </a>
                 {% endif %}
             </div>
             {% endif %}
+
+            <!-- Caretaker Action Buttons - ONLY for caretakers who haven't applied -->
+            {% if user.role == 'caretaker' and care_request.status == 'open' and not has_applied %}
+            <div class="action-buttons">
+                <a href="{% url 'requests:apply_for_request' care_request.id %}" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Apply for this Request
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Already Applied Message for caretakers -->
+            {% if user.role == 'caretaker' and has_applied %}
+            <div class="action-buttons">
+                <div class="info-item" style="background: #dcfce7; text-align: center;">
+                    <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.5rem;"></i>
+                    <p style="margin-top: 0.5rem; color: #166534;">You have already applied for this request.</p>
+                    <p style="font-size: 0.9rem; color: #166534;">The family will review your application and contact you soon.</p>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
-
-    <script>
-        document.querySelector('.logout-item a')?.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.getElementById('logout-form').submit();
-        });
-    </script>
 
 </body>
 

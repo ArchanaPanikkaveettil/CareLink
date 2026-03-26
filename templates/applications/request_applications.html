@@ -919,14 +919,14 @@
                 </div>
 
                 <div class="action-buttons">
-                    <a href="{% url 'caretaker_detail' application.caretaker.id %}" class="btn btn-outline btn-sm">
+                    <a href="{% url 'requests:caretaker_detail' application.caretaker.id %}" class="btn btn-outline btn-sm">
                         <i class="fas fa-eye"></i> View Profile
                     </a>
 
 
                     {% if not is_position_filled %}
                     {% if application.status == 'pending' %}
-                    <a href="{% url 'shortlist_application' application.id %}" class="btn btn-warning btn-sm tooltip">
+                    <a href="{% url 'applications:shortlist_application' application.id %}" class="btn btn-warning btn-sm tooltip">
                         <i class="fas fa-star"></i> Shortlist
                         <span class="tooltip-text">Add to shortlist for later selection</span>
                     </a>
@@ -967,18 +967,18 @@
                                 )" class="btn btn-success btn-sm">
                         <i class="fas fa-envelope"></i> Send Offer
                     </button>
-                    <a href="{% url 'add_shortlist_notes' application.id %}" class="btn btn-outline btn-sm">
+                    <a href="{% url 'applications:add_shortlist_notes' application.id %}" class="btn btn-outline btn-sm">
                         <i class="fas fa-sticky-note"></i> Notes
                     </a>
-                    <a href="{% url 'remove_shortlist' application.id %}" class="btn btn-danger btn-sm">
+                    <a href="{% url 'applications:remove_shortlist' application.id %}" class="btn btn-danger btn-sm">
                         <i class="fas fa-star-half-alt"></i> Remove
                     </a>
                     <div class="d-inline-flex gap-1">
-                        <a href="{% url 'update_shortlist_rank' application.id 'up' %}"
+                        <a href="{% url 'applications:update_shortlist_rank' application.id 'up' %}"
                             class="btn btn-sm btn-outline {% if application.shortlist_rank == 1 %}disabled{% endif %}">
                             <i class="fas fa-arrow-up"></i>
                         </a>
-                        <a href="{% url 'update_shortlist_rank' application.id 'down' %}"
+                        <a href="{% url 'applications:update_shortlist_rank' application.id 'down' %}"
                             class="btn btn-sm btn-outline {% if application.shortlist_rank == shortlisted_count %}disabled{% endif %}">
                             <i class="fas fa-arrow-down"></i>
                         </a>
@@ -1023,7 +1023,7 @@
             <i class="fas fa-file-alt"></i>
             <h3>No Applications Yet</h3>
             <p>No caretakers have applied for this request yet.</p>
-            <a href="{% url 'my_requests' %}" class="btn btn-outline">
+            <a href="{% url 'requests:my_requests' %}" class="btn btn-outline">
                 <i class="fas fa-arrow-left"></i> Back to My Requests
             </a>
         </div>

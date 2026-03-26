@@ -49,7 +49,7 @@ def apply_request(request, request_id):
             request=care_request, caretaker=request.user
         ).exists():
             messages.error(request, "You have already applied for this request.")
-            return redirect("my_applications")
+            return redirect("applications:my_applications")
 
         # Create the application
         application = CareApplication.objects.create(
@@ -86,7 +86,7 @@ def apply_request(request, request_id):
         )
 
         messages.success(request, "Application submitted successfully!")
-        return redirect("my_applications")
+        return redirect("applications:my_applications")
 
     return render(
         request, "applications/apply_request.html", {"care_request": care_request}
@@ -163,7 +163,7 @@ def withdraw_application(request, application_id):
             messages.success(request, "Application withdrawn successfully.")
         else:
             messages.error(request, "This application cannot be withdrawn.")
-        return redirect("my_applications")
+        return redirect("applications:my_applications")
 
     return render(
         request, "applications/withdraw_confirm.html", {"application": application}
@@ -188,7 +188,7 @@ def respond_to_offer(request, application_id, response):
     if application.offer_expires_at and application.offer_expires_at < timezone.now():
         application.expire_offer()
         messages.error(request, "This offer has expired.")
-        return redirect("my_applications")
+        return redirect("applications:my_applications")
 
     if response == "accept":
         with transaction.atomic():
@@ -231,7 +231,7 @@ def respond_to_offer(request, application_id, response):
     else:
         messages.error(request, "Invalid response.")
 
-    return redirect("my_applications")
+    return redirect("applications:my_applications")
 
 
 # -------------------------------------------------------------------------
@@ -420,7 +420,7 @@ def accept_application(request, application_id):
 
     if application.status != "pending":
         messages.error(request, "Only pending applications can be accepted directly.")
-        return redirect("request_applications", request_id=application.request.id)
+        return redirect("applications:request_applications", request_id=application.request.id)
 
     care_request = application.request
 
@@ -492,7 +492,7 @@ def accept_application(request, application_id):
             f"Application accepted. {application.caretaker.get_full_name()} has been assigned.",
         )
 
-    return redirect("request_applications", request_id=care_request.id)
+    return redirect("applications:request_applications", request_id=care_request.id)
 
 
 # -------------------------------------------------------------------------
@@ -530,39 +530,39 @@ def reject_application(request, application_id):
     else:
         messages.error(request, "This application cannot be rejected.")
 
-    return redirect("request_applications", request_id=application.request.id)
+    return redirect("applications:request_applications", request_id=application.request.id)
 
 
 # -------------------------------------------------------------------------
 # View applications for a request
 # -------------------------------------------------------------------------
+
 @login_required
 def request_applications(request, request_id):
-    """View applications for a specific care request (for families)"""
+    """View all applications for a specific request (for families)"""
     if request.user.role != "family":
-        messages.error(
-            request, "Access denied. Only family members can view applications."
-        )
+        messages.error(request, "Access denied.")
         return redirect("index")
-
-    care_request = get_object_or_404(CareRequest, id=request_id, family=request.user)
-    status_filter = request.GET.get("status", "all")
-
-    applications = (
-        CareApplication.objects.filter(request=care_request)
-        .select_related("caretaker", "caretaker__caretaker_profile")
-        .order_by("-applied_at")
-    )
-
-    if status_filter != "all":
-        applications = applications.filter(status=status_filter)
-
+    
+    care_request = get_object_or_404(CareRequest, id=request_id)
+    
+    if care_request.family != request.user:
+        messages.error(request, "You do not have permission to view applications for this request.")
+        return redirect("index")
+    
+    applications = CareApplication.objects.filter(request=care_request).order_by("-applied_at")
+    
+    # Add offer count for each application
+    for app in applications:
+        app.offer_count = app.offers.count() if hasattr(app, 'offers') else 0
+    
     context = {
         "care_request": care_request,
         "applications": applications,
-        "status_filter": status_filter,
     }
     return render(request, "applications/request_applications.html", context)
+
+
 
 
 # -------------------------------------------------------------------------
@@ -605,7 +605,7 @@ def shortlist_application(request, application_id):
         messages.success(
             request, f"{application.caretaker.get_full_name()} has been shortlisted."
         )
-        return redirect("shortlisted_candidates", request_id=application.request.id)
+        return redirect("applications:shortlisted_candidates", request_id=application.request.id)
 
     # GET request - show shortlist form
     return render(
@@ -703,7 +703,7 @@ def update_shortlist_rank(request, application_id, direction):
             application.save()
             messages.success(request, "Rank updated successfully.")
 
-    return redirect("shortlisted_candidates", request_id=application.request.id)
+    return redirect("applications:shortlisted_candidates", request_id=application.request.id)
 
 
 # -------------------------------------------------------------------------
@@ -728,7 +728,7 @@ def add_shortlist_notes(request, application_id):
         application.shortlist_notes = notes
         application.save()
         messages.success(request, "Notes saved successfully.")
-        return redirect("shortlisted_candidates", request_id=application.request.id)
+        return redirect("applications:shortlisted_candidates", request_id=application.request.id)
 
     return render(
         request, "applications/shortlist_notes.html", {"application": application}
@@ -784,7 +784,7 @@ def remove_shortlist(request, application_id):
         messages.success(
             request, f"{application.caretaker.get_full_name()} removed from shortlist."
         )
-        return redirect("shortlisted_candidates", request_id=application.request.id)
+        return redirect("applications:shortlisted_candidates", request_id=application.request.id)
 
     return render(
         request,
@@ -800,107 +800,47 @@ def remove_shortlist(request, application_id):
 
 @login_required
 def send_offer(request, application_id):
-    """Send an offer letter to a caretaker"""
-    # Get the application or return 404
-    application = get_object_or_404(CareApplication, id=application_id)
-
-    # Check if user is the family who owns the request
-    if request.user != application.request.family:
-        messages.error(
-            request,
-            "❌ Access denied. You don't have permission to send offers for this request.",
-        )
+    """Send an offer to a caretaker (for families)"""
+    if request.user.role != "family":
+        messages.error(request, "Access denied.")
         return redirect("index")
 
-    # Check if request is still open
-    if application.request.status != "open":
-        messages.error(request, "❌ This request is no longer accepting applications.")
-        return redirect("request_applications", request_id=application.request.id)
-
-    # Check if application is in valid state for sending offer
-    if application.status not in ["pending", "shortlisted"]:
-        messages.error(
-            request,
-            f"❌ Cannot send offer to application with status: {application.get_status_display()}",
-        )
-        return redirect("request_applications", request_id=application.request.id)
-
+    application = get_object_or_404(CareApplication, id=application_id)
+    
+    # Check if the family owns this request
+    if application.request.family != request.user:
+        messages.error(request, "You do not have permission to send offers for this request.")
+        return redirect("index")
+    
+    if application.status != "shortlisted":
+        messages.error(request, "Only shortlisted applications can receive offers.")
+        # FIXED: Added namespace - use 'applications:request_applications'
+        return redirect("applications:request_applications", request_id=application.request.id)
+    
     if request.method == "POST":
+        offer_amount = request.POST.get("offer_amount")
+        offer_message = request.POST.get("offer_message", "")
+        
+        if not offer_amount:
+            messages.error(request, "Please enter an offer amount.")
+            return render(request, "applications/send_offer.html", {
+                "application": application,
+                "offer_amount": offer_amount,
+                "offer_message": offer_message,
+            })
+        
         try:
-            # Get form data
-            offer_message = request.POST.get("offer_message")
-            proposed_rate = request.POST.get("proposed_rate")
-            start_date = request.POST.get("start_date")
-            offer_valid_until = request.POST.get("offer_valid_until")
-            working_hours = request.POST.get("working_hours")
-            special_terms = request.POST.get("special_terms", "")
-
-            # Validate required fields
-            if not all([offer_message, proposed_rate, start_date, offer_valid_until]):
-                messages.error(request, "❌ Please fill in all required fields.")
-                return redirect(
-                    "request_applications", request_id=application.request.id
-                )
-
-            # Update application with offer details
-            application.status = "offer_sent"
-            application.offer_message = offer_message
-            application.offer_proposed_rate = proposed_rate
-            application.offer_start_date = start_date
-            application.offer_valid_until = offer_valid_until
-            application.offer_working_hours = working_hours
-            application.offer_special_terms = special_terms
-            application.offer_sent_at = timezone.now()
-            application.save()
-
-            # Reject all other pending applications for this request
-            CareApplication.objects.filter(
-                request=application.request, status="pending"
-            ).exclude(id=application.id).update(
-                status="rejected",
-                rejection_note="Another candidate was selected",
-                rejected_at=timezone.now(),
-            )
-
-            # Freeze shortlisted applications
-            CareApplication.objects.filter(
-                request=application.request, status="shortlisted"
-            ).exclude(id=application.id).update(
-                status="frozen",
-                frozen_reason="Offer sent to another candidate",
-                frozen_at=timezone.now(),
-            )
-
-            # ========== CREATE NOTIFICATION ==========
-            Notification.objects.create(
-                recipient=application.caretaker,
-                sender=request.user,
-                notification_type="assignment",
-                title="New Offer Received",
-                message=f"You have received an offer for the position caring for {application.request.patient_name}.",
-                icon="fa-envelope",
-                link=f"/applications/detail/{application.id}/",
-                is_read=False,
-            )
-
-            # Send email notification if checked
-            if request.POST.get("notify_by_email"):
-                # Add email sending logic here
-                # You can implement this later
-                pass
-
-            messages.success(
-                request,
-                f"✅ Offer letter sent successfully to {application.caretaker.get_full_name()}!",
-            )
-
+            application.send_offer(offer_amount=offer_amount, message=offer_message)
+            messages.success(request, f"Offer sent successfully to {application.caretaker.get_full_name()}!")
+            # FIXED: Added namespace - use 'applications:request_applications'
+            return redirect("applications:request_applications", request_id=application.request.id)
         except Exception as e:
-            messages.error(request, f"❌ Error sending offer: {str(e)}")
-
-        return redirect("request_applications", request_id=application.request.id)
-
-    # If not POST, redirect to applications page
-    return redirect("request_applications", request_id=application.request.id)
+            messages.error(request, f"Error sending offer: {str(e)}")
+    
+    context = {
+        "application": application,
+    }
+    return render(request, "applications/send_offer.html", context)
 
 
 # ============================================================================

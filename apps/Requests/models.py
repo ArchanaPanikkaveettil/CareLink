@@ -8,6 +8,8 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
+from apps.Users.models import ElderProfile
+
 
 User = get_user_model()
 
@@ -55,6 +57,14 @@ class CareRequest(models.Model):
         ("weekly", "Per Week"),
         ("monthly", "Per Month"),
     ]
+
+    elder_profile = models.ForeignKey(
+        ElderProfile,  
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="care_requests"
+    )
 
     # Basic Information
     request_id = models.CharField(max_length=20, unique=True, editable=False)
@@ -447,8 +457,6 @@ class CareRequestSchedule(models.Model):
         unique_together = ["request", "day_of_week"]
 
         # Add these imports at the top if not already present
-
-
 
 
 # Add these models to your existing models.py file (after your existing CareRequest model)

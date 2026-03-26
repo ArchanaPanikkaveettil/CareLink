@@ -274,13 +274,25 @@
         }
 
         /* alerts */
-        .alert {
+        .alert-success {
             background: #d4edda;
             color: #155724;
             padding: 15px 20px;
             border-radius: 12px;
             margin-bottom: 20px;
             border-left: 4px solid #28a745;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-warning {
+            background: #fff3e0;
+            color: #856404;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f59e0b;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -430,9 +442,9 @@
             </div>
         </div>
 
-        <!-- Profile Incomplete Warning -->
-
-        <div class="alert" style="background: #fff3e0; border-left-color: #f59e0b; margin-bottom: 20px;">
+        <!-- Profile Incomplete Warning - Now only shows when profile is incomplete -->
+        <!-- {% if profile_incomplete %}
+        <div class="alert-warning">
             <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
             <div>
                 <strong>Complete Your Profile</strong><br>
@@ -443,12 +455,23 @@
                 </a>
             </div>
         </div>
+        {% endif %} -->
 
+        <!-- Profile Complete Success Message (Optional - shows when profile is complete) -->
+        <!-- {% if not profile_incomplete and not hide_profile_success %}
+        <div class="alert-success">
+            <i class="fas fa-check-circle" style="color: #28a745;"></i>
+            <div>
+                <strong>Profile Complete!</strong><br>
+                Your profile is complete. You can now set your availability and apply for jobs.
+            </div>
+        </div>
+        {% endif %} -->
 
         <!-- Messages -->
         {% if messages %}
         {% for message in messages %}
-        <div class="alert">
+        <div class="alert-success">
             <i class="fas fa-check-circle"></i> {{ message }}
         </div>
         {% endfor %}

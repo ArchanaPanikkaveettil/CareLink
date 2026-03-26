@@ -6,44 +6,339 @@
 {% block page_icon %}<i class="fas fa-calendar-alt"></i>{% endblock %}
 {% block page_title %}My Availability Schedule{% endblock %}
 
+{% block extra_css %}
+<style>
+    .stats-container {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        border-radius: 15px;
+        padding: 25px 20px;
+        text-align: center;
+        flex: 1;
+        min-width: 150px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #0f3460;
+        margin-bottom: 8px;
+    }
+
+    .stat-number.text-success {
+        color: #10b981;
+    }
+
+    .stat-number.text-warning {
+        color: #f59e0b;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0f3460;
+        margin: 25px 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        margin-bottom: 20px;
+    }
+
+    .availability-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .availability-table th {
+        background: #f8fafc;
+        padding: 14px 16px;
+        text-align: left;
+        font-weight: 600;
+        color: #0f3460;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .availability-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+
+    .availability-table tr:hover {
+        background: #faf9ff;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .badge-success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-warning {
+        background: #fed7aa;
+        color: #9b2c1d;
+    }
+
+    .badge-info {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-secondary {
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+    .btn-sm {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-danger {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .btn-danger:hover {
+        background: #fecaca;
+        transform: translateY(-1px);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(15, 52, 96, 0.2);
+    }
+
+    .btn-clear-all {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 10px 20px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .btn-clear-all:hover {
+        background: #fecaca;
+        transform: translateY(-2px);
+    }
+
+    .alert {
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .alert-info {
+        background: #e0f2fe;
+        color: #075985;
+        border-left: 4px solid #0e7b9e;
+    }
+
+    .alert-info a {
+        color: #0f3460;
+        text-decoration: underline;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px;
+        color: #94a3b8;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #cbd5e1;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .card-header h4 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #0f3460;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+    }
+
+    .mt-4 {
+        margin-top: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .stats-container {
+            gap: 10px;
+        }
+
+        .stat-card {
+            padding: 15px;
+            min-width: 100px;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+        }
+
+        .availability-table th,
+        .availability-table td {
+            padding: 10px;
+            font-size: 0.75rem;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.65rem;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .card-header>div {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-md-12">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h4>Availability Slots</h4>
-                <a href="{% url 'requests:set_availability' %}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Add New Slots
-                </a>
+            <div class="card-header">
+                <h4>
+                    <i class="fas fa-calendar-week"></i> Availability Slots
+                </h4>
+                <div style="display: flex; gap: 10px;">
+                    <a href="{% url 'requests:set_availability' %}" class="btn-primary">
+                        <i class="fas fa-plus"></i> Add New Slots
+                    </a>
+                    {% if recurring_slots_count > 0 %}
+                    <form method="POST" action="{% url 'requests:clear_all_availability' %}" style="display: inline;"
+                        onsubmit="return confirm('⚠️ Are you sure you want to clear ALL recurring availability slots? This will remove your weekly schedule completely. This action cannot be undone.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-clear-all">
+                            <i class="fas fa-trash-alt"></i> Clear All
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
             </div>
             <div class="card-body">
-                <!-- Statistics -->
-                <div class="row mb-4">
-                    <div class="col-md-4">
-                        <div class="stat-card">
-                            <div class="stat-number">{{ total_slots }}</div>
-                            <div class="stat-label">Total Slots</div>
-                        </div>
+
+                <!-- Statistics Section -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ recurring_slots_count|default:"0" }}</div>
+                        <div class="stat-label">Recurring Slots</div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="stat-card">
-                            <div class="stat-number text-success">{{ available_count }}</div>
-                            <div class="stat-label">Available</div>
-                        </div>
+                    <div class="stat-card">
+                        <div class="stat-number text-success">{{ available_count|default:"0" }}</div>
+                        <div class="stat-label">Upcoming Available</div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="stat-card">
-                            <div class="stat-number text-warning">{{ booked_count }}</div>
-                            <div class="stat-label">Booked</div>
-                        </div>
+                    <div class="stat-card">
+                        <div class="stat-number text-warning">{{ booked_count|default:"0" }}</div>
+                        <div class="stat-label">Booked</div>
                     </div>
                 </div>
-                
-                <!-- Available Slots -->
-                <h5 class="mt-4">Available Slots</h5>
+
+                <!-- Available Slots Section -->
+                <div class="section-title">
+                    <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                    Available Slots
+                </div>
+
                 {% if available_slots %}
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="availability-table">
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -51,7 +346,6 @@
                                 <th>Status</th>
                                 <th>Recurring</th>
                                 <th>Actions</th>
-                            </tr>
                         </thead>
                         <tbody>
                             {% for slot in available_slots %}
@@ -59,17 +353,24 @@
                                 <td>{{ slot.date|date:"l, F j, Y" }}</td>
                                 <td>{{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}</td>
                                 <td>
-                                    <span class="badge badge-success">Available</span>
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check-circle"></i> Available
+                                    </span>
                                 </td>
                                 <td>
                                     {% if slot.is_recurring %}
-                                        <span class="badge badge-info">Recurring until {{ slot.recurring_until|date:"M j, Y" }}</span>
+                                    <span class="badge badge-info">
+                                        <i class="fas fa-sync-alt"></i> Recurring
+                                    </span>
                                     {% else %}
-                                        <span class="badge badge-secondary">One-time</span>
+                                    <span class="badge badge-secondary">
+                                        <i class="fas fa-clock"></i> One-time
+                                    </span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{% url 'requests:delete_availability' slot.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove this slot?')">
+                                    <a href="{% url 'requests:delete_availability' slot.id %}" class="btn-sm btn-danger"
+                                        onclick="return confirm('Are you sure you want to remove this slot?')">
                                         <i class="fas fa-trash"></i> Remove
                                     </a>
                                 </td>
@@ -80,15 +381,23 @@
                 </div>
                 {% else %}
                 <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> No available slots found. <a href="{% url 'requests:set_availability' %}">Add your availability</a> to start receiving requests.
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        No available slots found. <a href="{% url 'requests:set_availability' %}">Add your
+                            availability</a> to start receiving requests.
+                    </div>
                 </div>
                 {% endif %}
-                
-                <!-- Booked Slots -->
+
+                <!-- Booked Slots Section -->
                 {% if booked_slots %}
-                <h5 class="mt-4">Booked Slots</h5>
+                <div class="section-title">
+                    <i class="fas fa-calendar-check" style="color: #f59e0b;"></i>
+                    Booked Slots
+                </div>
+
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="availability-table">
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -96,7 +405,6 @@
                                 <th>Status</th>
                                 <th>Booked By</th>
                                 <th>Actions</th>
-                            </tr>
                         </thead>
                         <tbody>
                             {% for slot in booked_slots %}
@@ -104,21 +412,27 @@
                                 <td>{{ slot.date|date:"l, F j, Y" }}</td>
                                 <td>{{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}</td>
                                 <td>
-                                    <span class="badge badge-warning">Booked</span>
+                                    <span class="badge badge-warning">
+                                        <i class="fas fa-lock"></i> Booked
+                                    </span>
                                 </td>
                                 <td>
                                     {% if slot.booked_request %}
-                                        <a href="{% url 'requests:request_detail' slot.booked_request.id %}">
-                                            {{ slot.booked_request.family.get_full_name }}
-                                        </a>
+                                    <a href="{% url 'requests:request_detail' slot.booked_request.id %}"
+                                        style="color: #0f3460;">
+                                        <i class="fas fa-user"></i> {{
+                                        slot.booked_request.family.get_full_name|default:slot.booked_request.family.username
+                                        }}
+                                    </a>
                                     {% else %}
-                                        -
+                                    <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="#" class="btn btn-sm btn-info" disabled>
+                                    <span class="btn-sm"
+                                        style="background: #e2e8f0; color: #475569; cursor: not-allowed;">
                                         <i class="fas fa-lock"></i> Locked
-                                    </a>
+                                    </span>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -126,33 +440,20 @@
                     </table>
                 </div>
                 {% endif %}
+
+                <!-- Empty State -->
+                {% if not available_slots and not booked_slots %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-alt"></i>
+                    <p>No availability slots set yet.</p>
+                    <a href="{% url 'requests:set_availability' %}" class="btn-primary"
+                        style="margin-top: 15px; display: inline-block;">
+                        <i class="fas fa-plus"></i> Set Your Availability
+                    </a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.stat-card {
-    background: #f8fafc;
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
-    border: 1px solid #e2e8f0;
-}
-.stat-number {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #0f3460;
-}
-.stat-number.text-success {
-    color: #10b981;
-}
-.stat-number.text-warning {
-    color: #f59e0b;
-}
-.stat-label {
-    color: #64748b;
-    margin-top: 5px;
-}
-</style>
 {% endblock %}

@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'apps.Applications',
     'apps.Dashboard',
     'apps.Notifications',
+     'apps.assignments',
+    
 ]
 
 AUTH_USER_MODEL = 'Users.User'

@@ -586,11 +586,7 @@
             </a>
             {% endif %}
 
-            {% if request.status == 'assigned' or request.status == 'closed' %}
-            <a href="{% url 'requests:request_detail' request.id %}" class="btn btn-outline">
-                <i class="fas fa-info-circle"></i> Details
-            </a>
-            {% endif %}
+            
 
             <!-- Always show view details for any status -->
             {% if request.status != 'draft' and request.status != 'open' %}

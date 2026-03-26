@@ -15,7 +15,11 @@ from CareLink import settings
 from .forms import AdminUserEditForm
 from apps.Users.admin_utils import AdminEmailService, AdminExporter
 from .models import (
-    User, CaretakerProfile, FamilyProfile, CaretakerAvailability, ElderProfile
+    User,
+    CaretakerProfile,
+    FamilyProfile,
+    CaretakerAvailability,
+    ElderProfile,
 )
 
 # Import from other apps with try/except for safety
@@ -64,21 +68,34 @@ def caretaker_register(request):
             confirm_password = request.POST.get("confirm_password")
             phone = request.POST.get("phone")
 
-            if not all([username, email, first_name, last_name, password, confirm_password, phone]):
+            if not all(
+                [
+                    username,
+                    email,
+                    first_name,
+                    last_name,
+                    password,
+                    confirm_password,
+                    phone,
+                ]
+            ):
                 messages.error(request, "All account fields are required.")
-                return redirect("caretaker_register")
+                return redirect("users:caretaker_register")
 
             if password != confirm_password:
                 messages.error(request, "Passwords do not match.")
-                return redirect("caretaker_register")
+                return redirect("users:caretaker_register")
 
             if len(password) < 6:
                 messages.error(request, "Password must be at least 6 characters.")
-                return redirect("caretaker_register")
+                return redirect("users:caretaker_register")
 
-            if User.objects.filter(username=username).exists() or User.objects.filter(email=email).exists():
+            if (
+                User.objects.filter(username=username).exists()
+                or User.objects.filter(email=email).exists()
+            ):
                 messages.error(request, "Username or email already exists.")
-                return redirect("caretaker_register")
+                return redirect("users:caretaker_register")
 
             # ========== VERIFICATION FIELDS ==========
             date_of_birth = request.POST.get("date_of_birth")
@@ -95,22 +112,46 @@ def caretaker_register(request):
             emergency_phone = request.POST.get("emergency_phone")
             emergency_relation = request.POST.get("emergency_relation")
 
-            if not all([date_of_birth, gender, certificate, identity_proof, qualification,
-                       experience_years, address, city, state, pincode,
-                       emergency_name, emergency_phone, emergency_relation]):
-                messages.error(request, "All verification fields are required for security purposes.")
-                return redirect("caretaker_register")
+            if not all(
+                [
+                    date_of_birth,
+                    gender,
+                    certificate,
+                    identity_proof,
+                    qualification,
+                    experience_years,
+                    address,
+                    city,
+                    state,
+                    pincode,
+                    emergency_name,
+                    emergency_phone,
+                    emergency_relation,
+                ]
+            ):
+                messages.error(
+                    request,
+                    "All verification fields are required for security purposes.",
+                )
+                return redirect("users:caretaker_register")
 
             accepted_terms = request.POST.get("accepted_terms") == "on"
             if not accepted_terms:
                 messages.error(request, "You must accept the Terms and Conditions.")
-                return redirect("caretaker_register")
+                return redirect("users:caretaker_register")
 
             user = User.objects.create_user(
-                username=username, email=email, password=password,
-                first_name=first_name, last_name=last_name, role="caretaker",
-                is_verified=False, verification_status="pending", phone=phone,
-                accepted_terms=accepted_terms, accepted_terms_date=timezone.now(),
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                role="caretaker",
+                is_verified=False,
+                verification_status="pending",
+                phone=phone,
+                accepted_terms=accepted_terms,
+                accepted_terms_date=timezone.now(),
             )
 
             profile = CaretakerProfile.objects.create(
@@ -118,20 +159,33 @@ def caretaker_register(request):
                 emergency_contact_name=emergency_name,
                 emergency_contact_phone=emergency_phone,
                 emergency_contact_relation=emergency_relation,
-                date_of_birth=date_of_birth, gender=gender,
-                experience_years=experience_years, qualification=qualification,
-                certificate=certificate, identity_proof=identity_proof,
-                address=address, city=city, state=state, pincode=pincode, country="India",
-                skills="", languages="", bio="", availability_status="available",
+                date_of_birth=date_of_birth,
+                gender=gender,
+                experience_years=experience_years,
+                qualification=qualification,
+                certificate=certificate,
+                identity_proof=identity_proof,
+                address=address,
+                city=city,
+                state=state,
+                pincode=pincode,
+                country="India",
+                skills="",
+                languages="",
+                bio="",
+                availability_status="available",
                 verified_by_admin=False,
             )
 
-            messages.success(request, "Registration successful! Your documents are under verification.")
-            return redirect("login")
+            messages.success(
+                request,
+                "Registration successful! Your documents are under verification.",
+            )
+            return redirect("users:login")
 
         except Exception as e:
             messages.error(request, f"Registration failed: {str(e)}")
-            return redirect("caretaker_register")
+            return redirect("users:caretaker_register")
 
     return render(request, "users/caretaker_register.html")
 
@@ -149,45 +203,58 @@ def family_register(request):
             confirm_password = request.POST.get("confirm_password")
             phone = request.POST.get("phone")
 
-            if not all([first_name, last_name, email, password, confirm_password, phone]):
+            if not all(
+                [first_name, last_name, email, password, confirm_password, phone]
+            ):
                 messages.error(request, "All fields are required.")
-                return redirect("family_register")
+                return redirect("users:family_register")
 
             if password != confirm_password:
                 messages.error(request, "Passwords do not match.")
-                return redirect("family_register")
+                return redirect("users:family_register")
 
             if len(password) < 6:
                 messages.error(request, "Password must be at least 6 characters long.")
-                return redirect("family_register")
+                return redirect("users:family_register")
 
             if User.objects.filter(username=email).exists():
                 messages.error(request, "Email already registered.")
-                return redirect("family_register")
+                return redirect("users:family_register")
 
             accepted_terms = request.POST.get("accepted_terms") == "on"
             if not accepted_terms:
                 messages.error(request, "You must accept the Terms and Conditions.")
-                return redirect("family_register")
+                return redirect("users:family_register")
 
             user = User.objects.create_user(
-                username=email, email=email, password=password,
-                first_name=first_name, last_name=last_name, role="family",
-                is_verified=True, phone=phone,
-                accepted_terms=accepted_terms, accepted_terms_date=timezone.now(),
+                username=email,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                role="family",
+                is_verified=True,
+                phone=phone,
+                accepted_terms=accepted_terms,
+                accepted_terms_date=timezone.now(),
             )
 
             FamilyProfile.objects.create(
-                user=user, phone=phone, address="", patient_name="",
-                patient_age=None, primary_medical_condition="", care_required="",
+                user=user,
+                phone=phone,
+                address="",
+                patient_name="",
+                patient_age=None,
+                primary_medical_condition="",
+                care_required="",
             )
 
             messages.success(request, "Registration successful! You can now login.")
-            return redirect("login")
+            return redirect("users:login")
 
         except Exception as e:
             messages.error(request, f"Registration failed: {str(e)}")
-            return redirect("family_register")
+            return redirect("users:family_register")
 
     return render(request, "users/family_register.html")
 
@@ -211,7 +278,10 @@ def custom_login(request):
                 return redirect("dashboard:family_dashboard")
             elif user.role == "caretaker":
                 try:
-                    if hasattr(user, "caretaker_profile") and user.caretaker_profile.verified_by_admin:
+                    if (
+                        hasattr(user, "caretaker_profile")
+                        and user.caretaker_profile.verified_by_admin
+                    ):
                         return redirect("dashboard:caretaker_dashboard")
                     else:
                         return redirect("users:verification_pending")
@@ -220,7 +290,9 @@ def custom_login(request):
             else:
                 return redirect("users:index")
         else:
-            return render(request, "users/login.html", {"error": "Invalid email or password"})
+            return render(
+                request, "users/login.html", {"error": "Invalid email or password"}
+            )
 
     return render(request, "users/login.html")
 
@@ -238,9 +310,13 @@ def admin_dashboard(request):
     total_users = User.objects.count()
     total_caretakers = User.objects.filter(role="caretaker").count()
     total_families = User.objects.filter(role="family").count()
-    pending_verifications = User.objects.filter(role="caretaker", verification_status="pending").count()
+    pending_verifications = User.objects.filter(
+        role="caretaker", verification_status="pending"
+    ).count()
     recent_users = User.objects.order_by("-date_joined")[:10]
-    pending_caretakers = CaretakerProfile.objects.filter(user__verification_status="pending").select_related("user")[:10]
+    pending_caretakers = CaretakerProfile.objects.filter(
+        user__verification_status="pending"
+    ).select_related("user")[:10]
 
     context = {
         "total_users": total_users,
@@ -284,10 +360,10 @@ def admin_users_list(request):
 
     if search_query:
         users = users.filter(
-            Q(username__icontains=search_query) |
-            Q(email__icontains=search_query) |
-            Q(first_name__icontains=search_query) |
-            Q(last_name__icontains=search_query)
+            Q(username__icontains=search_query)
+            | Q(email__icontains=search_query)
+            | Q(first_name__icontains=search_query)
+            | Q(last_name__icontains=search_query)
         )
 
     page = request.GET.get("page", 1)
@@ -320,15 +396,19 @@ def admin_caretakers_list(request):
     search_query = request.GET.get("q", "")
     status_filter = request.GET.get("status", "")
 
-    caretakers = CaretakerProfile.objects.select_related("user").all().order_by("-user__date_joined")
+    caretakers = (
+        CaretakerProfile.objects.select_related("user")
+        .all()
+        .order_by("-user__date_joined")
+    )
 
     if search_query:
         caretakers = caretakers.filter(
-            Q(user__first_name__icontains=search_query) |
-            Q(user__last_name__icontains=search_query) |
-            Q(user__email__icontains=search_query) |
-            Q(city__icontains=search_query) |
-            Q(qualification__icontains=search_query)
+            Q(user__first_name__icontains=search_query)
+            | Q(user__last_name__icontains=search_query)
+            | Q(user__email__icontains=search_query)
+            | Q(city__icontains=search_query)
+            | Q(qualification__icontains=search_query)
         )
 
     if status_filter:
@@ -371,14 +451,18 @@ def admin_families_list(request):
     search_query = request.GET.get("q", "")
     status_filter = request.GET.get("status", "")
 
-    families = FamilyProfile.objects.select_related("user").all().order_by("-user__date_joined")
+    families = (
+        FamilyProfile.objects.select_related("user")
+        .all()
+        .order_by("-user__date_joined")
+    )
 
     if search_query:
         families = families.filter(
-            Q(user__first_name__icontains=search_query) |
-            Q(user__last_name__icontains=search_query) |
-            Q(user__email__icontains=search_query) |
-            Q(city__icontains=search_query)
+            Q(user__first_name__icontains=search_query)
+            | Q(user__last_name__icontains=search_query)
+            | Q(user__email__icontains=search_query)
+            | Q(city__icontains=search_query)
         )
 
     if status_filter:
@@ -412,9 +496,11 @@ def admin_verifications(request):
         messages.error(request, "Access denied.")
         return redirect("users:index")
 
-    pending_caretakers = CaretakerProfile.objects.filter(
-        user__verification_status="pending"
-    ).select_related("user").order_by("user__date_joined")
+    pending_caretakers = (
+        CaretakerProfile.objects.filter(user__verification_status="pending")
+        .select_related("user")
+        .order_by("user__date_joined")
+    )
 
     page = request.GET.get("page", 1)
     paginator = Paginator(pending_caretakers, 15)
@@ -451,14 +537,20 @@ def admin_verify_caretaker(request, id):
             caretaker.verified_by_admin = True
             caretaker.verified_date = timezone.now()
             caretaker.verification_remarks = remarks
-            messages.success(request, f"Caretaker {caretaker.user.get_full_name()} has been verified.")
+            messages.success(
+                request,
+                f"Caretaker {caretaker.user.get_full_name()} has been verified.",
+            )
 
         elif action == "reject":
             caretaker.user.verification_status = "rejected"
             caretaker.user.is_verified = False
             caretaker.verified_by_admin = False
             caretaker.verification_remarks = remarks
-            messages.warning(request, f"Caretaker {caretaker.user.get_full_name()} has been rejected.")
+            messages.warning(
+                request,
+                f"Caretaker {caretaker.user.get_full_name()} has been rejected.",
+            )
 
         caretaker.user.save()
         caretaker.save()
@@ -466,9 +558,13 @@ def admin_verify_caretaker(request, id):
 
     documents = {
         "certificate": caretaker.certificate.url if caretaker.certificate else None,
-        "identity_proof": caretaker.identity_proof.url if caretaker.identity_proof else None,
+        "identity_proof": (
+            caretaker.identity_proof.url if caretaker.identity_proof else None
+        ),
         "resume": caretaker.resume.url if caretaker.resume else None,
-        "background_check": caretaker.background_check.url if caretaker.background_check else None,
+        "background_check": (
+            caretaker.background_check.url if caretaker.background_check else None
+        ),
     }
 
     context = {
@@ -518,31 +614,33 @@ def admin_requests(request):
 
     if CareRequest is None:
         context = {
-            'requests': [],
-            'total_requests': 0,
-            'open_requests': 0,
-            'assigned_requests': 0,
-            'completed_requests': 0,
+            "requests": [],
+            "total_requests": 0,
+            "open_requests": 0,
+            "assigned_requests": 0,
+            "completed_requests": 0,
         }
-        return render(request, 'admin/admin_requests.html', context)
+        return render(request, "admin/admin_requests.html", context)
 
-    requests = CareRequest.objects.select_related('family').all().order_by('-created_at')
+    requests = (
+        CareRequest.objects.select_related("family").all().order_by("-created_at")
+    )
 
     if search_query:
         requests = requests.filter(
-            Q(title__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(family__first_name__icontains=search_query) |
-            Q(family__last_name__icontains=search_query)
+            Q(title__icontains=search_query)
+            | Q(description__icontains=search_query)
+            | Q(family__first_name__icontains=search_query)
+            | Q(family__last_name__icontains=search_query)
         )
 
     if status_filter:
         requests = requests.filter(status=status_filter)
 
     total_requests = CareRequest.objects.count()
-    open_requests = CareRequest.objects.filter(status='open').count()
-    assigned_requests = CareRequest.objects.filter(status='assigned').count()
-    completed_requests = CareRequest.objects.filter(status='closed').count()
+    open_requests = CareRequest.objects.filter(status="open").count()
+    assigned_requests = CareRequest.objects.filter(status="assigned").count()
+    completed_requests = CareRequest.objects.filter(status="closed").count()
 
     # Count applications for each request - FIXED: use 'request' not 'care_request'
     if CareApplication:
@@ -564,17 +662,16 @@ def admin_requests(request):
         requests = paginator.page(paginator.num_pages)
 
     context = {
-        'requests': requests,
-        'search_query': search_query,
-        'status_filter': status_filter,
-        'total_requests': total_requests,
-        'open_requests': open_requests,
-        'assigned_requests': assigned_requests,
-        'completed_requests': completed_requests,
+        "requests": requests,
+        "search_query": search_query,
+        "status_filter": status_filter,
+        "total_requests": total_requests,
+        "open_requests": open_requests,
+        "assigned_requests": assigned_requests,
+        "completed_requests": completed_requests,
     }
 
-    return render(request, 'admin/admin_requests.html', context)
-
+    return render(request, "admin/admin_requests.html", context)
 
 
 @login_required
@@ -592,15 +689,15 @@ def admin_request_detail(request, request_id):
     applications = []
     if CareApplication:
         # FIXED: use 'request' not 'care_request'
-        applications = CareApplication.objects.filter(request=care_request).select_related('caretaker__user')
+        applications = CareApplication.objects.filter(
+            request=care_request
+        ).select_related("caretaker__user")
 
     context = {
-        'request': care_request,
-        'applications': applications,
+        "request": care_request,
+        "applications": applications,
     }
-    return render(request, 'admin/admin_request_detail.html', context)
-
-
+    return render(request, "admin/admin_request_detail.html", context)
 
 
 @login_required
@@ -615,39 +712,43 @@ def admin_applications(request):
 
     if CareApplication is None:
         context = {
-            'applications': [],
-            'total_applications': 0,
-            'pending_applications': 0,
-            'accepted_applications': 0,
-            'rejected_applications': 0,
+            "applications": [],
+            "total_applications": 0,
+            "pending_applications": 0,
+            "accepted_applications": 0,
+            "rejected_applications": 0,
         }
-        return render(request, 'admin/admin_applications.html', context)
+        return render(request, "admin/admin_applications.html", context)
 
     # FIXED: Use correct select_related paths
     # CareApplication has:
     # - caretaker (ForeignKey to CaretakerProfile)
     # - request (ForeignKey to CareRequest, which has family)
-    applications = CareApplication.objects.select_related(
-        'caretaker',  # This gets CaretakerProfile
-        'request',    # This gets CareRequest
-        'request__family'  # This gets the family User through the request
-    ).all().order_by('-applied_at')
+    applications = (
+        CareApplication.objects.select_related(
+            "caretaker",  # This gets CaretakerProfile
+            "request",  # This gets CareRequest
+            "request__family",  # This gets the family User through the request
+        )
+        .all()
+        .order_by("-applied_at")
+    )
 
     if search_query:
         applications = applications.filter(
-            Q(caretaker__user__first_name__icontains=search_query) |
-            Q(caretaker__user__last_name__icontains=search_query) |
-            Q(request__family__first_name__icontains=search_query) |
-            Q(request__family__last_name__icontains=search_query)
+            Q(caretaker__user__first_name__icontains=search_query)
+            | Q(caretaker__user__last_name__icontains=search_query)
+            | Q(request__family__first_name__icontains=search_query)
+            | Q(request__family__last_name__icontains=search_query)
         )
 
     if status_filter:
         applications = applications.filter(status=status_filter)
 
     total_applications = CareApplication.objects.count()
-    pending_applications = CareApplication.objects.filter(status='pending').count()
-    accepted_applications = CareApplication.objects.filter(status='accepted').count()
-    rejected_applications = CareApplication.objects.filter(status='rejected').count()
+    pending_applications = CareApplication.objects.filter(status="pending").count()
+    accepted_applications = CareApplication.objects.filter(status="accepted").count()
+    rejected_applications = CareApplication.objects.filter(status="rejected").count()
 
     page = request.GET.get("page", 1)
     paginator = Paginator(applications, 15)
@@ -660,17 +761,16 @@ def admin_applications(request):
         applications = paginator.page(paginator.num_pages)
 
     context = {
-        'applications': applications,
-        'search_query': search_query,
-        'status_filter': status_filter,
-        'total_applications': total_applications,
-        'pending_applications': pending_applications,
-        'accepted_applications': accepted_applications,
-        'rejected_applications': rejected_applications,
+        "applications": applications,
+        "search_query": search_query,
+        "status_filter": status_filter,
+        "total_applications": total_applications,
+        "pending_applications": pending_applications,
+        "accepted_applications": accepted_applications,
+        "rejected_applications": rejected_applications,
     }
 
-    return render(request, 'admin/admin_applications.html', context)
-
+    return render(request, "admin/admin_applications.html", context)
 
 
 @login_required
@@ -687,9 +787,9 @@ def admin_application_detail(request, app_id):
     application = get_object_or_404(CareApplication, id=app_id)
 
     context = {
-        'application': application,
+        "application": application,
     }
-    return render(request, 'admin/admin_application_detail.html', context)
+    return render(request, "admin/admin_application_detail.html", context)
 
 
 @login_required
@@ -704,40 +804,48 @@ def admin_reports(request):
     report_type = request.GET.get("type", "users")
 
     total_users = User.objects.filter(is_active=True).count()
-    total_caretakers = User.objects.filter(role='caretaker', is_active=True).count()
-    total_families = User.objects.filter(role='family', is_active=True).count()
-    verified_caretakers = User.objects.filter(role='caretaker', is_verified=True).count()
-    pending_verifications = User.objects.filter(role='caretaker', verification_status='pending').count()
-    active_caretakers = CaretakerProfile.objects.filter(availability_status='available').count()
-    active_families = User.objects.filter(role='family', is_active=True).count()
+    total_caretakers = User.objects.filter(role="caretaker", is_active=True).count()
+    total_families = User.objects.filter(role="family", is_active=True).count()
+    verified_caretakers = User.objects.filter(
+        role="caretaker", is_verified=True
+    ).count()
+    pending_verifications = User.objects.filter(
+        role="caretaker", verification_status="pending"
+    ).count()
+    active_caretakers = CaretakerProfile.objects.filter(
+        availability_status="available"
+    ).count()
+    active_families = User.objects.filter(role="family", is_active=True).count()
 
     monthly_requests = 0
     if CareRequest:
         today = timezone.now()
         month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        monthly_requests = CareRequest.objects.filter(created_at__gte=month_start).count()
+        monthly_requests = CareRequest.objects.filter(
+            created_at__gte=month_start
+        ).count()
 
     context = {
-        'report_type': report_type,
-        'start_date': start_date,
-        'end_date': end_date,
-        'total_users': total_users,
-        'total_caretakers': total_caretakers,
-        'total_families': total_families,
-        'verified_caretakers': verified_caretakers,
-        'pending_verifications': pending_verifications,
-        'active_caretakers': active_caretakers,
-        'active_families': active_families,
-        'monthly_requests': monthly_requests,
-        'user_growth': 12,
-        'caretaker_growth': 8,
-        'family_growth': 15,
-        'verified_growth': 8,
-        'pending_growth': 5,
-        'request_growth': 25,
+        "report_type": report_type,
+        "start_date": start_date,
+        "end_date": end_date,
+        "total_users": total_users,
+        "total_caretakers": total_caretakers,
+        "total_families": total_families,
+        "verified_caretakers": verified_caretakers,
+        "pending_verifications": pending_verifications,
+        "active_caretakers": active_caretakers,
+        "active_families": active_families,
+        "monthly_requests": monthly_requests,
+        "user_growth": 12,
+        "caretaker_growth": 8,
+        "family_growth": 15,
+        "verified_growth": 8,
+        "pending_growth": 5,
+        "request_growth": 25,
     }
 
-    return render(request, 'admin/admin_reports.html', context)
+    return render(request, "admin/admin_reports.html", context)
 
 
 @login_required
@@ -755,12 +863,12 @@ def admin_audit_logs(request):
     try:
         from apps.Users.models import AuditLog
 
-        logs = AuditLog.objects.select_related('user').all()
+        logs = AuditLog.objects.select_related("user").all()
 
         if user_filter:
             logs = logs.filter(
-                Q(user__username__icontains=user_filter) |
-                Q(user__email__icontains=user_filter)
+                Q(user__username__icontains=user_filter)
+                | Q(user__email__icontains=user_filter)
             )
 
         if action_filter:
@@ -778,8 +886,10 @@ def admin_audit_logs(request):
 
         today_logs = logs.filter(created_at__date=today).count()
         week_logs = logs.filter(created_at__date__gte=week_ago).count()
-        failed_attempts = logs.filter(status='failed', created_at__date__gte=week_ago).count()
-        unique_users = logs.values('user').distinct().count()
+        failed_attempts = logs.filter(
+            status="failed", created_at__date__gte=week_ago
+        ).count()
+        unique_users = logs.values("user").distinct().count()
 
         page = request.GET.get("page", 1)
         paginator = Paginator(logs, 20)
@@ -800,20 +910,19 @@ def admin_audit_logs(request):
         unique_users = 0
 
     context = {
-        'logs': logs,
-        'total_logs': total_logs,
-        'today_logs': today_logs,
-        'week_logs': week_logs,
-        'failed_attempts': failed_attempts,
-        'unique_users': unique_users,
-        'user_filter': user_filter,
-        'action_filter': action_filter,
-        'from_date': from_date,
-        'to_date': to_date,
+        "logs": logs,
+        "total_logs": total_logs,
+        "today_logs": today_logs,
+        "week_logs": week_logs,
+        "failed_attempts": failed_attempts,
+        "unique_users": unique_users,
+        "user_filter": user_filter,
+        "action_filter": action_filter,
+        "from_date": from_date,
+        "to_date": to_date,
     }
 
-    return render(request, 'admin/admin_audit_logs.html', context)
-
+    return render(request, "admin/admin_audit_logs.html", context)
 
 
 @login_required
@@ -827,52 +936,54 @@ def admin_audit_logs(request):
     action_filter = request.GET.get("action", "")
     from_date = request.GET.get("from_date", "")
     to_date = request.GET.get("to_date", "")
-    
+
     # Try to get audit logs if model exists
     try:
         from apps.Users.models import AuditLog
-        
-        logs = AuditLog.objects.select_related('user').all()
-        
+
+        logs = AuditLog.objects.select_related("user").all()
+
         if user_filter:
             logs = logs.filter(
-                Q(user__username__icontains=user_filter) |
-                Q(user__email__icontains=user_filter)
+                Q(user__username__icontains=user_filter)
+                | Q(user__email__icontains=user_filter)
             )
-        
+
         if action_filter:
             logs = logs.filter(action=action_filter)
-        
+
         if from_date:
             logs = logs.filter(created_at__date__gte=from_date)
-        
+
         if to_date:
             logs = logs.filter(created_at__date__lte=to_date)
-        
+
         total_logs = logs.count()
         today = timezone.now().date()
         week_ago = today - timedelta(days=7)
-        
+
         today_logs = logs.filter(created_at__date=today).count()
         week_logs = logs.filter(created_at__date__gte=week_ago).count()
-        failed_attempts = logs.filter(status='failed', created_at__date__gte=week_ago).count()
-        unique_users = logs.values('user').distinct().count()
-        
+        failed_attempts = logs.filter(
+            status="failed", created_at__date__gte=week_ago
+        ).count()
+        unique_users = logs.values("user").distinct().count()
+
         page = request.GET.get("page", 1)
         paginator = Paginator(logs, 20)
-        
+
         try:
             logs = paginator.page(page)
         except PageNotAnInteger:
             logs = paginator.page(1)
         except EmptyPage:
             logs = paginator.page(paginator.num_pages)
-        
+
     except (ImportError, NameError):
         # Sample data for testing when no AuditLog model exists
         from django.utils import timezone
         from datetime import datetime
-        
+
         # Create a mock log object for display
         class MockLog:
             def __init__(self, user, action, resource, details, ip, status, created_at):
@@ -883,33 +994,49 @@ def admin_audit_logs(request):
                 self.ip_address = ip
                 self.status = status
                 self.created_at = created_at
-        
+
         sample_logs = [
-            MockLog(request.user, 'login', 'Authentication', 'Successful login', '127.0.0.1', 'success', timezone.now()),
-            MockLog(request.user, 'update', 'User Profile', 'Updated profile information', '127.0.0.1', 'success', timezone.now() - timedelta(hours=2)),
+            MockLog(
+                request.user,
+                "login",
+                "Authentication",
+                "Successful login",
+                "127.0.0.1",
+                "success",
+                timezone.now(),
+            ),
+            MockLog(
+                request.user,
+                "update",
+                "User Profile",
+                "Updated profile information",
+                "127.0.0.1",
+                "success",
+                timezone.now() - timedelta(hours=2),
+            ),
         ]
-        
+
         logs = sample_logs
         total_logs = len(sample_logs)
         today_logs = 1
         week_logs = 2
         failed_attempts = 0
         unique_users = 1
-    
+
     context = {
-        'logs': logs,
-        'total_logs': total_logs,
-        'today_logs': today_logs,
-        'week_logs': week_logs,
-        'failed_attempts': failed_attempts,
-        'unique_users': unique_users,
-        'user_filter': user_filter,
-        'action_filter': action_filter,
-        'from_date': from_date,
-        'to_date': to_date,
+        "logs": logs,
+        "total_logs": total_logs,
+        "today_logs": today_logs,
+        "week_logs": week_logs,
+        "failed_attempts": failed_attempts,
+        "unique_users": unique_users,
+        "user_filter": user_filter,
+        "action_filter": action_filter,
+        "from_date": from_date,
+        "to_date": to_date,
     }
-    
-    return render(request, 'admin/admin_audit_logs.html', context)
+
+    return render(request, "admin/admin_audit_logs.html", context)
 
 
 @login_required
@@ -950,7 +1077,9 @@ def admin_toggle_user_status(request, id):
             messages.success(request, f"User {user.get_full_name()} is now staff.")
         elif action == "remove_staff":
             user.is_staff = False
-            messages.success(request, f"Staff privileges removed from {user.get_full_name()}.")
+            messages.success(
+                request, f"Staff privileges removed from {user.get_full_name()}."
+            )
 
         user.save()
 
@@ -965,24 +1094,26 @@ def admin_user_edit(request, id):
     """Edit user from admin panel"""
     if not (request.user.is_superuser or request.user.is_staff):
         messages.error(request, "Access denied.")
-        return redirect('users:admin_dashboard')
+        return redirect("users:admin_dashboard")
 
     user = get_object_or_404(User, id=id)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = AdminUserEditForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
-            messages.success(request, f'User {user.get_full_name()} updated successfully.')
-            return redirect('users:admin_user_detail', id=user.id)
+            messages.success(
+                request, f"User {user.get_full_name()} updated successfully."
+            )
+            return redirect("users:admin_user_detail", id=user.id)
     else:
         form = AdminUserEditForm(instance=user)
 
     context = {
-        'edit_user': user,
-        'form': form,
+        "edit_user": user,
+        "form": form,
     }
-    return render(request, 'admin/admin_user_edit.html', context)
+    return render(request, "admin/admin_user_edit.html", context)
 
 
 @login_required
@@ -990,20 +1121,20 @@ def admin_user_delete(request, id):
     """Delete user from admin panel"""
     if not request.user.is_superuser:
         messages.error(request, "Only superusers can delete users.")
-        return redirect('users:admin_dashboard')
+        return redirect("users:admin_dashboard")
 
     user = get_object_or_404(User, id=id)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         username = user.get_full_name()
         user.delete()
-        messages.success(request, f'User {username} has been deleted.')
-        return redirect('users:admin_users_list')
+        messages.success(request, f"User {username} has been deleted.")
+        return redirect("users:admin_users_list")
 
     context = {
-        'delete_user': user,
+        "delete_user": user,
     }
-    return render(request, 'admin/admin_user_confirm_delete.html', context)
+    return render(request, "admin/admin_user_confirm_delete.html", context)
 
 
 # -------------------------------------------------------------------------
@@ -1020,7 +1151,9 @@ def admin_profile(request):
 
     if request.method == "POST":
         # Update admin profile
-        request.user.first_name = request.POST.get("first_name", request.user.first_name)
+        request.user.first_name = request.POST.get(
+            "first_name", request.user.first_name
+        )
         request.user.last_name = request.POST.get("last_name", request.user.last_name)
         request.user.email = request.POST.get("email", request.user.email)
         request.user.phone = request.POST.get("phone", request.user.phone)
@@ -1059,7 +1192,9 @@ def admin_change_password(request):
     """Change admin user password"""
     if not (request.user.is_superuser or request.user.is_staff):
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"success": False, "error": "Access denied"}, status=403)
+            return JsonResponse(
+                {"success": False, "error": "Access denied"}, status=403
+            )
         messages.error(request, "Access denied.")
         return redirect("users:index")
 
@@ -1127,7 +1262,9 @@ def admin_logout_all_sessions(request):
             for session_key in user_sessions:
                 Session.objects.filter(session_key=session_key).delete()
 
-            messages.success(request, f"Logged out {len(user_sessions)} other sessions.")
+            messages.success(
+                request, f"Logged out {len(user_sessions)} other sessions."
+            )
             return redirect("users:admin_profile")
 
         except Exception as e:
@@ -1136,12 +1273,15 @@ def admin_logout_all_sessions(request):
 
     return redirect("users:admin_profile")
 
+
 @login_required
 def admin_change_password(request):
     """Change admin user password"""
     if not (request.user.is_superuser or request.user.is_staff):
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"success": False, "error": "Access denied"}, status=403)
+            return JsonResponse(
+                {"success": False, "error": "Access denied"}, status=403
+            )
         messages.error(request, "Access denied.")
         return redirect("users:index")
 
@@ -1209,7 +1349,9 @@ def admin_logout_all_sessions(request):
             for session_key in user_sessions:
                 Session.objects.filter(session_key=session_key).delete()
 
-            messages.success(request, f"Logged out {len(user_sessions)} other sessions.")
+            messages.success(
+                request, f"Logged out {len(user_sessions)} other sessions."
+            )
             return redirect("users:admin_profile")
 
         except Exception as e:
@@ -1235,7 +1377,11 @@ def admin_quick_view_caretaker(request, id):
             "full_name": caretaker.user.get_full_name(),
             "email": caretaker.user.email,
             "phone": caretaker.user.phone or "Not provided",
-            "dob": str(caretaker.date_of_birth) if caretaker.date_of_birth else "Not provided",
+            "dob": (
+                str(caretaker.date_of_birth)
+                if caretaker.date_of_birth
+                else "Not provided"
+            ),
             "gender": caretaker.gender or "Not provided",
             "experience": caretaker.experience_years,
             "qualification": caretaker.qualification or "Not provided",
@@ -1256,28 +1402,28 @@ def admin_quick_view_caretaker(request, id):
 def admin_bulk_verify(request):
     """Bulk verify caretakers"""
     if not (request.user.is_superuser or request.user.is_staff):
-        return JsonResponse({'error': 'Access denied'}, status=403)
+        return JsonResponse({"error": "Access denied"}, status=403)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             data = json.loads(request.body)
-            caretaker_ids = data.get('caretaker_ids', [])
-            action = data.get('action', 'approve')
-            remarks = data.get('remarks', '')
+            caretaker_ids = data.get("caretaker_ids", [])
+            action = data.get("action", "approve")
+            remarks = data.get("remarks", "")
 
             caretakers = CaretakerProfile.objects.filter(id__in=caretaker_ids)
             count = 0
 
             for caretaker in caretakers:
-                if action == 'approve':
-                    caretaker.user.verification_status = 'verified'
+                if action == "approve":
+                    caretaker.user.verification_status = "verified"
                     caretaker.user.is_verified = True
                     caretaker.verified_by_admin = True
                     caretaker.verified_date = timezone.now()
                     caretaker.verification_remarks = remarks
                     count += 1
-                elif action == 'reject':
-                    caretaker.user.verification_status = 'rejected'
+                elif action == "reject":
+                    caretaker.user.verification_status = "rejected"
                     caretaker.user.is_verified = False
                     caretaker.verification_remarks = remarks
                     count += 1
@@ -1285,12 +1431,14 @@ def admin_bulk_verify(request):
                 caretaker.user.save()
                 caretaker.save()
 
-            return JsonResponse({'success': True, 'message': f'{count} caretakers have been {action}d.'})
+            return JsonResponse(
+                {"success": True, "message": f"{count} caretakers have been {action}d."}
+            )
 
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({"error": str(e)}, status=400)
 
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
 
 @login_required
@@ -1298,67 +1446,67 @@ def admin_export_data(request):
     """Export data based on type"""
     if not (request.user.is_superuser or request.user.is_staff):
         messages.error(request, "Access denied.")
-        return redirect('users:admin_dashboard')
+        return redirect("users:admin_dashboard")
 
-    export_type = request.GET.get('type', 'users')
+    export_type = request.GET.get("type", "users")
 
-    if export_type == 'users':
-        users = User.objects.all().order_by('-date_joined')
+    if export_type == "users":
+        users = User.objects.all().order_by("-date_joined")
         return AdminExporter.export_users_to_csv(users)
-    elif export_type == 'caretakers':
-        caretakers = CaretakerProfile.objects.select_related('user').all()
+    elif export_type == "caretakers":
+        caretakers = CaretakerProfile.objects.select_related("user").all()
         return AdminExporter.export_caretakers_to_csv(caretakers)
-    elif export_type == 'families':
-        families = FamilyProfile.objects.select_related('user').all()
+    elif export_type == "families":
+        families = FamilyProfile.objects.select_related("user").all()
         messages.info(request, "Family export coming soon.")
-        return redirect('users:admin_reports')
+        return redirect("users:admin_reports")
 
     messages.error(request, "Invalid export type.")
-    return redirect('users:admin_reports')
+    return redirect("users:admin_reports")
 
 
 @login_required
 def admin_system_health(request):
     """System health check endpoint for admin"""
     if not request.user.is_superuser:
-        return JsonResponse({'error': 'Access denied'}, status=403)
+        return JsonResponse({"error": "Access denied"}, status=403)
 
     from django.db import connection
     from django.core.cache import cache
     import os
 
     health_data = {
-        'status': 'healthy',
-        'timestamp': timezone.now().isoformat(),
-        'checks': {}
+        "status": "healthy",
+        "timestamp": timezone.now().isoformat(),
+        "checks": {},
     }
 
     try:
         connection.ensure_connection()
-        health_data['checks']['database'] = {'status': 'ok'}
+        health_data["checks"]["database"] = {"status": "ok"}
     except Exception as e:
-        health_data['checks']['database'] = {'status': 'error', 'error': str(e)}
-        health_data['status'] = 'unhealthy'
+        health_data["checks"]["database"] = {"status": "error", "error": str(e)}
+        health_data["status"] = "unhealthy"
 
     try:
-        cache.set('health_check', 'ok', 10)
-        if cache.get('health_check') == 'ok':
-            health_data['checks']['cache'] = {'status': 'ok'}
+        cache.set("health_check", "ok", 10)
+        if cache.get("health_check") == "ok":
+            health_data["checks"]["cache"] = {"status": "ok"}
         else:
-            health_data['checks']['cache'] = {'status': 'error'}
+            health_data["checks"]["cache"] = {"status": "error"}
     except Exception as e:
-        health_data['checks']['cache'] = {'status': 'error', 'error': str(e)}
+        health_data["checks"]["cache"] = {"status": "error", "error": str(e)}
 
     try:
-        static_dir = settings.STATIC_ROOT if settings.STATIC_ROOT else 'static'
+        static_dir = settings.STATIC_ROOT if settings.STATIC_ROOT else "static"
         media_dir = settings.MEDIA_ROOT
-        health_data['checks']['storage'] = {
-            'status': 'ok',
-            'static_exists': os.path.exists(static_dir),
-            'media_exists': os.path.exists(media_dir)
+        health_data["checks"]["storage"] = {
+            "status": "ok",
+            "static_exists": os.path.exists(static_dir),
+            "media_exists": os.path.exists(media_dir),
         }
     except Exception as e:
-        health_data['checks']['storage'] = {'status': 'error', 'error': str(e)}
+        health_data["checks"]["storage"] = {"status": "error", "error": str(e)}
 
     return JsonResponse(health_data)
 
@@ -1367,24 +1515,29 @@ def admin_system_health(request):
 def admin_clear_old_logs(request):
     """Clear audit logs older than specified days"""
     if not request.user.is_superuser:
-        return JsonResponse({'error': 'Access denied'}, status=403)
+        return JsonResponse({"error": "Access denied"}, status=403)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
-            days = int(request.POST.get('days', 30))
+            days = int(request.POST.get("days", 30))
             cutoff_date = timezone.now() - timedelta(days=days)
 
             from apps.Users.models import AuditLog
-            deleted_count = AuditLog.objects.filter(created_at__lt=cutoff_date).delete()[0]
 
-            return JsonResponse({
-                'success': True,
-                'message': f'Deleted {deleted_count} logs older than {days} days.'
-            })
+            deleted_count = AuditLog.objects.filter(
+                created_at__lt=cutoff_date
+            ).delete()[0]
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": f"Deleted {deleted_count} logs older than {days} days.",
+                }
+            )
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({"error": str(e)}, status=400)
 
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
 
 # -------------------------------------------------------------------------
@@ -1396,14 +1549,16 @@ def admin_test(request):
     if not (request.user.is_superuser or request.user.is_staff):
         return HttpResponse("Access denied", status=403)
 
-    return HttpResponse(f"""
+    return HttpResponse(
+        f"""
         <h1>Admin Panel Test</h1>
         <p>Welcome {request.user.get_full_name()}!</p>
         <p>Your role: {request.user.role}</p>
         <p>Verification status: {request.user.verification_status}</p>
         <p>Phone: {request.user.phone}</p>
         <p><a href="/admin-panel/dashboard/">Go to Dashboard</a></p>
-    """)
+    """
+    )
 
 
 # -------------------------------------------------------------------------
@@ -1417,8 +1572,16 @@ def caretaker_profile(request):
 
     try:
         profile = request.user.caretaker_profile
-        skills_list = [skill.strip() for skill in profile.skills.split(",") if skill.strip()] if profile.skills else []
-        languages_list = [lang.strip() for lang in profile.languages.split(",") if lang.strip()] if profile.languages else []
+        skills_list = (
+            [skill.strip() for skill in profile.skills.split(",") if skill.strip()]
+            if profile.skills
+            else []
+        )
+        languages_list = (
+            [lang.strip() for lang in profile.languages.split(",") if lang.strip()]
+            if profile.languages
+            else []
+        )
     except CaretakerProfile.DoesNotExist:
         profile = CaretakerProfile.objects.create(user=request.user, address="")
         skills_list = []
@@ -1458,9 +1621,15 @@ def update_caretaker_profile(request):
 
             # Contact Information
             request.user.phone = request.POST.get("phone", request.user.phone)
-            profile.emergency_contact_name = request.POST.get("emergency_contact_name", "")
-            profile.emergency_contact_phone = request.POST.get("emergency_contact_phone", "")
-            profile.emergency_contact_relation = request.POST.get("emergency_contact_relation", "")
+            profile.emergency_contact_name = request.POST.get(
+                "emergency_contact_name", ""
+            )
+            profile.emergency_contact_phone = request.POST.get(
+                "emergency_contact_phone", ""
+            )
+            profile.emergency_contact_relation = request.POST.get(
+                "emergency_contact_relation", ""
+            )
 
             # Professional Information
             if request.POST.get("experience_years"):
@@ -1479,11 +1648,17 @@ def update_caretaker_profile(request):
             profile.achievements = request.POST.get("achievements", "")
 
             # Availability
-            profile.availability_status = request.POST.get("availability_status", "available")
+            profile.availability_status = request.POST.get(
+                "availability_status", "available"
+            )
             profile.preferred_shift = request.POST.get("preferred_shift", "flexible")
-            profile.willing_to_relocate = request.POST.get("willing_to_relocate") == "on"
+            profile.willing_to_relocate = (
+                request.POST.get("willing_to_relocate") == "on"
+            )
             if request.POST.get("max_travel_distance"):
-                profile.max_travel_distance = int(request.POST.get("max_travel_distance"))
+                profile.max_travel_distance = int(
+                    request.POST.get("max_travel_distance")
+                )
 
             # Location
             profile.address = request.POST.get("address", "")
@@ -1505,8 +1680,24 @@ def update_caretaker_profile(request):
 
             # Availability Schedule
             profile.availability_schedule.all().delete()
-            days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-            day_map = {"monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6}
+            days = [
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday",
+            ]
+            day_map = {
+                "monday": 0,
+                "tuesday": 1,
+                "wednesday": 2,
+                "thursday": 3,
+                "friday": 4,
+                "saturday": 5,
+                "sunday": 6,
+            }
 
             for day in days:
                 if request.POST.get(f"{day}_available") == "on":
@@ -1514,8 +1705,11 @@ def update_caretaker_profile(request):
                     end_time = request.POST.get(f"{day}_end")
                     if start_time and end_time:
                         CaretakerAvailability.objects.create(
-                            caretaker=profile, day_of_week=day_map[day],
-                            start_time=start_time, end_time=end_time, is_available=True
+                            caretaker=profile,
+                            day_of_week=day_map[day],
+                            start_time=start_time,
+                            end_time=end_time,
+                            is_available=True,
                         )
 
             messages.success(request, "Profile updated successfully!")
@@ -1526,7 +1720,15 @@ def update_caretaker_profile(request):
 
     availability_dict = {}
     for avail in profile.availability_schedule.all():
-        days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+        days = [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday",
+        ]
         day_name = days[avail.day_of_week]
         availability_dict[day_name] = {
             "available": True,
@@ -1535,7 +1737,15 @@ def update_caretaker_profile(request):
         }
 
     context = {"profile": profile}
-    days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    days = [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+    ]
     for day in days:
         if day in availability_dict:
             context[f"{day}_available"] = True
@@ -1563,18 +1773,22 @@ def verification_pending(request):
 @login_required
 def search_caretakers(request):
     if request.user.role != "family":
-        messages.error(request, "Access denied. Only families can search for caretakers.")
+        messages.error(
+            request, "Access denied. Only families can search for caretakers."
+        )
         return redirect("users:index")
 
-    caretakers = CaretakerProfile.objects.filter(user__role="caretaker", user__is_verified=True).select_related("user")
+    caretakers = CaretakerProfile.objects.filter(
+        user__role="caretaker", user__is_verified=True
+    ).select_related("user")
 
     query = request.GET.get("q")
     if query:
         caretakers = caretakers.filter(
-            Q(user__first_name__icontains=query) |
-            Q(user__last_name__icontains=query) |
-            Q(qualification__icontains=query) |
-            Q(city__icontains=query)
+            Q(user__first_name__icontains=query)
+            | Q(user__last_name__icontains=query)
+            | Q(qualification__icontains=query)
+            | Q(city__icontains=query)
         )
 
     min_exp = request.GET.get("experience")
@@ -1605,7 +1819,6 @@ def caretaker_detail(request, id):
     return render(request, "users/caretaker_detail.html", context)
 
 
-
 @login_required
 def family_profile(request):
     if request.user.role != "family":
@@ -1616,8 +1829,13 @@ def family_profile(request):
         profile = request.user.family_profile
     except FamilyProfile.DoesNotExist:
         profile = FamilyProfile.objects.create(
-            user=request.user, phone=request.user.phone or "", address="",
-            patient_name="", patient_age=None, primary_medical_condition="", care_required=""
+            user=request.user,
+            phone=request.user.phone or "",
+            address="",
+            patient_name="",
+            patient_age=None,
+            primary_medical_condition="",
+            care_required="",
         )
         messages.info(request, "Please complete your profile information.")
 
@@ -1634,7 +1852,9 @@ def family_profile(request):
         if CareApplication:
             # FIXED: use 'request' not 'care_request'
             for req in user_requests:
-                total_applications += CareApplication.objects.filter(request=req).count()
+                total_applications += CareApplication.objects.filter(
+                    request=req
+                ).count()
 
     context = {
         "profile": profile,
@@ -1646,7 +1866,6 @@ def family_profile(request):
     return render(request, "users/family_profile.html", context)
 
 
-
 @login_required
 def update_family_profile(request):
     if request.user.role != "family":
@@ -1656,16 +1875,24 @@ def update_family_profile(request):
     try:
         profile = request.user.family_profile
     except FamilyProfile.DoesNotExist:
-        profile = FamilyProfile.objects.create(user=request.user, phone=request.user.phone or "")
+        profile = FamilyProfile.objects.create(
+            user=request.user, phone=request.user.phone or ""
+        )
 
     if request.method == "POST":
         try:
             # Contact
             profile.phone = request.POST.get("phone", "")
             profile.alternate_phone = request.POST.get("alternate_phone", "")
-            profile.emergency_contact_name = request.POST.get("emergency_contact_name", "")
-            profile.emergency_contact_phone = request.POST.get("emergency_contact_phone", "")
-            profile.emergency_contact_relation = request.POST.get("emergency_contact_relation", "")
+            profile.emergency_contact_name = request.POST.get(
+                "emergency_contact_name", ""
+            )
+            profile.emergency_contact_phone = request.POST.get(
+                "emergency_contact_phone", ""
+            )
+            profile.emergency_contact_relation = request.POST.get(
+                "emergency_contact_relation", ""
+            )
 
             # Address
             profile.address = request.POST.get("address", "")
@@ -1689,7 +1916,9 @@ def update_family_profile(request):
             profile.patient_blood_group = request.POST.get("patient_blood_group", "")
 
             # Medical
-            profile.primary_medical_condition = request.POST.get("primary_medical_condition", "")
+            profile.primary_medical_condition = request.POST.get(
+                "primary_medical_condition", ""
+            )
             profile.secondary_conditions = request.POST.get("secondary_conditions", "")
             profile.allergies = request.POST.get("allergies", "")
             profile.medications = request.POST.get("medications", "")
@@ -1703,12 +1932,18 @@ def update_family_profile(request):
             profile.pets_at_home = request.POST.get("pets_at_home") == "on"
             profile.pet_details = request.POST.get("pet_details", "")
             profile.smokers_in_home = request.POST.get("smokers_in_home") == "on"
-            profile.accessibility_requirements = request.POST.get("accessibility_requirements", "")
+            profile.accessibility_requirements = request.POST.get(
+                "accessibility_requirements", ""
+            )
 
             # Preferences
             profile.previous_caretaker = request.POST.get("previous_caretaker") == "on"
-            profile.previous_caretaker_feedback = request.POST.get("previous_caretaker_feedback", "")
-            profile.preferred_caretaker_gender = request.POST.get("preferred_caretaker_gender", "any")
+            profile.previous_caretaker_feedback = request.POST.get(
+                "previous_caretaker_feedback", ""
+            )
+            profile.preferred_caretaker_gender = request.POST.get(
+                "preferred_caretaker_gender", "any"
+            )
             profile.preferred_language = request.POST.get("preferred_language", "")
             if request.POST.get("monthly_budget"):
                 profile.monthly_budget = float(request.POST.get("monthly_budget"))
@@ -1727,7 +1962,8 @@ def update_family_profile(request):
                 request.user.save()
 
             messages.success(request, "Profile updated successfully!")
-            return redirect("family_profile")
+            # FIXED: Added 'users:' namespace prefix
+            return redirect("users:family_profile")
 
         except Exception as e:
             messages.error(request, f"Error updating profile: {str(e)}")
@@ -1746,7 +1982,7 @@ def caretaker_dashboard(request):
         return redirect("users:index")
 
     if not request.user.is_verified or request.user.verification_status != "verified":
-        return redirect("verification_pending")
+        return redirect("users:verification_pending")
 
     try:
         profile = request.user.caretaker_profile
@@ -1762,7 +1998,9 @@ def caretaker_dashboard(request):
         total_applications = applications.count()
         pending_applications = applications.filter(status="pending").count()
         # Check the correct status for assigned jobs
-        assigned_jobs = applications.filter(status="accepted").count()  # or "approved" depending on your model
+        assigned_jobs = applications.filter(
+            status="accepted"
+        ).count()  # or "approved" depending on your model
 
     context = {
         "profile": profile,
@@ -1775,7 +2013,6 @@ def caretaker_dashboard(request):
         "is_available_today": True,
     }
     return render(request, "users/caretaker_dashboard.html", context)
-
 
 
 @login_required
@@ -1802,7 +2039,9 @@ def elder_list(request):
         messages.error(request, "Access denied.")
         return redirect("users:index")
 
-    elders = ElderProfile.objects.filter(family=request.user).order_by("-is_primary", "name")
+    elders = ElderProfile.objects.filter(family=request.user).order_by(
+        "-is_primary", "name"
+    )
     context = {"elders": elders}
     return render(request, "users/elder_list.html", context)
 
@@ -1818,7 +2057,6 @@ def elder_detail(request, elder_id):
     return render(request, "users/elder_detail.html", context)
 
 
-@login_required
 def elder_add(request):
     if request.user.role != "family":
         messages.error(request, "Access denied.")
@@ -1841,7 +2079,9 @@ def elder_add(request):
                 cognitive_status=request.POST.get("cognitive_status", "normal"),
                 emergency_contact_name=request.POST.get("emergency_contact_name", ""),
                 emergency_contact_phone=request.POST.get("emergency_contact_phone", ""),
-                emergency_contact_relation=request.POST.get("emergency_contact_relation", ""),
+                emergency_contact_relation=request.POST.get(
+                    "emergency_contact_relation", ""
+                ),
                 notes=request.POST.get("notes", ""),
                 is_primary=request.POST.get("is_primary") == "on",
             )
@@ -1859,11 +2099,14 @@ def elder_add(request):
                 elder.is_primary = True
                 elder.save()
 
-            messages.success(request, f"Elder profile for {elder.name} added successfully!")
-            return redirect("elder_list")
+            messages.success(
+                request, f"Elder profile for {elder.name} added successfully!"
+            )
+            return redirect("users:elder_list")
         except Exception as e:
             messages.error(request, f"Error adding elder: {str(e)}")
 
+    # FIXED: Changed from "requests/elder_add.html" to "users/elder_add.html"
     return render(request, "users/elder_add.html")
 
 
@@ -1882,15 +2125,29 @@ def elder_edit(request, elder_id):
             elder.gender = request.POST.get("gender", elder.gender)
             elder.relationship = request.POST.get("relationship", elder.relationship)
             elder.blood_group = request.POST.get("blood_group", elder.blood_group)
-            elder.medical_conditions = request.POST.get("medical_conditions", elder.medical_conditions)
+            elder.medical_conditions = request.POST.get(
+                "medical_conditions", elder.medical_conditions
+            )
             elder.allergies = request.POST.get("allergies", elder.allergies)
             elder.medications = request.POST.get("medications", elder.medications)
-            elder.dietary_restrictions = request.POST.get("dietary_restrictions", elder.dietary_restrictions)
-            elder.mobility_status = request.POST.get("mobility_status", elder.mobility_status)
-            elder.cognitive_status = request.POST.get("cognitive_status", elder.cognitive_status)
-            elder.emergency_contact_name = request.POST.get("emergency_contact_name", elder.emergency_contact_name)
-            elder.emergency_contact_phone = request.POST.get("emergency_contact_phone", elder.emergency_contact_phone)
-            elder.emergency_contact_relation = request.POST.get("emergency_contact_relation", elder.emergency_contact_relation)
+            elder.dietary_restrictions = request.POST.get(
+                "dietary_restrictions", elder.dietary_restrictions
+            )
+            elder.mobility_status = request.POST.get(
+                "mobility_status", elder.mobility_status
+            )
+            elder.cognitive_status = request.POST.get(
+                "cognitive_status", elder.cognitive_status
+            )
+            elder.emergency_contact_name = request.POST.get(
+                "emergency_contact_name", elder.emergency_contact_name
+            )
+            elder.emergency_contact_phone = request.POST.get(
+                "emergency_contact_phone", elder.emergency_contact_phone
+            )
+            elder.emergency_contact_relation = request.POST.get(
+                "emergency_contact_relation", elder.emergency_contact_relation
+            )
             elder.notes = request.POST.get("notes", elder.notes)
 
             new_primary = request.POST.get("is_primary") == "on"
@@ -1904,8 +2161,10 @@ def elder_edit(request, elder_id):
                 elder.profile_picture = request.FILES["profile_picture"]
 
             elder.save()
-            messages.success(request, f"Elder profile for {elder.name} updated successfully!")
-            return redirect("elder_detail", elder_id=elder.id)
+            messages.success(
+                request, f"Elder profile for {elder.name} updated successfully!"
+            )
+            return redirect("users:elder_detail", elder_id=elder.id)
         except Exception as e:
             messages.error(request, f"Error updating elder: {str(e)}")
 
@@ -1931,7 +2190,9 @@ def elder_delete(request, elder_id):
             if remaining:
                 remaining.is_primary = True
                 remaining.save()
-                messages.info(request, f"{remaining.name} has been set as the new primary elder.")
+                messages.info(
+                    request, f"{remaining.name} has been set as the new primary elder."
+                )
 
         messages.success(request, f"Elder profile for {name} deleted successfully!")
         return redirect("elder_list")
@@ -1951,4 +2212,4 @@ def elder_set_primary(request, elder_id):
     elder.save()
 
     messages.success(request, f"{elder.name} is now the primary elder.")
-    return redirect("elder_list")
+    return redirect("users:elder_list")
