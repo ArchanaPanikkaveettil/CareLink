@@ -28,7 +28,7 @@
             <div class="notification-item {% if not notification.is_read %}unread{% endif %}" 
                  data-notification-id="{{ notification.id }}">
                 <div class="notification-icon">
-                    <i class="fas {{ notification.icon|default:'fa-bell' }}"></i>
+                    <i class="fas {% if notification.icon and 'fa-' in notification.icon %}{{ notification.icon }}{% else %}fa-{{ notification.icon|default:'bell' }}{% endif %}"></i>
                 </div>
                 <div class="notification-content">
                     <div class="notification-title">{{ notification.title|default:"Notification" }}</div>

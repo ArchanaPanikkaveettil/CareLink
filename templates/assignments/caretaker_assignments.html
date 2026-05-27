@@ -1,0 +1,343 @@
+{% extends 'users/nurse_base.html' %}
+{% load static %}
+
+{% block title %}My Patients - CareLink{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-users"></i> My Patients
+{% endblock %}
+
+{% block page_icon %}
+<i class="fas fa-users"></i>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header Stats -->
+    <div class="stats-grid" style="margin-bottom: 30px;">
+        <div class="stat-card">
+            <div class="stat-number">{{ assignments|length }}</div>
+            <div class="stat-label">Active Patients</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ total_tasks_today|default:0 }}</div>
+            <div class="stat-label">Tasks Today</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ pending_tasks_total|default:0 }}</div>
+            <div class="stat-label">Pending Tasks</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ unread_messages|default:0 }}</div>
+            <div class="stat-label">Unread Messages</div>
+        </div>
+    </div>
+
+    {% if assignments %}
+        <div class="cards-grid">
+            {% for assignment in assignments %}
+                <div class="caregiver-card">
+                    <!-- Card Header -->
+                    <div class="card-header" style="background: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3 style="font-size: 1.1rem; margin-bottom: 5px;">
+                                    <i class="fas fa-user-injured"></i> 
+                                    {{ assignment.display_patient_name }}
+                                </h3>
+                                <p style="font-size: 0.75rem; opacity: 0.9; margin-top: 5px;">
+                                    <i class="fas fa-user-md"></i> Family: {{ assignment.family.get_full_name|default:assignment.family.username }}
+                                </p>
+                            </div>
+                            <span class="status-badge status-active">
+                                <i class="fas fa-circle" style="font-size: 0.6rem; margin-right: 4px;"></i>
+                                Active
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Card Body -->
+                    <div class="card-body">
+                        <!-- Assignment Details -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                            <div>
+                                <p class="info-label">Care Started</p>
+                                <p class="info-value"><strong>{{ assignment.start_date|date:"M d, Y" }}</strong></p>
+                            </div>
+                            <div>
+                                <p class="info-label">Shift Type</p>
+                                <p class="info-value"><strong>{{ assignment.get_shift_type_display }}</strong></p>
+                            </div>
+                            <div>
+                                <p class="info-label">Work Hours/Day</p>
+                                <p class="info-value"><strong>{{ assignment.work_hours_per_day }} hours</strong></p>
+                            </div>
+                            <div>
+                                <p class="info-label">Hourly Rate</p>
+                                <p class="info-value"><strong>₹{{ assignment.hourly_rate|default:"N/A" }}</strong></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Today's Status -->
+                        <div style="background: #f8fafc; border-radius: 10px; padding: 12px; margin-bottom: 15px; border-left: 4px solid 
+                            {% if assignment.today_attendance and assignment.today_attendance.check_in_time %}#10b981
+                            {% elif assignment.today_attendance and assignment.today_attendance.status == 'absent' %}#ef4444
+                            {% else %}#94a3b8{% endif %}">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <i class="fas fa-calendar-day" style="color: #0f3460;"></i>
+                                    <strong style="margin-left: 8px;">Today's Status</strong>
+                                </div>
+                                {% if assignment.today_attendance %}
+                                    {% if assignment.today_attendance.check_in_time %}
+                                        <span class="status-badge" style="background: #10b981;">
+                                            <i class="fas fa-sign-in-alt"></i> 
+                                            {{ assignment.today_attendance.check_in_time|time:"g:i A" }}
+                                        </span>
+                                    {% elif assignment.today_attendance.status == 'absent' %}
+                                        <span class="status-badge" style="background: #ef4444;">
+                                            <i class="fas fa-times"></i> Absent
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge" style="background: #f59e0b;">
+                                            <i class="fas fa-clock"></i> Not Checked In
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="status-badge" style="background: #6b7280;">
+                                        <i class="fas fa-question"></i> No Record
+                                    </span>
+                                {% endif %}
+                            </div>
+                            {% if assignment.today_attendance and assignment.today_attendance.check_out_time %}
+                            <div style="margin-top: 8px; font-size: 0.75rem; color: #64748b;">
+                                <i class="fas fa-sign-out-alt"></i> Checked out: {{ assignment.today_attendance.check_out_time|time:"g:i A" }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Quick Stats -->
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
+                            <div style="text-align: center; padding: 8px; background: #eff6ff; border-radius: 8px;">
+                                <div style="font-size: 1.2rem; font-weight: bold; color: #0f3460;">{{ assignment.today_tasks_count|default:"0" }}</div>
+                                <div style="font-size: 0.7rem; color: #64748b;">Tasks Today</div>
+                            </div>
+                            <div style="text-align: center; padding: 8px; background: #fef3c7; border-radius: 8px;">
+                                <div style="font-size: 1.2rem; font-weight: bold; color: #f59e0b;">{{ assignment.pending_tasks_count|default:"0" }}</div>
+                                <div style="font-size: 0.7rem; color: #64748b;">Pending Tasks</div>
+                            </div>
+                            <div style="text-align: center; padding: 8px; background: #f3e8ff; border-radius: 8px;">
+                                <div style="font-size: 1.2rem; font-weight: bold; color: #9333ea;">{{ assignment.unread_notes_count|default:"0" }}</div>
+                                <div style="font-size: 0.7rem; color: #64748b;">New Notes</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Patient Details -->
+                        <div style="background: #f8fafc; border-radius: 8px; padding: 10px;">
+                            <p style="font-size: 0.7rem; color: #64748b; margin-bottom: 5px;">
+                                <i class="fas fa-info-circle"></i> Patient Details:
+                            </p>
+                            <p style="font-size: 0.85rem; margin-bottom: 0;">
+                                <strong>{{ assignment.display_patient_name }}</strong>
+                                {% if assignment.care_request.elder_profile.age %}
+                                    <span style="color: #64748b;">({{ assignment.care_request.elder_profile.age }} years)</span>
+                                {% elif assignment.care_request.patient_age %}
+                                    <span style="color: #64748b;">({{ assignment.care_request.patient_age }} years)</span>
+                                {% endif %}
+                                {% if assignment.care_request.elder.gender %}
+                                    <br><span style="font-size: 0.75rem; color: #64748b;">Gender: {{ assignment.care_request.elder.gender }}</span>
+                                {% endif %}
+                            </p>
+                            {% if assignment.care_request.care_details %}
+                                <p style="font-size: 0.75rem; color: #64748b; margin-top: 5px;">
+                                    {{ assignment.care_request.care_details|truncatewords:20 }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Card Actions -->
+                    <div style="padding: 15px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                            <a href="{% url 'assignments:caretaker_assignment_detail' assignment.id %}" 
+                               class="btn btn-primary" style="text-align: center;">
+                                <i class="fas fa-eye"></i> Overview
+                            </a>
+                            <a href="{% url 'assignments:mark_attendance' assignment.id %}" 
+                               class="btn btn-secondary" style="text-align: center;">
+                                <i class="fas fa-fingerprint"></i> Attendance
+                            </a>
+                            <a href="{% url 'assignments:create_daily_report' assignment.id %}" 
+                               class="btn btn-primary" style="text-align: center;">
+                                <i class="fas fa-clipboard-list"></i> Report
+                            </a>
+                            <a href="{% url 'assignments:task_list' assignment.id %}" 
+                               class="btn btn-secondary" style="text-align: center;">
+                                <i class="fas fa-tasks"></i> Tasks
+                            </a>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <a href="{% url 'assignments:create_note' assignment.id %}" 
+                               class="btn btn-secondary" style="text-align: center; display: block;">
+                                <i class="fas fa-comment"></i> Send Note
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <i class="fas fa-user-nurse"></i>
+            <h3>No Patients Assigned Yet</h3>
+            <p>You haven't been assigned to any patients yet.</p>
+            <a href="{% url 'requests:browse_requests' %}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Browse Available Requests
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #0f3460;
+    }
+    
+    .stat-label {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 25px;
+    }
+    
+    .caregiver-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .caregiver-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header {
+        padding: 20px;
+        color: white;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    .info-label {
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-bottom: 4px;
+    }
+    
+    .info-value {
+        font-size: 0.9rem;
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .status-active {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #1e4a7a;
+    }
+    
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+    
+    .btn-secondary:hover {
+        background: #cbd5e1;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 20px;
+    }
+    
+    .empty-state h3 {
+        font-size: 1.3rem;
+        color: #1e293b;
+        margin-bottom: 10px;
+    }
+    
+    .empty-state p {
+        color: #64748b;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}

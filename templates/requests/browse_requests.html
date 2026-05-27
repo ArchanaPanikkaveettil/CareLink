@@ -443,7 +443,7 @@
                     <i class="fas fa-user-circle"></i>
                 </div>
                 <div class="patient-info">
-                    <h3>{{ request.patient_name }}
+                    <h3>{{ request.display_patient_name }}
                         {% if request.id in applied_request_ids %}
                         <span class="applied-badge">
                             <i class="fas fa-check"></i> Applied
@@ -482,8 +482,8 @@
                         <span>{{ request.shift_timing|default:"Flexible" }}</span>
                     </div>
                     <div class="meta-item">
-                        <i class="fas fa-dollar-sign"></i>
-                        <span>${{ request.salary_offered }}/{{ request.get_payment_frequency_display|lower }}</span>
+                        <i class="fas fa-rupee-sign"></i>
+                        <span>₹{{ request.salary_offered }}/{{ request.get_payment_frequency_display|lower }}</span>
                     </div>
                 </div>
 

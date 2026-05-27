@@ -1,0 +1,489 @@
+{% extends base_template|default:'base.html' %}
+
+{% load static %}
+
+{% block title %}Send Message - CareLink{% endblock %}
+
+{% block page_title %}
+    {% if user.role == 'family' %}
+        Send Message to {{ assignment.caretaker.get_full_name|default:assignment.caretaker.username }}
+    {% else %}
+        Send Message to {{ assignment.family.get_full_name|default:assignment.family.username }}
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .message-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 25px;
+    }
+
+    .info-section {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border-left: 4px solid #0f3460;
+    }
+
+    .info-section h4 {
+        color: #0f3460;
+        font-size: 1rem;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-section p {
+        color: #475569;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .recipient-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .recipient-avatar {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #0f3460, #1e4a7a);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .recipient-details h3 {
+        color: #0f3460;
+        font-size: 1.1rem;
+        margin-bottom: 4px;
+    }
+
+    .recipient-details p {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .form-group label i {
+        color: #0f3460;
+        margin-right: 6px;
+        width: 18px;
+    }
+
+    .form-group label .required {
+        color: #dc3545;
+        margin-left: 4px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        background: white;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #0f3460;
+        box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475669' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+
+    .help-text {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .help-text i {
+        color: #0f3460;
+        font-size: 0.7rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f5f1;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(15, 52, 96, 0.2);
+    }
+
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #475569;
+        transform: translateY(-2px);
+    }
+
+    .info-box {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .info-box i {
+        font-size: 1.5rem;
+        color: #0f3460;
+    }
+
+    .info-box-content {
+        flex: 1;
+    }
+
+    .info-box-title {
+        font-weight: 600;
+        color: #0f3460;
+        margin-bottom: 5px;
+    }
+
+    .info-box-text {
+        color: #475569;
+        font-size: 0.9rem;
+    }
+
+    .type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-top: 5px;
+    }
+
+    .type-general {
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+    .type-medical {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .type-emergency {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    @media (max-width: 768px) {
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .recipient-info {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="message-card">
+        <!-- Info Box -->
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            <div class="info-box-content">
+                <div class="info-box-title">About Care Messages</div>
+                <div class="info-box-text">
+                    Messages are shared between family members and caregivers. 
+                    {% if user.role == 'family' %}
+                        Use this to communicate important updates or instructions to your caregiver.
+                    {% else %}
+                        Use this to share updates about the patient's condition or any concerns.
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recipient Information -->
+        <div class="recipient-info">
+            <div class="recipient-avatar">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="recipient-details">
+                <h3>
+                    {% if user.role == 'family' %}
+                        {{ assignment.caretaker.get_full_name|default:assignment.caretaker.username }}
+                    {% else %}
+                        {{ assignment.family.get_full_name|default:assignment.family.username }}
+                    {% endif %}
+                </h3>
+                <p>
+                    <i class="fas fa-envelope"></i> 
+                    {% if user.role == 'family' %}
+                        {{ assignment.caretaker.email }}
+                    {% else %}
+                        {{ assignment.family.email }}
+                    {% endif %}
+                </p>
+                <p>
+                    <i class="fas fa-briefcase"></i> 
+                    Care Assignment #{{ assignment.id }}
+                    {% if assignment.care_request %}
+                        • Patient: {{ assignment.care_request.display_patient_name }}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Message Form -->
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-heading"></i> Message Title <span class="required">*</span>
+                </label>
+                <input type="text" name="title" class="form-control" 
+                       placeholder="e.g., Update on today's care, Medication reminder, Schedule change"
+                       required>
+                <div class="help-text">
+                    <i class="fas fa-info-circle"></i> Give a clear, concise title for your message
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-comment-dots"></i> Message <span class="required">*</span>
+                </label>
+                <textarea name="content" class="form-control" rows="5" 
+                          placeholder="Write your message here. Be specific and clear about your communication..."
+                          required></textarea>
+                <div class="help-text">
+                    <i class="fas fa-lightbulb"></i> 
+                    {% if user.role == 'family' %}
+                        Include any special instructions, schedule changes, or important updates.
+                    {% else %}
+                        Include observations, concerns, or updates about the patient's condition.
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-tag"></i> Message Type
+                </label>
+                <select name="note_type" class="form-control">
+                    <option value="general">📝 General Message</option>
+                    <option value="medical">🏥 Medical Update</option>
+                    <option value="emergency">🚨 Emergency Alert</option>
+                    <option value="feedback">💬 Feedback</option>
+                    <option value="reminder">⏰ Reminder</option>
+                </select>
+                <div class="help-text">
+                    <i class="fas fa-info-circle"></i> 
+                    <span class="type-badge type-general">General</span> for routine messages,
+                    <span class="type-badge type-medical">Medical</span> for health updates,
+                    <span class="type-badge type-emergency">Emergency</span> for urgent matters
+                </div>
+            </div>
+
+            <!-- Importance Options -->
+            <div class="form-group">
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                        <input type="checkbox" name="is_important" value="on" style="width: 18px; height: 18px;">
+                        <i class="fas fa-star" style="color: #f59e0b;"></i> Mark as Important
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+                        <input type="checkbox" name="is_urgent" value="on" style="width: 18px; height: 18px;">
+                        <i class="fas fa-exclamation-triangle" style="color: #dc2626;"></i> Mark as Urgent
+                    </label>
+                </div>
+                <div class="help-text">
+                    <i class="fas fa-info-circle"></i> 
+                    Important messages get highlighted; Urgent messages trigger immediate notifications
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="
+                    {% if user.role == 'family' %}
+                        {% url 'assignments:family_assignment_detail' assignment.id %}
+                    {% else %}
+                        {% url 'assignments:caretaker_assignment_detail' assignment.id %}
+                    {% endif %}
+                " class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Send Message
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tips Section -->
+    <div class="message-card" style="background: #f8fafc;">
+        <h4 style="color: #0f3460; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-lightbulb"></i> Tips for Effective Communication
+        </h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <div>
+                <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                <strong>Be Specific</strong>
+                <p style="color: #64748b; font-size: 0.85rem; margin-top: 5px;">Include dates, times, and clear details</p>
+            </div>
+            <div>
+                <i class="fas fa-clock" style="color: #0f3460;"></i>
+                <strong>Timely Updates</strong>
+                <p style="color: #64748b; font-size: 0.85rem; margin-top: 5px;">Send messages promptly when changes occur</p>
+            </div>
+            <div>
+                <i class="fas fa-handshake" style="color: #0f3460;"></i>
+                <strong>Be Respectful</strong>
+                <p style="color: #64748b; font-size: 0.85rem; margin-top: 5px;">Maintain professional and courteous tone</p>
+            </div>
+            <div>
+                <i class="fas fa-bell" style="color: #f59e0b;"></i>
+                <strong>Use Urgent Wisely</strong>
+                <p style="color: #64748b; font-size: 0.85rem; margin-top: 5px;">Reserve emergency flag for truly urgent matters</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus on title input
+    document.addEventListener('DOMContentLoaded', function() {
+        const titleInput = document.querySelector('input[name="title"]');
+        if (titleInput) {
+            titleInput.focus();
+        }
+    });
+
+    // Show warning when marking as urgent
+    const urgentCheckbox = document.querySelector('input[name="is_urgent"]');
+    if (urgentCheckbox) {
+        urgentCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                if (confirm('⚠️ Marking this as URGENT will send an immediate notification to the recipient. Are you sure this requires urgent attention?')) {
+                    // Proceed
+                } else {
+                    this.checked = false;
+                }
+            }
+        });
+    }
+
+    // Character counter for message field
+    const messageField = document.querySelector('textarea[name="content"]');
+    if (messageField) {
+        const counter = document.createElement('div');
+        counter.className = 'help-text';
+        counter.style.marginTop = '5px';
+        counter.innerHTML = '<i class="fas fa-font"></i> <span id="charCount">0</span> characters';
+        messageField.parentNode.appendChild(counter);
+        
+        const charCountSpan = document.getElementById('charCount');
+        
+        function updateCharCount() {
+            const count = messageField.value.length;
+            if (charCountSpan) {
+                charCountSpan.textContent = count;
+                if (count > 500) {
+                    charCountSpan.style.color = '#f59e0b';
+                } else if (count > 1000) {
+                    charCountSpan.style.color = '#dc2626';
+                } else {
+                    charCountSpan.style.color = '#64748b';
+                }
+            }
+        }
+        
+        messageField.addEventListener('input', updateCharCount);
+        updateCharCount();
+    }
+</script>
+{% endblock %}

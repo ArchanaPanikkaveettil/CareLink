@@ -1,0 +1,187 @@
+{% extends 'users/family_base.html' %}
+{% load static %}
+
+{% block title %}My Caregivers - CareLink{% endblock %}
+
+{% block page_title %}
+My Caregivers
+{% endblock %}
+
+{% block page_icon %}
+<i class="fas fa-hand-holding-heart"></i>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ active_assignments|length }}</div>
+            <div class="stat-label">Active Caregivers</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ total_caregivers|default:0 }}</div>
+            <div class="stat-label">Total Assigned</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ pending_tasks_total|default:0 }}</div>
+            <div class="stat-label">Pending Tasks</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ unread_messages_total|default:0 }}</div>
+            <div class="stat-label">Unread Messages</div>
+        </div>
+    </div>
+
+    {% if active_assignments %}
+        <div class="cards-grid">
+            {% for assignment in active_assignments %}
+            <div class="caregiver-card">
+                <!-- Caregiver Header -->
+                <div class="card-header">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3>{{ assignment.caregiver_name }}</h3>
+                            <p style="font-size: 0.85rem; opacity: 0.9; margin-top: 5px;">
+                                <i class="fas fa-id-card"></i> ID: {{ assignment.caretaker.id }}
+                            </p>
+                        </div>
+                        <span class="status-badge status-active">
+                            <i class="fas fa-circle" style="font-size: 0.6rem; margin-right: 4px;"></i>
+                            Active
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Assignment Details -->
+                <div class="card-body">
+                    <div class="info-row">
+                        <span class="info-label"><i class="fas fa-calendar-alt"></i> Assigned Since:</span>
+                        <span class="info-value">{{ assignment.assigned_date|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label"><i class="fas fa-clock"></i> Shift Type:</span>
+                        <span class="info-value">{{ assignment.get_shift_type_display }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label"><i class="fas fa-hourglass-half"></i> Work Hours/Day:</span>
+                        <span class="info-value">{{ assignment.work_hours_per_day }} hrs</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label"><i class="fas fa-rupee-sign"></i> Monthly Salary:</span>
+                        <span class="info-value" style="color: #10b981; font-weight: 600;">{{ assignment.formatted_salary }}</span>
+                    </div>
+                </div>
+                
+                <!-- Today's Status -->
+                <div style="padding: 0 20px 15px 20px;">
+                    <div style="background: #f8fafc; border-radius: 10px; padding: 12px; border-left: 4px solid 
+                        {% if assignment.today_attendance.status == 'present' %}#10b981
+                        {% elif assignment.today_attendance.status == 'absent' %}#ef4444
+                        {% elif assignment.today_attendance.status == 'leave' %}#f59e0b
+                        {% else %}#94a3b8{% endif %}">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <i class="fas fa-calendar-day" style="color: #0f3460;"></i>
+                            <strong style="font-size: 0.85rem;">Today's Status - {% now "M d, Y" %}</strong>
+                        </div>
+                        {% if assignment.today_attendance %}
+                            {% if assignment.today_attendance.status == 'present' %}
+                                <div style="color: #10b981;">
+                                    <i class="fas fa-check-circle"></i> Checked in at {{ assignment.today_attendance.check_in_time|time:"g:i A" }}
+                                </div>
+                                {% if assignment.today_attendance.check_out_time %}
+                                <div style="color: #64748b; font-size: 0.85rem; margin-top: 5px;">
+                                    <i class="fas fa-sign-out-alt"></i> Checked out at {{ assignment.today_attendance.check_out_time|time:"g:i A" }}
+                                </div>
+                                {% endif %}
+                            {% elif assignment.today_attendance.status == 'absent' %}
+                                <div style="color: #ef4444;">
+                                    <i class="fas fa-times-circle"></i> Marked Absent
+                                </div>
+                            {% elif assignment.today_attendance.status == 'leave' %}
+                                <div style="color: #f59e0b;">
+                                    <i class="fas fa-umbrella-beach"></i> On Leave
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div style="color: #94a3b8;">
+                                <i class="fas fa-clock"></i> No check-in record for today
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Stats Row -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 20px 15px 20px;">
+                    <div style="text-align: center; padding: 10px; background: #eff6ff; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #0f3460;">{{ assignment.pending_tasks_count }}</div>
+                        <div style="font-size: 0.7rem; color: #64748b;">Pending Tasks</div>
+                    </div>
+                    <div style="text-align: center; padding: 10px; background: #faf5ff; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #9333ea;">{{ assignment.unread_notes_count }}</div>
+                        <div style="font-size: 0.7rem; color: #64748b;">Unread Messages</div>
+                    </div>
+                    <div style="text-align: center; padding: 10px; background: #f0fdf4; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;">{{ assignment.unread_reports_count }}</div>
+                        <div style="font-size: 0.7rem; color: #64748b;">New Reports</div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="card-actions" style="display: flex; flex-wrap: wrap; gap: 10px; padding: 15px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 20px 20px;">
+                    <a href="{% url 'assignments:family_assignment_detail' assignment.id %}" class="btn btn-primary" style="flex: 1 1 calc(50% - 5px); min-width: 100px; justify-content: center;">
+                        <i class="fas fa-info-circle"></i> Details
+                    </a>
+                    <a href="{% url 'assignments:view_reports' assignment.id %}" class="btn btn-secondary" style="flex: 1 1 calc(50% - 5px); min-width: 100px; justify-content: center;">
+                        <i class="fas fa-chart-line"></i> Reports
+                    </a>
+                    <a href="{% url 'assignments:note_list' assignment.id %}" class="btn btn-secondary" style="flex: 1 1 calc(50% - 5px); min-width: 100px; justify-content: center;">
+                        <i class="fas fa-comment"></i> Message
+                    </a>
+                    <a href="{% url 'assignments:terminate_assignment' assignment.id %}" class="btn btn-danger" style="flex: 1 1 calc(50% - 5px); min-width: 100px; justify-content: center;"
+                       onclick="return confirm('Are you sure you want to end this service? This action cannot be undone.')">
+                        <i class="fas fa-times-circle"></i> End
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <i class="fas fa-hand-holding-heart"></i>
+            <h3>No Active Caregivers</h3>
+            <p>You don't have any active caregivers assigned at the moment.</p>
+            <a href="{% url 'users:search_caretakers' %}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Find a Caregiver
+            </a>
+            <a href="{% url 'requests:post_request' %}" class="btn btn-secondary" style="margin-left: 10px;">
+                <i class="fas fa-plus-circle"></i> Post a Request
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add hover effect for cards
+    document.querySelectorAll('.caregiver-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Add confirmation for ending service
+    document.querySelectorAll('.btn-danger').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            if (!confirm('Are you sure you want to end this service? This action cannot be undone.')) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}

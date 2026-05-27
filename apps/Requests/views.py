@@ -42,42 +42,24 @@ def view_caretaker_availability(request, caretaker_id):
     cal = calendar.monthcalendar(year, month)
     month_name = calendar.month_name[month]
     
-    recurring_slots = CaretakerAvailability.objects.filter(
-        caretaker=caretaker_profile,
-        is_available=True
-    ).order_by('day_of_week', 'start_time')
-    
-    weekday_to_slots = {}
-    for slot in recurring_slots:
-        if slot.day_of_week not in weekday_to_slots:
-            weekday_to_slots[slot.day_of_week] = []
-        weekday_to_slots[slot.day_of_week].append(slot)
+    month_start = date(year, month, 1)
+    if month == 12:
+        month_end = date(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        month_end = date(year, month + 1, 1) - timedelta(days=1)
+        
+    slots = CaretakerAvailability.objects.filter(
+        caretaker=caretaker_user,
+        date__gte=month_start,
+        date__lte=month_end,
+    ).order_by('date', 'start_time')
     
     availability_by_date = {}
-    
-    for week in cal:
-        for day in week:
-            if day != 0:
-                try:
-                    current_date = date(year, month, day)
-                    if current_date >= today:
-                        weekday = current_date.weekday()
-                        if weekday in weekday_to_slots:
-                            date_key = current_date.strftime('%Y-%m-%d')
-                            slots_with_date = []
-                            for slot in weekday_to_slots[weekday]:
-                                class TempSlot:
-                                    pass
-                                temp_slot = TempSlot()
-                                temp_slot.id = slot.id
-                                temp_slot.start_time = slot.start_time
-                                temp_slot.end_time = slot.end_time
-                                temp_slot.status = 'available'
-                                temp_slot.date = current_date
-                                slots_with_date.append(temp_slot)
-                            availability_by_date[date_key] = slots_with_date
-                except ValueError:
-                    pass
+    for slot in slots:
+        date_key = slot.date.strftime('%Y-%m-%d')
+        if date_key not in availability_by_date:
+            availability_by_date[date_key] = []
+        availability_by_date[date_key].append(slot)
     
     if month == 1:
         prev_month = 12
@@ -117,46 +99,24 @@ def caretaker_availability_list(request):
         messages.error(request, "Access denied.")
         return redirect("users:index")
     
-    try:
-        caretaker_profile = CaretakerProfile.objects.get(user=request.user)
-    except CaretakerProfile.DoesNotExist:
-        messages.error(request, "Caretaker profile not found.")
-        return redirect("users:profile_setup")
-    
-    recurring_slots = CaretakerAvailability.objects.filter(
-        caretaker=caretaker_profile,
-        is_available=True
-    ).order_by('day_of_week', 'start_time')
-    
-    recurring_slots_count = recurring_slots.count()
-    
     # Generate upcoming dates for display (next 30 days)
     today = date.today()
-    upcoming_slots = []
+    slots = CaretakerAvailability.objects.filter(
+        caretaker=request.user,
+        date__gte=today
+    ).order_by('date', 'start_time')
     
-    for i in range(30):
-        current_date = today + timedelta(days=i)
-        weekday = current_date.weekday()
-        
-        for slot in recurring_slots:
-            if slot.day_of_week == weekday:
-                class TempSlot:
-                    pass
-                temp_slot = TempSlot()
-                temp_slot.id = slot.id
-                temp_slot.date = current_date
-                temp_slot.start_time = slot.start_time
-                temp_slot.end_time = slot.end_time
-                temp_slot.is_recurring = True
-                upcoming_slots.append(temp_slot)
+    available_slots = slots.filter(status='available')
+    booked_slots = slots.filter(status='booked')
     
-    total_slots = len(upcoming_slots)
-    available_count = total_slots
-    booked_count = 0
+    total_slots = slots.count()
+    available_count = available_slots.count()
+    booked_count = booked_slots.count()
+    recurring_slots_count = available_slots.filter(is_recurring=True).count()
     
     context = {
-        'available_slots': upcoming_slots,
-        'booked_slots': [],
+        'available_slots': available_slots,
+        'booked_slots': booked_slots,
         'total_slots': total_slots,
         'available_count': available_count,
         'booked_count': booked_count,
@@ -276,7 +236,12 @@ def apply_for_request(request, request_id):
         messages.error(request, "❌ This request is no longer accepting applications.")
         return redirect("requests:request_detail", request_id=care_request.id)
 
-    if CareApplication.objects.filter(request=care_request, caretaker=request.user).exists():
+    # Check for existing application
+    existing_app = CareApplication.objects.filter(
+        request=care_request, caretaker=request.user
+    ).first()
+
+    if existing_app and existing_app.status != "withdrawn":
         messages.warning(request, "⚠️ You have already applied for this request.")
         return redirect("requests:request_detail", request_id=care_request.id)
 
@@ -291,38 +256,70 @@ def apply_for_request(request, request_id):
 
         if not message or not proposed_rate:
             messages.error(request, "❌ All fields are required.")
-            return render(request, "requests/apply_for_request.html", {"care_request": care_request, "job_type": job_type})
+            return render(
+                request,
+                "requests/apply_for_request.html",
+                {"care_request": care_request, "job_type": job_type},
+            )
 
         if job_type in ["part_time", "night_care", "home_visit"]:
             if not work_start_time or not work_end_time or not work_days:
-                messages.error(request, "❌ Please specify working hours and days for part-time application.")
-                return render(request, "requests/apply_for_request.html", {"care_request": care_request, "job_type": job_type})
+                messages.error(
+                    request,
+                    "❌ Please specify working hours and days for part-time application.",
+                )
+                return render(
+                    request,
+                    "requests/apply_for_request.html",
+                    {"care_request": care_request, "job_type": job_type},
+                )
 
             try:
                 work_days = [int(day) for day in work_days]
             except (ValueError, TypeError):
                 messages.error(request, "❌ Invalid work days selected.")
-                return render(request, "requests/apply_for_request.html", {"care_request": care_request})
+                return render(
+                    request, "requests/apply_for_request.html", {"care_request": care_request}
+                )
 
         try:
-            application = CareApplication.objects.create(
-                request=care_request,
-                caretaker=request.user,
-                message=message,
-                proposed_rate=proposed_rate,
-                status="pending",
-                job_type=job_type,
-                work_start_time=work_start_time if job_type != "full_time" else None,
-                work_end_time=work_end_time if job_type != "full_time" else None,
-                work_days=work_days if job_type != "full_time" else None,
-            )
+            if existing_app:
+                # Reactivate withdrawn application
+                existing_app.message = message
+                existing_app.proposed_rate = proposed_rate
+                existing_app.status = "pending"
+                existing_app.job_type = job_type
+                existing_app.work_start_time = (
+                    work_start_time if job_type != "full_time" else None
+                )
+                existing_app.work_end_time = (
+                    work_end_time if job_type != "full_time" else None
+                )
+                existing_app.work_days = work_days if job_type != "full_time" else None
+                existing_app.applied_at = timezone.now()
+                existing_app.save()
+            else:
+                # Create new application
+                CareApplication.objects.create(
+                    request=care_request,
+                    caretaker=request.user,
+                    message=message,
+                    proposed_rate=proposed_rate,
+                    status="pending",
+                    job_type=job_type,
+                    work_start_time=work_start_time if job_type != "full_time" else None,
+                    work_end_time=work_end_time if job_type != "full_time" else None,
+                    work_days=work_days if job_type != "full_time" else None,
+                )
 
             messages.success(request, "✅ Application submitted successfully!")
             return redirect("applications:my_applications")
 
         except Exception as e:
             messages.error(request, f"❌ Error submitting application: {str(e)}")
-            return render(request, "requests/apply_for_request.html", {"care_request": care_request})
+            return render(
+                request, "requests/apply_for_request.html", {"care_request": care_request}
+            )
 
     context = {
         "care_request": care_request,
@@ -513,20 +510,25 @@ def my_requests(request):
             | Q(city__icontains=search)
         )
 
+    requests_list = requests_list.order_by("-created_at")
+
     for req in requests_list:
-        req.total_applications = CareApplication.objects.filter(request=req).count()
+        # Count excluding withdrawn
+        req.total_applications = CareApplication.objects.filter(request=req).exclude(status="withdrawn").count()
+        
         req.shortlisted_applications = CareApplication.objects.filter(
             request=req, status__in=["shortlisted", "offer_sent", "offer_accepted"]
         ).count()
+        
         req.pending_applications = CareApplication.objects.filter(
             request=req, status="pending"
         ).count()
+        
         req.offers_sent_count = CareApplication.objects.filter(
             request=req, status__in=["offer_sent", "offer_accepted"]
         ).count()
+        
         req.has_active_shortlist = req.shortlisted_applications > 0
-
-    requests_list = requests_list.order_by("-created_at")
 
     open_count = requests_list.filter(status="open").count()
     draft_count = requests_list.filter(status="draft").count()
@@ -559,26 +561,47 @@ def request_detail(request, request_id):
         return redirect("index")
 
     has_applied = False
+    application_status = None
     if request.user.role == "caretaker":
-        has_applied = CareApplication.objects.filter(
+        application = CareApplication.objects.filter(
             caretaker=request.user, request=care_request
-        ).exists()
+        ).first()
+        if application:
+            application_status = application.status
+            if application.status != "withdrawn":
+                has_applied = True
 
     from django.db.models import Count
+    from apps.assignments.models import CareAssignment
 
-    application_stats = CareApplication.objects.filter(request=care_request).aggregate(
-        total=Count("id"),
-        pending=Count("id", filter=Q(status="pending")),
-        shortlisted=Count("id", filter=Q(status="shortlisted")),
-        accepted=Count("id", filter=Q(status="accepted")),
-        rejected=Count("id", filter=Q(status="rejected")),
+    # Calculate application stats, excluding withdrawn ones
+    application_stats = (
+        CareApplication.objects.filter(request=care_request)
+        .exclude(status="withdrawn")
+        .aggregate(
+            total=Count("id"),
+            pending=Count("id", filter=Q(status="pending")),
+            shortlisted=Count("id", filter=Q(status="shortlisted")),
+            accepted=Count("id", filter=Q(status="accepted")),
+            rejected=Count("id", filter=Q(status="rejected")),
+        )
     )
+
+    assignment = CareAssignment.objects.filter(care_request=care_request).first()
+    # If assigned_caretaker field is null but an assignment exists, link them
+    if not care_request.assigned_caretaker and assignment:
+        # We don't save it to DB here to avoid side effects during GET, 
+        # but we pass it in context or temporarily attach it
+        care_request.assigned_caretaker = assignment.caretaker
 
     context = {
         "care_request": care_request,
+        "assignment": assignment,
         "user": request.user,
         "has_applied": has_applied,
+        "application_status": application_status,
         "application_stats": application_stats,
+        "base_template": "users/nurse_base.html" if request.user.role == "caretaker" else "users/family_base.html",
     }
     return render(request, "requests/request_detail.html", context)
 
@@ -875,82 +898,51 @@ def delete_request(request, request_id):
 # ============================================================================
 
 @login_required
-def book_caretaker(request, caretaker_id, request_id):
-    """Book a caretaker for a specific care request"""
+def book_caretaker(request, caretaker_id, slot_id):
+    """Directly book a caretaker based on an availability slot"""
     if request.user.role != "family":
         messages.error(request, "Only family members can book caretakers")
-        return redirect("index")
+        return redirect("users:index")
 
-    care_request = get_object_or_404(CareRequest, id=request_id, family=request.user)
     caretaker_user = get_object_or_404(User, id=caretaker_id, role="caretaker")
-    
-    caretaker_profile = get_object_or_404(CaretakerProfile, user=caretaker_user)
+    slot = get_object_or_404(CaretakerAvailability, id=slot_id, caretaker=caretaker_user)
 
-    if care_request.status != "open":
-        messages.error(request, "This care request is no longer available for booking")
-        return redirect("requests:request_detail", request_id=care_request.id)
+    if slot.status != "available":
+        messages.error(request, "This time slot is no longer available.")
+        return redirect("requests:caretaker_availability", caretaker_id=caretaker_user.id)
 
-    selected_date = request.GET.get("date")
-    selected_start = request.GET.get("start")
-    selected_end = request.GET.get("end")
+    user_requests = CareRequest.objects.filter(family=request.user, status="open")
 
     if request.method == "POST":
-        booking_date_str = request.POST.get("booking_date")
-        start_time_str = request.POST.get("start_time")
-        end_time_str = request.POST.get("end_time")
+        selected_request_id = request.POST.get("care_request_id")
         family_notes = request.POST.get("family_notes", "")
 
-        if not all([booking_date_str, start_time_str, end_time_str]):
-            messages.error(request, "Please fill all required fields")
-            return redirect(
-                "book_caretaker", caretaker_id=caretaker_id, request_id=request_id
-            )
+        if not selected_request_id:
+            messages.error(request, "Please select an open care request to link with this booking.")
+            return redirect("requests:book_caretaker", caretaker_id=caretaker_user.id, slot_id=slot.id)
+
+        care_request = get_object_or_404(CareRequest, id=selected_request_id, family=request.user)
 
         try:
-            booking_date = datetime.strptime(booking_date_str, "%Y-%m-%d").date()
-            start_time = datetime.strptime(start_time_str, "%H:%M").time()
-            end_time = datetime.strptime(end_time_str, "%H:%M").time()
-            
-            weekday_num = booking_date.weekday()
-
-            start_datetime = datetime.combine(booking_date, start_time)
-            end_datetime = datetime.combine(booking_date, end_time)
+            start_datetime = datetime.combine(slot.date, slot.start_time)
+            end_datetime = datetime.combine(slot.date, slot.end_time)
             duration_hours = (end_datetime - start_datetime).seconds / 3600
-
-            availability = CaretakerAvailability.objects.filter(
-                caretaker=caretaker_profile,
-                day_of_week=weekday_num,
-                start_time__lte=start_time,
-                end_time__gte=end_time,
-                is_available=True,
-            ).first()
-
-            if not availability:
-                messages.error(request, "The caretaker is not available at the selected time")
-                return redirect("caretaker_availability", caretaker_id=caretaker_id)
-
-            existing_booking = CareBooking.objects.filter(
-                caretaker=caretaker_user,
-                booking_date=booking_date,
-                start_time=start_time,
-                status__in=["pending", "confirmed", "in_progress"],
-            ).exists()
-
-            if existing_booking:
-                messages.error(request, "This time slot is already booked")
-                return redirect("caretaker_availability", caretaker_id=caretaker_id)
 
             booking = CareBooking.objects.create(
                 care_request=care_request,
                 caretaker=caretaker_user,
                 family=request.user,
-                booking_date=booking_date,
-                start_time=start_time,
-                end_time=end_time,
+                booking_date=slot.date,
+                start_time=slot.start_time,
+                end_time=slot.end_time,
                 duration_hours=duration_hours,
                 status="pending",
                 family_notes=family_notes,
             )
+
+            slot.status = "booked"
+            slot.booked_request = care_request
+            slot.save()
 
             from apps.Notifications.models import Notification
 
@@ -958,27 +950,170 @@ def book_caretaker(request, caretaker_id, request_id):
                 recipient=caretaker_user,
                 sender=request.user,
                 notification_type="booking",
-                title="New Booking Request",
-                message=f"{request.user.get_full_name()} has requested a booking for {booking_date} at {start_time}",
+                title="New Direct Booking Request",
+                message=f"{request.user.get_full_name()} has requested a direct booking on {slot.date} at {slot.start_time}",
                 icon="fa-calendar-plus",
-                link=f"/bookings/{booking.id}/",
+                link=f"/requests/booking/{booking.id}/",
                 is_read=False,
             )
 
-            messages.success(request, "Booking request sent successfully!")
-            return redirect("my_bookings")
+            messages.success(request, f"Booking request successfully sent to {caretaker_user.get_full_name()}!")
+            return redirect("requests:my_bookings")
 
         except Exception as e:
             messages.error(request, f"Error creating booking: {str(e)}")
 
     context = {
-        "care_request": care_request,
         "caretaker": caretaker_user,
-        "selected_date": selected_date,
-        "selected_start": selected_start,
-        "selected_end": selected_end,
+        "slot": slot,
+        "user_requests": user_requests,
     }
     return render(request, "requests/book_caretaker.html", context)
+
+
+@login_required
+def book_caretaker_multi(request, caretaker_id):
+    """Multi-slot booking: family can pick a date range, per-day or random slots."""
+    if request.user.role != "family":
+        messages.error(request, "Only family members can book caretakers.")
+        return redirect("users:index")
+
+    caretaker_user = get_object_or_404(User, id=caretaker_id, role="caretaker")
+
+    # Fetch all future available slots for this caretaker
+    available_slots = CaretakerAvailability.objects.filter(
+        caretaker=caretaker_user,
+        status="available",
+        date__gte=date.today(),
+    ).order_by("date", "start_time")
+
+    user_requests = CareRequest.objects.filter(family=request.user, status="open")
+
+    if request.method == "POST":
+        slot_ids = request.POST.getlist("slot_ids")
+        selected_request_id = request.POST.get("care_request_id")
+        family_notes = request.POST.get("family_notes", "")
+
+        if not slot_ids:
+            messages.error(request, "Please select at least one date slot.")
+            return redirect("requests:book_caretaker_multi", caretaker_id=caretaker_user.id)
+
+        if not selected_request_id:
+            messages.error(request, "Please select an open care request to link with this booking.")
+            return redirect("requests:book_caretaker_multi", caretaker_id=caretaker_user.id)
+
+        care_request = get_object_or_404(CareRequest, id=selected_request_id, family=request.user)
+
+        created_count = 0
+        skipped_count = 0
+
+        from apps.Notifications.models import Notification
+
+        for slot_id in slot_ids:
+            try:
+                slot = CaretakerAvailability.objects.get(
+                    id=slot_id,
+                    caretaker=caretaker_user,
+                    status="available"
+                )
+                start_dt = datetime.combine(slot.date, slot.start_time)
+                end_dt = datetime.combine(slot.date, slot.end_time)
+                duration_hours = (end_dt - start_dt).seconds / 3600
+
+                CareBooking.objects.create(
+                    care_request=care_request,
+                    caretaker=caretaker_user,
+                    family=request.user,
+                    booking_date=slot.date,
+                    start_time=slot.start_time,
+                    end_time=slot.end_time,
+                    duration_hours=duration_hours,
+                    status="pending",
+                    family_notes=family_notes,
+                )
+                # Don't lock the slot yet — only lock it when the caretaker accepts.
+                # This allows the caretaker to see it's being requested without forcing the slot closed.
+                slot.booked_request = care_request
+                slot.save()
+                created_count += 1
+
+            except CaretakerAvailability.DoesNotExist:
+                skipped_count += 1
+            except Exception:
+                skipped_count += 1
+
+        if created_count > 0:
+            Notification.objects.create(
+                recipient=caretaker_user,
+                sender=request.user,
+                notification_type="booking",
+                title="New Multi-Day Booking Request",
+                message=f"{request.user.get_full_name()} has requested {created_count} booking slot(s) starting from the selected dates.",
+                icon="fa-calendar-plus",
+                link="/requests/my-bookings/",
+                is_read=False,
+            )
+            if skipped_count > 0:
+                messages.warning(request, f"✅ Booked {created_count} slot(s). {skipped_count} slot(s) were already taken and skipped.")
+            else:
+                messages.success(request, f"✅ Successfully sent {created_count} booking request(s) to {caretaker_user.get_full_name()}!")
+        else:
+            messages.error(request, "No slots could be booked. They may have already been taken.")
+
+        return redirect("requests:my_bookings")
+
+    context = {
+        "caretaker": caretaker_user,
+        "available_slots": available_slots,
+        "user_requests": user_requests,
+    }
+    return render(request, "requests/book_caretaker_multi.html", context)
+
+
+@login_required
+def create_booking_request(request, caretaker_id):
+    """Create a minimal CareRequest inline during the direct booking flow."""
+    if request.user.role != "family":
+        messages.error(request, "Only family members can create care requests.")
+        return redirect("users:index")
+
+    caretaker_user = get_object_or_404(User, id=caretaker_id, role="caretaker")
+
+    if request.method == "POST":
+        try:
+            from django.utils.crypto import get_random_string
+            req_id = "CR-" + get_random_string(6).upper()
+
+            care_req = CareRequest.objects.create(
+                request_id=req_id,
+                family=request.user,
+                patient_name=request.POST.get("patient_name", "").strip(),
+                patient_age=int(request.POST.get("patient_age", 60)),
+                patient_gender=request.POST.get("patient_gender", "other"),
+                medical_condition=request.POST.get("medical_condition", "General care needed"),
+                care_type=request.POST.get("care_type", "part_time"),
+                urgency_level=request.POST.get("urgency_level", "medium"),
+                required_skills=request.POST.get("required_skills", "General caregiving"),
+                salary_offered=float(request.POST.get("salary_offered", 500)),
+                payment_frequency=request.POST.get("payment_frequency", "hourly"),
+                shift_timing=request.POST.get("shift_timing", "Flexible"),
+                start_date=date.today(),
+                duration_days=int(request.POST.get("duration_days", 7)),
+                address=request.POST.get("address", ""),
+                city=request.POST.get("city", ""),
+                state=request.POST.get("state", "Kerala"),
+                pincode=request.POST.get("pincode", "000000"),
+                status="open",
+                interview_required=False,
+                interview_type="phone",
+                mobility_status="independent",
+                cognitive_status="normal",
+            )
+            messages.success(request, f"✅ Care request for {care_req.patient_name} created! Now select dates to book.")
+        except Exception as e:
+            messages.error(request, f"Error creating care request: {str(e)}")
+
+    return redirect("requests:book_caretaker_multi", caretaker_id=caretaker_user.id)
 
 
 @login_required
@@ -1016,6 +1151,7 @@ def my_bookings(request):
         "bookings": page_obj,
         "counts": counts,
         "status_filter": status_filter,
+        "base_template": "users/nurse_base.html" if request.user.role == 'caretaker' else "users/family_base.html"
     }
     return render(request, "requests/my_bookings.html", context)
 
@@ -1033,6 +1169,7 @@ def booking_detail(request, booking_id):
         "booking": booking,
         "is_family": request.user == booking.family,
         "is_caretaker": request.user == booking.caretaker,
+        "base_template": "users/nurse_base.html" if request.user.role == 'caretaker' else "users/family_base.html"
     }
     return render(request, "requests/booking_detail.html", context)
 
@@ -1045,26 +1182,42 @@ def confirm_booking(request, booking_id):
 
     if booking.status != "pending":
         messages.error(request, "This booking cannot be confirmed")
-        return redirect("booking_detail", booking_id=booking.id)
+        return redirect("requests:booking_detail", booking_id=booking.id)
+
+    confirmation_message = request.POST.get("confirmation_message", "").strip()
 
     if booking.confirm_booking():
         from apps.Notifications.models import Notification
+        
+        booking.confirmation_message = confirmation_message
+        booking.save(update_fields=['confirmation_message'])
+
+        # NOW lock the availability slot — caretaker has accepted
+        CaretakerAvailability.objects.filter(
+            caretaker=booking.caretaker,
+            date=booking.booking_date,
+            start_time=booking.start_time,
+        ).update(status="booked", booked_request=booking.care_request)
+
+        msg_body = f"{request.user.get_full_name()} has accepted your booking for {booking.booking_date.strftime('%d %b %Y')}."
+        if confirmation_message:
+            msg_body += f"\n\nMessage: {confirmation_message}"
 
         Notification.objects.create(
             recipient=booking.family,
             sender=request.user,
             notification_type="booking",
-            title="Booking Confirmed",
-            message=f"{request.user.get_full_name()} has confirmed your booking for {booking.booking_date}",
+            title="✅ Booking Confirmed!",
+            message=msg_body,
             icon="fa-calendar-check",
-            link=f"/bookings/{booking.id}/",
+            link=f"/requests/booking/{booking.id}/",
             is_read=False,
         )
         messages.success(request, "Booking confirmed successfully!")
     else:
         messages.error(request, "Failed to confirm booking")
 
-    return redirect("booking_detail", booking_id=booking.id)
+    return redirect("requests:booking_detail", booking_id=booking.id)
 
 
 @login_required
@@ -1075,99 +1228,180 @@ def cancel_booking(request, booking_id):
 
     if request.user != booking.family and request.user != booking.caretaker:
         messages.error(request, "Access denied")
-        return redirect("index")
+        return redirect("users:index")
 
     if booking.status in ["completed", "cancelled"]:
         messages.error(request, "This booking cannot be cancelled")
-        return redirect("booking_detail", booking_id=booking.id)
+        return redirect("requests:booking_detail", booking_id=booking.id)
+        
+    cancellation_reason = request.POST.get("cancellation_reason", "").strip()
 
     if booking.cancel_booking():
         from apps.Notifications.models import Notification
+        
+        booking.cancellation_reason = cancellation_reason
+        booking.save(update_fields=['cancellation_reason'])
 
         recipient = (
             booking.family if request.user == booking.caretaker else booking.caretaker
         )
+        
+        msg_body = f"{request.user.get_full_name()} has cancelled the booking for {booking.booking_date.strftime('%d %b %Y')}."
+        if cancellation_reason:
+            msg_body += f"\n\nReason: {cancellation_reason}"
+            
         Notification.objects.create(
             recipient=recipient,
             sender=request.user,
             notification_type="booking",
-            title="Booking Cancelled",
-            message=f"{request.user.get_full_name()} has cancelled the booking for {booking.booking_date}",
+            title="❌ Booking Cancelled",
+            message=msg_body,
             icon="fa-calendar-times",
-            link=f"/bookings/{booking.id}/",
+            link=f"/requests/booking/{booking.id}/",
             is_read=False,
         )
+        # Free the availability slot back
+        CaretakerAvailability.objects.filter(
+            caretaker=booking.caretaker,
+            date=booking.booking_date,
+            start_time=booking.start_time,
+            status="booked"
+        ).update(status="available", booked_request=None)
         messages.success(request, "Booking cancelled successfully!")
     else:
         messages.error(request, "Failed to cancel booking")
 
-    return redirect("booking_detail", booking_id=booking.id)
+    return redirect("requests:booking_detail", booking_id=booking.id)
 
 
 @login_required
+@require_POST
 def complete_booking(request, booking_id):
     """Complete a booking"""
     booking = get_object_or_404(CareBooking, id=booking_id)
 
     if request.user != booking.caretaker:
         messages.error(request, "Only the caretaker can complete a booking")
-        return redirect("booking_detail", booking_id=booking.id)
+        return redirect("requests:booking_detail", booking_id=booking.id)
 
     if booking.status != "in_progress":
         messages.error(request, "This booking cannot be completed")
-        return redirect("booking_detail", booking_id=booking.id)
+        return redirect("requests:booking_detail", booking_id=booking.id)
+
+    completion_notes = request.POST.get("completion_notes", "").strip()
 
     if booking.complete_booking():
         from apps.Notifications.models import Notification
+        
+        booking.completion_notes = completion_notes
+        booking.save(update_fields=['completion_notes'])
+
+        msg_body = f"{request.user.get_full_name()} has completed the care session on {booking.booking_date.strftime('%d %b %Y')}."
+        if completion_notes:
+            msg_body += f"\n\nNotes: {completion_notes}"
 
         Notification.objects.create(
             recipient=booking.family,
             sender=request.user,
             notification_type="booking",
-            title="Care Session Completed",
-            message=f"{request.user.get_full_name()} has completed the care session",
+            title="🎉 Care Session Completed!",
+            message=msg_body,
             icon="fa-check-circle",
-            link=f"/bookings/{booking.id}/",
+            link=f"/requests/booking/{booking.id}/",
             is_read=False,
         )
         messages.success(request, "Care session completed!")
     else:
         messages.error(request, "Failed to complete booking")
 
-    return redirect("booking_detail", booking_id=booking.id)
+    return redirect("requests:booking_detail", booking_id=booking.id)
 
 
 @login_required
+@require_POST
 def start_booking(request, booking_id):
     """Start a booking (mark as in progress)"""
     booking = get_object_or_404(CareBooking, id=booking_id)
 
     if request.user != booking.caretaker:
         messages.error(request, "Only the caretaker can start a booking")
-        return redirect("booking_detail", booking_id=booking.id)
+        return redirect("requests:booking_detail", booking_id=booking.id)
 
     if booking.status != "confirmed":
         messages.error(request, "This booking cannot be started")
-        return redirect("booking_detail", booking_id=booking.id)
+        return redirect("requests:booking_detail", booking_id=booking.id)
+
+    start_notes = request.POST.get("start_notes", "").strip()
 
     booking.status = "in_progress"
+    booking.start_notes = start_notes
     booking.save()
 
     from apps.Notifications.models import Notification
+
+    msg_body = f"{request.user.get_full_name()} has started the care session for {booking.booking_date.strftime('%d %b %Y')}."
+    if start_notes:
+        msg_body += f"\n\nNotes: {start_notes}"
 
     Notification.objects.create(
         recipient=booking.family,
         sender=request.user,
         notification_type="booking",
-        title="Care Session Started",
-        message=f"{request.user.get_full_name()} has started the care session",
+        title="🚀 Care Session Started!",
+        message=msg_body,
         icon="fa-play-circle",
-        link=f"/bookings/{booking.id}/",
+        link=f"/requests/booking/{booking.id}/",
         is_read=False,
     )
 
     messages.success(request, "Care session started!")
-    return redirect("booking_detail", booking_id=booking.id)
+    return redirect("requests:booking_detail", booking_id=booking.id)
+
+
+@login_required
+@require_POST
+def submit_booking_review(request, booking_id):
+    """Submit a review for a booking (family action)"""
+    booking = get_object_or_404(CareBooking, id=booking_id, family=request.user)
+
+    if booking.status not in ["completed", "in_progress", "confirmed"]:
+        messages.error(request, "You can only review confirmed, completed or in-progress sessions.")
+        return redirect("requests:booking_detail", booking_id=booking.id)
+
+    rating = request.POST.get("rating")
+    comment = request.POST.get("comment", "").strip()
+
+    if not rating:
+        messages.error(request, "Please provide a rating.")
+        return redirect("requests:booking_detail", booking_id=booking.id)
+
+    from apps.Users.models import CaretakerReview
+
+    # If the booking is not completed, complete it now
+    if booking.status != "completed":
+        booking.complete_booking()
+        # Also free the slot if it was still locked
+        from apps.Users.models import CaretakerAvailability
+        CaretakerAvailability.objects.filter(
+            caretaker=booking.caretaker,
+            date=booking.booking_date,
+            start_time=booking.start_time,
+            status="booked"
+        ).update(status="available", booked_request=None)
+        
+    # Create or update review
+    CaretakerReview.objects.update_or_create(
+        booking=booking,
+        defaults={
+            "caretaker": booking.caretaker.caretaker_profile,
+            "family": booking.family.family_profile,
+            "rating": int(rating),
+            "comment": comment
+        }
+    )
+
+    messages.success(request, "Thank you for your review! Session marked as completed.")
+    return redirect("requests:booking_detail", booking_id=booking.id)
 
 
 # ============================================================================
@@ -1176,82 +1410,139 @@ def start_booking(request, booking_id):
 
 @login_required
 def caretaker_set_availability(request):
-    """Set availability for caretaker (weekly recurring schedule)"""
+    """Set availability for caretaker (specific dates) and checks full-time conflicts"""
+    import json
+    from django.db.models import Q
+    from apps.assignments.models import CareAssignment
+    from .models import CaretakerAvailability
+
     if request.user.role != "caretaker":
         messages.error(request, "Only caretakers can set availability")
         return redirect("users:index")
-    
-    try:
-        caretaker_profile = CaretakerProfile.objects.get(user=request.user)
-    except CaretakerProfile.DoesNotExist:
-        messages.error(request, "Caretaker profile not found. Please complete your profile first.")
-        return redirect("users:profile_setup")
 
     if request.method == "POST":
-        mode = request.POST.get("mode", "weekly")
-        
+        mode = request.POST.get("mode", "dateRange")
+
         try:
-            if mode == "weekly":
+            dates_to_add = []
+            if mode in ["dateRange", "multipleDates"]:
+                selected_dates_json = request.POST.get("selected_dates", "[]")
+                selected_dates = json.loads(selected_dates_json)
+                
+                if not selected_dates:
+                    messages.error(request, "Please select at least one date.")
+                    return redirect("requests:set_availability")
+                
+                for dt_str in selected_dates:
+                    dates_to_add.append(datetime.strptime(dt_str, "%Y-%m-%d").date())
+
+            elif mode == "weekly":
                 selected_weekdays_json = request.POST.get("selected_weekdays", "[]")
                 selected_weekdays = json.loads(selected_weekdays_json)
-                
-                start_time_str = request.POST.get("start_time_0")
-                end_time_str = request.POST.get("end_time_0")
-                
                 if not selected_weekdays:
-                    messages.error(request, "Please select at least one day")
+                    messages.error(request, "Please select at least one day of the week.")
                     return redirect("requests:set_availability")
                 
-                if not start_time_str or not end_time_str:
-                    messages.error(request, "Please select start and end time")
+                # Generate dates for the next 90 days matching the weekdays
+                today_date = date.today()
+                for i in range(90):
+                    curr = today_date + timedelta(days=i)
+                    if str(curr.weekday()) in selected_weekdays:
+                        dates_to_add.append(curr)
+                
+                if not dates_to_add:
+                    messages.error(request, "Could not map selected days to the calendar.")
                     return redirect("requests:set_availability")
-                
-                start_time = datetime.strptime(start_time_str, "%H:%M").time()
-                end_time = datetime.strptime(end_time_str, "%H:%M").time()
-                
-                if end_time <= start_time:
-                    messages.error(request, "End time must be after start time")
-                    return redirect("requests:set_availability")
-                
-                CaretakerAvailability.objects.filter(
-                    caretaker=caretaker_profile,
-                    day_of_week__in=selected_weekdays
-                ).delete()
-                
-                created_count = 0
-                for day in selected_weekdays:
-                    CaretakerAvailability.objects.create(
-                        caretaker=caretaker_profile,
-                        day_of_week=int(day),
-                        start_time=start_time,
-                        end_time=end_time,
-                        is_available=True
+            
+            # Extract time slots
+            time_slots = []
+            i = 0
+            while True:
+                start_str = request.POST.get(f"start_time_{i}")
+                end_str = request.POST.get(f"end_time_{i}")
+                if start_str and end_str:
+                    st = datetime.strptime(start_str, "%H:%M").time()
+                    et = datetime.strptime(end_str, "%H:%M").time()
+                    if et <= st:
+                        messages.error(request, f"End time ({end_str}) must be after start time ({start_str}).")
+                        return redirect("requests:set_availability")
+                    time_slots.append((st, et))
+                    i += 1
+                else:
+                    break
+            
+            if not time_slots:
+                messages.error(request, "Please add at least one valid time slot.")
+                return redirect("requests:set_availability")
+
+            # Check for Live-In commitments
+            # Caretakers cannot be available on dates if they are engaged in a 24-hour live-in assignment.
+            # (If full_time or part_time, they can set availability for their off-hours).
+            active_live_in_jobs = CareAssignment.objects.filter(
+                caretaker=request.user,
+                status="active",
+                shift_type="live_in"
+            )
+
+            # Process additions
+            created_count = 0
+            skipped_conflicts = 0
+
+            for d in set(dates_to_add):
+                # Is caretaker locked into a full-time rule on this date?
+                has_conflict = False
+                for job in active_live_in_jobs:
+                    # if job end_date is None, it means the job is ongoing indefinitely
+                    if job.start_date <= d and (job.end_date is None or job.end_date >= d):
+                        has_conflict = True
+                        break
+
+                if has_conflict:
+                    skipped_conflicts += 1
+                    continue
+
+                for (st, et) in time_slots:
+                    # Create or update availability entry
+                    CaretakerAvailability.objects.update_or_create(
+                        caretaker=request.user,
+                        date=d,
+                        start_time=st,
+                        defaults={
+                            "end_time": et,
+                            "status": "available",
+                            "is_recurring": (mode == "weekly")
+                        }
                     )
                     created_count += 1
-                
-                messages.success(request, f"✅ Successfully set availability for {created_count} day(s)!")
-                return redirect("requests:availability_list")
-                
+            
+            if skipped_conflicts > 0:
+                messages.warning(
+                    request, 
+                    f"Set {created_count} available slots, but skipped {skipped_conflicts} date(s) where you are already contractually committed to a 24-hour live-in active care assignment."
+                )
             else:
-                messages.info(request, "Weekly schedule mode is recommended for recurring availability.")
-                return redirect("requests:set_availability")
-                
+                messages.success(request, f"✅ Successfully added {created_count} new availability slot(s)!")
+
+            return redirect("requests:availability_list")
+
         except Exception as e:
-            messages.error(request, f"Error setting availability: {str(e)}")
+            messages.error(request, f"Error processing availability: {str(e)}")
             return redirect("requests:set_availability")
-    
+
+    # Fetch existing to show the user
     existing_slots = CaretakerAvailability.objects.filter(
-        caretaker=caretaker_profile,
-        is_available=True
-    ).order_by('day_of_week', 'start_time')
-    
+        caretaker=request.user,
+        date__gte=date.today(),
+        status="available"
+    ).order_by("date", "start_time")
+
     today = date.today()
     start_date = today + timedelta(days=1)
     next_30_days = [(start_date + timedelta(days=i)) for i in range(30)]
-    
+
     context = {
         "existing_slots": existing_slots,
-        "existing_availability": [],
+        "existing_availability": existing_slots,
         "next_30_days": next_30_days,
         "today": today.strftime("%Y-%m-%d"),
         "tomorrow": start_date.strftime("%Y-%m-%d"),

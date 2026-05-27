@@ -609,7 +609,7 @@
             <tbody>
                 {% for application in applications %}
                 <tr class="application-row"
-                    data-search="{{ application.caretaker.get_full_name }} {{ application.request.patient_name }}">
+                    data-search="{{ application.caretaker.get_full_name }} {{ application.request.display_patient_name }}">
                     <td>
                         <div class="caretaker-info">
                             <i class="fas fa-user-circle"></i>
@@ -621,7 +621,7 @@
                     </td>
                     <td>
                         <div class="request-info">
-                            <strong>{{ application.request.patient_name }}</strong>
+                            <strong>{{ application.request.display_patient_name }}</strong>
                             <small>{{ application.request.get_care_type_display }} • {{ application.request.duration_days }} days</small>
                             <small class="location"><i class="fas fa-map-marker-alt"></i> {{ application.request.location|default:"Location not specified" }}</small>
                         </div>
@@ -687,7 +687,7 @@
     <div class="mobile-view">
         {% for application in applications %}
         <div class="application-card"
-            data-search="{{ application.caretaker.get_full_name }} {{ application.request.patient_name }}">
+            data-search="{{ application.caretaker.get_full_name }} {{ application.request.display_patient_name }}">
             <div class="card-header">
                 <div class="caretaker-info">
                     <i class="fas fa-user-circle"></i>
@@ -704,7 +704,7 @@
             <div class="card-body">
                 <div class="request-detail">
                     <i class="fas fa-user"></i>
-                    <span><strong>Patient:</strong> {{ application.request.patient_name }}</span>
+                    <span><strong>Patient:</strong> {{ application.request.display_patient_name }}</span>
                 </div>
                 <div class="request-detail">
                     <i class="fas fa-calendar-alt"></i>

@@ -30,7 +30,7 @@
 
         /* ========== SIDEBAR STYLES ========== */
         .sidebar {
-            width: 260px;
+            width: 220px;
             background: linear-gradient(135deg, #0f3460 0%, #1a4a7a 100%);
             color: white;
             transition: all 0.3s;
@@ -168,7 +168,7 @@
         /* ========== MAIN CONTENT ========== */
         .main-content {
             flex: 1;
-            margin-left: 260px;
+            margin-left: 220px;
             transition: all 0.3s;
             min-height: 100vh;
             display: flex;
@@ -182,7 +182,7 @@
         /* Top Navbar */
         .top-navbar {
             background: white;
-            padding: 12px 20px;
+            padding: 20px 30px;
             box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
             display: flex;
             align-items: center;
@@ -190,13 +190,15 @@
             position: sticky;
             top: 0;
             z-index: 999;
+            width: 100%;
         }
 
         .page-title {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 600;
             color: #0f3460;
             margin: 0;
+            flex: 1;
         }
 
         .navbar-actions {
@@ -231,17 +233,32 @@
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: rgba(15, 52, 96, 0.1);
+            border: 1px solid rgba(15, 52, 96, 0.2);
         }
 
         .profile-dropdown:hover {
-            background: #f1f5f9;
+            background: rgba(15, 52, 96, 0.15);
+            border-color: rgba(15, 52, 96, 0.3);
         }
 
         .dropdown-icon {
-            color: #64748b;
-            font-size: 0.7rem;
+            color: #0f3460;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .account-text {
+            color: #0f3460;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .user-avatar i {
+            color: #0f3460;
+            font-size: 1rem;
         }
 
         /* Content Area */
@@ -305,17 +322,6 @@
             padding: 10px 8px;
             border-bottom: 1px solid #e2e8f0;
             white-space: nowrap;
-        }
-
-        /* Allow specific columns to wrap if needed */
-        .table td:first-child,
-        .table th:first-child {
-            padding-left: 0;
-        }
-
-        .table td:last-child,
-        .table th:last-child {
-            padding-right: 0;
         }
 
         /* ========== BADGES ========== */
@@ -452,47 +458,13 @@
         /* Badge styling */
         .badge {
             font-weight: 500;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
         }
 
-        /* Table alignment */
-        .text-center {
-            text-align: center;
-        }
-
-        /* User info cell */
-        .user-info-cell {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-
-
-
-        /* Dashboard specific table styles */
-        .dashboard-table .table {
-            margin-bottom: 0;
-        }
-
-        .dashboard-table .table th {
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 0.75rem;
-        }
-
-        .dashboard-table .table td {
-            font-size: 0.85rem;
-            padding: 0.75rem;
-            vertical-align: middle;
-        }
-
-        /* Card styles */
+        /* Card styling */
         .card {
+            border: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             border-radius: 12px;
-            overflow: hidden;
         }
 
         .card-header {
@@ -519,19 +491,21 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        @media (max-width: 768px) {
-            .table-responsive {
-                overflow-x: auto;
-            }
+        /* Fix dropdown arrows */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23475569' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 12px;
+            padding-right: 25px;
+            cursor: pointer;
+        }
 
-            .card-header h5 {
-                font-size: 0.9rem;
-            }
-
-            .btn-sm {
-                font-size: 0.7rem;
-                padding: 0.25rem 0.5rem;
-            }
+        select::-ms-expand {
+            display: none;
         }
 
         /* ========== RESPONSIVE ========== */
@@ -549,8 +523,8 @@
 
         @media (max-width: 768px) {
             .sidebar {
-                width: 260px;
-                left: -260px;
+                width: 220px;
+                left: -220px;
             }
 
             .sidebar.show {
@@ -588,7 +562,7 @@
             }
 
             .top-navbar {
-                padding: 10px 15px;
+                padding: 10px 20px;
             }
 
             .page-title {
@@ -643,7 +617,7 @@
             <li class="nav-item">
                 <a href="{% url 'users:admin_dashboard' %}"
                     class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-                    <i class="fas fa-dashboard"></i>
+                    <i class="fas fa-tachometer-alt"></i>
                     <span class="nav-text">Dashboard</span>
                 </a>
             </li>
@@ -693,6 +667,16 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="{% url 'admin_chat_list' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'admin_chat_list' %}active{% endif %}">
+                    <i class="fas fa-comments"></i>
+                    <span class="nav-text">Chat Support</span>
+                    {% if total_unread_chat_count %}
+                    <span class="badge bg-danger" id="chat-badge-admin">{{ total_unread_chat_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="{% url 'users:admin_reports' %}"
                     class="nav-link {% if request.resolver_match.url_name == 'admin_reports' %}active{% endif %}">
                     <i class="fas fa-chart-bar"></i>
@@ -713,13 +697,6 @@
                     <span class="nav-text">Settings</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="{% url 'users:admin_profile' %}"
-                    class="nav-link {% if request.resolver_match.url_name == 'admin_profile' %}active{% endif %}">
-                    <i class="fas fa-user"></i>
-                    <span class="nav-text">Profile</span>
-                </a>
-            </li>
         </ul>
     </div>
 
@@ -729,9 +706,60 @@
         <nav class="top-navbar">
             <h5 class="page-title">{% block page_title %}Dashboard{% endblock %}</h5>
             <div class="navbar-actions">
-                <div class="notification-badge">
-                    <i class="fas fa-bell"></i>
-                    <span class="badge-count">{{ unread_notifications_count|default:0 }}</span>
+                <div class="dropdown">
+                    <div class="notification-badge" data-bs-toggle="dropdown" id="notificationDropdown">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge-count">{{ unread_notifications_count|default:0 }}</span>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end notification-dropdown-menu"
+                        style="width: 350px; max-height: 400px; overflow-y: auto;">
+                        <li class="dropdown-header">
+                            <i class="fas fa-bell me-2"></i>Notifications
+                            <a href="javascript:void(0)" onclick="markAllNotificationsRead()"
+                                class="float-end text-decoration-none">Mark all read</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        {% for notification in notifications %}
+                        <li class="notification-item {% if not notification.is_read %}unread{% endif %}"
+                            style="padding: 8px 15px;">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-{{ notification.icon|default:'info-circle' }} text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <div class="small">{{ notification.message|truncatechars:50 }}</div>
+                                    <div class="text-muted small">{{ notification.created_at|timesince }} ago</div>
+                                </div>
+                                {% if not notification.is_read %}
+                                <div class="flex-shrink-0">
+                                    <button class="btn btn-sm btn-link p-0"
+                                        onclick="markNotificationRead('{{ notification.id }}')" title="Mark as read">
+                                        <i class="fas fa-check text-success"></i>
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="text-center p-3">
+                            <i class="fas fa-bell-slash text-muted mb-2" style="font-size: 2rem;"></i>
+                            <div class="text-muted">No notifications</div>
+                            <small class="text-muted">You're all caught up!</small>
+                        </li>
+                        {% endfor %}
+                        {% if notifications %}
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a href="{% url 'notifications:all_notifications' %}" class="dropdown-item text-center">
+                                <i class="fas fa-eye me-2"></i>View all notifications
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
                 </div>
                 <div class="dropdown">
                     <div class="profile-dropdown" data-bs-toggle="dropdown">
@@ -740,21 +768,46 @@
                             <img src="{{ user.profile_picture.url }}" alt="Profile"
                                 style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
                             {% else %}
-                            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                            <i class="fas fa-user"></i>
                             {% endif %}
                         </div>
-                        <span class="dropdown-icon"><i class="fas fa-chevron-down"></i></span>
+                        <span class="account-text">Account</span>
+                        <span class="dropdown-icon">▼</span>
                     </div>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{% url 'users:admin_profile' %}"><i
-                                    class="fas fa-user me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="{% url 'users:admin_settings' %}"><i
-                                    class="fas fa-cog me-2"></i>Settings</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end" style="width: 280px;">
+                        <li class="dropdown-header d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="user-avatar" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                                    {% if user.profile_picture %}
+                                    <img src="{{ user.profile_picture.url }}" alt="Profile"
+                                        style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                    {% else %}
+                                    <i class="fas fa-user"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fw-bold">{{ user.get_full_name|default:user.username }}</div>
+                                <small class="text-muted">
+                                    {% if user.is_superuser %}Super Admin{% else %}Staff{% endif %}
+                                </small>
+                            </div>
+                        </li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><a class="dropdown-item text-danger" href="{% url 'users:logout' %}"><i
-                                    class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        <li><a class="dropdown-item" href="{% url 'users:admin_profile' %}">
+                                <i class="fas fa-user me-2"></i>My Profile
+                            </a></li>
+                        <li><a class="dropdown-item" href="{% url 'users:admin_settings' %}">
+                                <i class="fas fa-cog me-2"></i>Account Settings
+                            </a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'users:logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                            </a></li>
                     </ul>
                 </div>
             </div>
@@ -811,6 +864,77 @@
                 setTimeout(() => alert.remove(), 500);
             });
         }, 5000);
+
+        // Mark notification as read
+        function markNotificationRead(notificationId) {
+            fetch(`/notifications/${notificationId}/mark-read/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove unread class
+                        const item = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
+                        if (item) {
+                            item.classList.remove('unread');
+
+                            // Remove the mark read button
+                            const btn = item.querySelector('.btn');
+                            if (btn) btn.remove();
+
+                            // Update notification count
+                            const badge = document.querySelector('.badge-count');
+                            if (badge) {
+                                const currentCount = parseInt(badge.textContent);
+                                badge.textContent = Math.max(0, currentCount - 1);
+                            }
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Mark all notifications as read
+        function markAllNotificationsRead() {
+            fetch('{% url "notifications:mark_all_read" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Remove unread class from all items
+                        document.querySelectorAll('.notification-item').forEach(item => {
+                            item.classList.remove('unread');
+                            const btn = item.querySelector('.btn-link');
+                            if (btn) btn.remove();
+                        });
+
+                        // Update notification count
+                        const badge = document.querySelector('.badge-count');
+                        if (badge) {
+                            badge.textContent = '0';
+                            badge.style.display = 'none';
+                        }
+
+                        // Update chat badge
+                        const chatBadge = document.getElementById('chat-badge-admin');
+                        if (chatBadge) {
+                            chatBadge.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
     </script>
 
     {% block extra_js %}{% endblock %}

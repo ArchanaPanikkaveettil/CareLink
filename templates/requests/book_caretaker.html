@@ -1,250 +1,336 @@
-<!-- templates/requests/book_caretaker.html -->
 {% extends 'users/family_base.html' %}
-
 {% load static %}
 
-{% block title %}Book Caretaker - CareLink{% endblock %}
+{% block title %}Book {{ caretaker.get_full_name }} - CareLink{% endblock %}
 
-{% block page_icon %}<i class="fas fa-calendar-plus"></i>{% endblock %}
-{% block page_title %}Book Caretaker{% endblock %}
+{% block page_icon %}<i class="fas fa-calendar-check"></i>{% endblock %}
+{% block page_title %}Confirm Booking{% endblock %}
 
 {% block extra_css %}
 <style>
-    .booking-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 25px;
+    .booking-wrapper {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
     }
-    
-    .booking-form-container, .booking-summary {
+
+    .booking-card {
         background: white;
-        border-radius: 15px;
-        padding: 25px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
     }
-    
+
+    .booking-header {
+        background: linear-gradient(135deg, #0f3460, #1e4a7a);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .caretaker-avatar {
+        width: 100px;
+        height: 100px;
+        background: white;
+        border-radius: 50%;
+        margin: 0 auto 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: #0f3460;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+    }
+
+    .caretaker-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .booking-header h2 {
+        margin: 0 0 10px;
+        font-size: 1.8rem;
+    }
+
+    .booking-header p {
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .booking-body {
+        padding: 30px;
+    }
+
+    .slot-details {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .detail-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .detail-label {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .detail-value {
+        color: #0f3460;
+        font-size: 1.1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .detail-value i {
+        color: #10b981;
+    }
+
     .form-group {
-        margin-bottom: 20px;
+        margin-bottom: 25px;
     }
-    
+
     .form-group label {
         display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: #0f3460;
-    }
-    
-    .form-control {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        font-size: 14px;
-    }
-    
-    .form-control:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-    
-    .summary-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 12px 0;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .summary-item:last-child {
-        border-bottom: none;
-    }
-    
-    .summary-label {
-        color: #64748b;
-    }
-    
-    .summary-value {
+        margin-bottom: 10px;
         font-weight: 600;
         color: #0f3460;
     }
-    
-    .total-amount {
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 2px solid #e2e8f0;
-        font-size: 18px;
-    }
-    
-    .btn-primary {
-        background: #0f3460;
-        color: white;
-        padding: 12px 30px;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
+
+    .form-control {
         width: 100%;
-        font-size: 16px;
-        font-weight: 500;
-        margin-top: 20px;
+        padding: 14px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s;
+        background: #f8fafc;
     }
-    
-    .btn-primary:hover {
-        background: #1e4a7a;
+
+    .form-control:focus {
+        outline: none;
+        border-color: #0f3460;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
     }
-    
-    .btn-secondary {
-        background: #64748b;
-        color: white;
-        padding: 12px 30px;
-        border: none;
-        border-radius: 10px;
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-    }
-    
-    .info-box {
-        background: #f0f9ff;
-        border-left: 4px solid #667eea;
+
+    .request-card {
+        display: block;
         padding: 15px;
-        margin-bottom: 20px;
-        border-radius: 8px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
     }
-    
+
+    .request-card:hover {
+        border-color: #94a3b8;
+        background: #f8fafc;
+    }
+
+    .request-input:checked + .request-card {
+        border-color: #0f3460;
+        background: #f0f9ff;
+    }
+
+    .request-input:checked + .request-card::after {
+        content: '\f058';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        color: #0f3460;
+        font-size: 1.2rem;
+    }
+
+    .request-title {
+        font-weight: 600;
+        color: #0f3460;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+
+    .request-meta {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .no-requests {
+        text-align: center;
+        padding: 30px;
+        background: #fef3c7;
+        border: 1px dashed #f59e0b;
+        border-radius: 12px;
+        color: #92400e;
+    }
+
+    .no-requests i {
+        font-size: 2rem;
+        margin-bottom: 15px;
+        color: #f59e0b;
+    }
+
+    .btn-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn-submit {
+        flex: 2;
+        background: #10b981;
+        color: white;
+        padding: 16px;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-submit:hover {
+        background: #059669;
+        transform: translateY(-2px);
+    }
+
+    .btn-cancel {
+        flex: 1;
+        background: #f1f5f9;
+        color: #64748b;
+        padding: 16px;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s;
+    }
+
+    .btn-cancel:hover {
+        background: #e2e8f0;
+        color: #0f3460;
+    }
+
     @media (max-width: 768px) {
-        .booking-container {
-            grid-template-columns: 1fr;
+        .slot-details {
+            flex-direction: column;
+            gap: 15px;
+        }
+        .btn-actions {
+            flex-direction: column;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="booking-container">
-    <!-- Booking Form -->
-    <div class="booking-form-container">
-        <h3>Booking Details</h3>
-        
-        <div class="info-box">
-            <i class="fas fa-info-circle"></i>
-            <strong>Selected Slot:</strong>
-            <div>Date: {{ selected_date|default:"Not selected" }}</div>
-            <div>Time: {{ selected_start|default:"Not selected" }} - {{ selected_end|default:"Not selected" }}</div>
-        </div>
-        
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="booking_date">Booking Date *</label>
-                <input type="date" class="form-control" id="booking_date" name="booking_date" 
-                       value="{{ selected_date }}" required readonly>
-            </div>
-            
-            <div class="form-group">
-                <label for="start_time">Start Time *</label>
-                <input type="time" class="form-control" id="start_time" name="start_time" 
-                       value="{{ selected_start }}" required readonly>
-            </div>
-            
-            <div class="form-group">
-                <label for="end_time">End Time *</label>
-                <input type="time" class="form-control" id="end_time" name="end_time" 
-                       value="{{ selected_end }}" required readonly>
-            </div>
-            
-            <div class="form-group">
-                <label for="family_notes">Special Instructions (Optional)</label>
-                <textarea class="form-control" id="family_notes" name="family_notes" rows="4" 
-                          placeholder="Any specific instructions for this session..."></textarea>
-            </div>
-            
-            <button type="submit" class="btn-primary">
-                <i class="fas fa-check-circle"></i> Send Booking Request
-            </button>
-        </form>
-    </div>
-    
-    <!-- Booking Summary -->
-    <div class="booking-summary">
-        <h3>Request Summary</h3>
-        
-        <div class="summary-item">
-            <span class="summary-label">Care Request:</span>
-            <span class="summary-value">{{ care_request.title|default:care_request.patient_name }}</span>
-        </div>
-        
-        <div class="summary-item">
-            <span class="summary-label">Care Type:</span>
-            <span class="summary-value">{{ care_request.get_care_type_display }}</span>
-        </div>
-        
-        <div class="summary-item">
-            <span class="summary-label">Caretaker:</span>
-            <span class="summary-value">{{ caretaker.get_full_name }}</span>
-        </div>
-        
-        <div class="summary-item">
-            <span class="summary-label">Duration:</span>
-            <span class="summary-value">
-                {% if selected_start and selected_end %}
-                    {% with start_h=selected_start|slice:":2"|add:0 start_m=selected_start|slice:"3:5"|add:0 end_h=selected_end|slice:":2"|add:0 end_m=selected_end|slice:"3:5"|add:0 %}
-                        {% with start_min=start_h|add:start_m|divisibleby:60 end_min=end_h|add:end_m|divisibleby:60 %}
-                            {{ end_h|add:end_m|divisibleby:60|add:-start_h|add:-start_m|divisibleby:60 }} hours
-                        {% endwith %}
-                    {% endwith %}
+<div class="booking-wrapper">
+    <div class="booking-card">
+        <div class="booking-header">
+            <div class="caretaker-avatar">
+                {% if caretaker.profile_picture %}
+                <img src="{{ caretaker.profile_picture.url }}" alt="{{ caretaker.get_full_name }}">
                 {% else %}
-                    To be calculated
+                <i class="fas fa-user-nurse"></i>
                 {% endif %}
-            </span>
-        </div>
-        
-        <div class="summary-item">
-            <span class="summary-label">Rate:</span>
-            <span class="summary-value">${{ care_request.salary_offered }}/hour</span>
-        </div>
-        
-        <div class="total-amount">
-            <div class="summary-item">
-                <span class="summary-label"><strong>Total Amount:</strong></span>
-                <span class="summary-value"><strong>$--</strong></span>
             </div>
+            <h2>Book {{ caretaker.get_full_name|default:caretaker.username }}</h2>
+            <p>Directly request this caretaker to fulfill your care needs.</p>
         </div>
-        
-        <a href="{% url 'requests:caretaker_availability' caretaker_id=caretaker.id %}" 
-           class="btn-secondary" style="display: block; text-align: center; margin-top: 20px;">
-            <i class="fas fa-arrow-left"></i> Back to Calendar
-        </a>
+
+        <div class="booking-body">
+            <div class="slot-details">
+                <div class="detail-item">
+                    <span class="detail-label">Date Selected</span>
+                    <span class="detail-value">
+                        <i class="fas fa-calendar-day"></i> {{ slot.date|date:"F j, Y" }}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Time Slot</span>
+                    <span class="detail-value">
+                        <i class="fas fa-clock"></i> {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}
+                    </span>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label>Select an Open Care Request <span style="color:red">*</span></label>
+                    
+                    {% if user_requests %}
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                        {% for req in user_requests %}
+                            <label style="margin: 0; font-weight: normal;">
+                                <input type="radio" name="care_request_id" value="{{ req.id }}" class="request-input" style="display: none;" required>
+                                <div class="request-card">
+                                    <div class="request-title">{{ req.display_patient_name }} - {{ req.get_service_type_display }}</div>
+                                    <div class="request-meta">
+                                        <i class="fas fa-map-marker-alt"></i> {{ req.location|default:"No location provided" }} &bull;
+                                        <i class="fas fa-rupee-sign"></i> {{ req.salary_offered|default:"Negotiable" }}
+                                    </div>
+                                </div>
+                            </label>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="no-requests">
+                            <i class="fas fa-clipboard-list"></i>
+                            <h4>No Open Requests Found</h4>
+                            <p>You must have an "Open" Care Request to book a caretaker directly.</p>
+                            <a href="{% url 'requests:post_request' %}" class="btn-cancel" style="display: inline-block; margin-top: 15px; padding: 10px 20px;">
+                                Create a Care Request
+                            </a>
+                        </div>
+                    {% endif %}
+                    <small style="color: #64748b; margin-top: 8px; display: block;">
+                        Your Care Request contains the patient details, tasks, and address that the caretaker will need.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="family_notes">Special Instructions or Notes (Optional)</label>
+                    <textarea name="family_notes" id="family_notes" rows="3" class="form-control" placeholder="E.g., Please enter through the side door. Looking forward to meeting you!"></textarea>
+                </div>
+
+                {% if user_requests %}
+                <div class="btn-actions">
+                    <a href="{% url 'requests:caretaker_availability' caretaker.id %}" class="btn-cancel">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-check-circle"></i> Confirm Booking Request
+                    </button>
+                </div>
+                {% endif %}
+            </form>
+        </div>
     </div>
 </div>
-
-<script>
-    // Calculate duration and total when times are selected
-    function calculateTotal() {
-        const startTime = document.getElementById('start_time').value;
-        const endTime = document.getElementById('end_time').value;
-        const rate = {{ care_request.salary_offered | default:0 }};
-        
-        if (startTime && endTime) {
-            const start = new Date(`2000-01-01T${startTime}`);
-            const end = new Date(`2000-01-01T${endTime}`);
-            const hours = (end - start) / (1000 * 60 * 60);
-            
-            if (hours > 0) {
-                const total = hours * rate;
-                const totalElement = document.querySelector('.total-amount .summary-value strong');
-                if (totalElement) {
-                    totalElement.textContent = `$${total.toFixed(2)}`;
-                }
-            }
-        }
-    }
-    
-    document.getElementById('start_time').addEventListener('change', calculateTotal);
-    document.getElementById('end_time').addEventListener('change', calculateTotal);
-    
-    // Run on load
-    calculateTotal();
-    }
-</script>
 {% endblock %}

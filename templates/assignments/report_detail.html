@@ -1,0 +1,319 @@
+{% extends base_template|default:'users/family_base.html' %}
+{% load static %}
+
+{% block title %}Report Detail - {{ report.report_date|date:"M d, Y" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-detail-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .detail-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+    }
+    
+    .card-header-custom {
+        background: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);
+        padding: 30px;
+        color: white;
+    }
+    
+    .report-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .report-title {
+        margin: 0;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .mood-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.2);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .section-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        padding: 30px;
+    }
+    
+    .section-block {
+        margin-bottom: 30px;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #0f3460;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .vitals-card {
+        background: #f8fafc;
+        border-radius: 15px;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .vital-item {
+        text-align: center;
+    }
+    
+    .vital-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #0f3460;
+    }
+    
+    .vital-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-top: 5px;
+    }
+    
+    .content-box {
+        padding: 15px 20px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border-left: 4px solid #1e4a7a;
+        font-size: 0.95rem;
+        color: #334155;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+    
+    .concern-box {
+        background: #fff1f2;
+        border-left-color: #ef4444;
+        color: #991b1b;
+    }
+    
+    .recommend-box {
+        background: #f0fdf4;
+        border-left-color: #22c55e;
+        color: #166534;
+    }
+    
+    .report-photo {
+        width: 100%;
+        max-width: 500px;
+        border-radius: 15px;
+        margin-top: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .btn-back {
+        background: transparent;
+        border: 1px solid white;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+    }
+    
+    .btn-back:hover {
+        background: white;
+        color: #0f3460;
+    }
+    
+    .notes-form {
+        padding: 30px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container report-detail-container">
+    <div class="detail-card">
+        <!-- Header -->
+        <div class="card-header-custom">
+            <div style="margin-bottom: 20px;">
+                <a href="{% url 'assignments:view_reports' report.assignment.id %}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> All Reports
+                </a>
+            </div>
+            <div class="report-meta">
+                <div>
+                    <h2 class="report-title">
+                        <i class="fas fa-file-medical"></i>
+                        Care Report for {{ report.report_date|date:"l, F j, Y" }}
+                    </h2>
+                    <p style="opacity: 0.9; margin-top: 10px;">
+                        Caretaker: <strong>{{ report.assignment.caretaker.get_full_name }}</strong>
+                    </p>
+                </div>
+                <div class="mood-indicator">
+                    <i class="fas fa-smile"></i> Mood: {{ report.get_mood_display }}
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body" style="padding: 0;">
+            <div class="section-grid">
+                <!-- Vitals Column -->
+                <div class="section-block">
+                    <div class="section-title">
+                        <i class="fas fa-heartbeat" style="color: #ef4444;"></i> Vital Signs
+                    </div>
+                    <div class="vitals-card">
+                        <div class="vital-item">
+                            <div class="vital-value">{{ report.blood_pressure_systolic }}/{{ report.blood_pressure_diastolic }}</div>
+                            <div class="vital-label">Blood Pressure</div>
+                        </div>
+                        <div class="vital-item">
+                            <div class="vital-value">{{ report.heart_rate }}</div>
+                            <div class="vital-label">Heart Rate (bpm)</div>
+                        </div>
+                        {% if report.temperature %}
+                        <div class="vital-item">
+                            <div class="vital-value">{{ report.temperature }}°C</div>
+                            <div class="vital-label">Temperature</div>
+                        </div>
+                        {% endif %}
+                        {% if report.blood_sugar %}
+                        <div class="vital-item">
+                            <div class="vital-value">{{ report.blood_sugar }}</div>
+                            <div class="vital-label">Blood Sugar</div>
+                        </div>
+                        {% endif %}
+                        {% if report.oxygen_saturation %}
+                        <div class="vital-item">
+                            <div class="vital-value">{{ report.oxygen_saturation }}%</div>
+                            <div class="vital-label">Oxygen Sat</div>
+                        </div>
+                        {% endif %}
+                        {% if report.weight %}
+                        <div class="vital-item">
+                            <div class="vital-value">{{ report.weight }} kg</div>
+                            <div class="vital-label">Weight</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="section-title" style="margin-top: 30px;">
+                        <i class="fas fa-utensils" style="color: #10b981;"></i> Vital Activities
+                    </div>
+                    {% if report.meals_taken %}
+                    <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">Meals</div>
+                    <div class="content-box">{{ report.meals_taken|linebreaks }}</div>
+                    {% endif %}
+                    
+                    {% if report.water_intake %}
+                    <p style="font-size: 0.9rem;"><strong>Water Intake:</strong> {{ report.water_intake }}</p>
+                    {% endif %}
+                    
+                    {% if report.sleep_hours %}
+                    <p style="font-size: 0.9rem;"><strong>Sleep:</strong> {{ report.sleep_hours }} hours ({{ report.get_sleep_quality_display }})</p>
+                    {% endif %}
+                </div>
+
+                <!-- Observations and Care Column -->
+                <div class="section-block">
+                    {% if report.medications_given %}
+                    <div class="section-title">
+                        <i class="fas fa-capsules" style="color: #0f3460;"></i> Medications
+                    </div>
+                    <div class="content-box">{{ report.medications_given|linebreaks }}</div>
+                    {% endif %}
+
+                    {% if report.exercises_done or report.activities_done %}
+                    <div class="section-title">
+                        <i class="fas fa-running" style="color: #3b82f6;"></i> Activities
+                    </div>
+                    {% if report.exercises_done %}
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">Exercises</div>
+                        <div class="content-box">{{ report.exercises_done }}</div>
+                    {% endif %}
+                    {% if report.activities_done %}
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">General</div>
+                        <div class="content-box">{{ report.activities_done }}</div>
+                    {% endif %}
+                    {% endif %}
+
+                    <div class="section-title">
+                        <i class="fas fa-eye" style="color: #f59e0b;"></i> Observations
+                    </div>
+                    <div class="content-box">{{ report.observations|default:"No notable observations recorded."|linebreaks }}</div>
+                    
+                    {% if report.concerns %}
+                    <div style="font-size: 0.8rem; font-weight: 700; color: #ef4444; margin-bottom: 5px; text-transform: uppercase;">Medical Concerns</div>
+                    <div class="content-box concern-box">{{ report.concerns|linebreaks }}</div>
+                    {% endif %}
+                    
+                    {% if report.recommendations %}
+                    <div style="font-size: 0.8rem; font-weight: 700; color: #22c55e; margin-bottom: 5px; text-transform: uppercase;">Recommendations</div>
+                    <div class="content-box recommend-box">{{ report.recommendations|linebreaks }}</div>
+                    {% endif %}
+                    
+                    {% if report.photo %}
+                    <div style="margin-top: 20px;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 10px; text-transform: uppercase;">Attached Photo</div>
+                        <img src="{{ report.photo.url }}" class="report-photo" alt="Report photo">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Family Notes Section -->
+            <div class="notes-form">
+                <div class="section-title">
+                    <i class="fas fa-comment-medical" style="color: #0f3460;"></i> Family Feedback & Notes
+                </div>
+                {% if report.family_notes %}
+                    <div class="content-box" style="background: white; border: 1px solid #e2e8f0;">
+                        {{ report.family_notes|linebreaks }}
+                    </div>
+                {% endif %}
+                
+                {% if request.user.role == 'family' %}
+                <form method="post" action="{% url 'assignments:add_family_notes' report.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <textarea name="family_notes" class="form-control" rows="3" placeholder="Add your feedback or specific instructions based on this report..." style="padding: 15px; border-radius: 12px; border: 1.5px solid #e2e8f0;"></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary" style="background: #0f3460; padding: 10px 25px; border-radius: 10px;">
+                            {% if report.family_notes %}Update Notes{% else %}Save Feedback{% endif %}
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

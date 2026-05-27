@@ -1,5 +1,5 @@
 <!-- templates/notifications/all.html -->
-{% extends 'users/family_base.html' %}
+{% extends base_template|default:'users/family_base.html' %}
 
 {% load static %}
 
@@ -410,10 +410,10 @@
         <div class="notification-item {% if not notification.is_read %}unread{% endif %}" 
              data-id="{{ notification.id }}"
              data-read="{% if notification.is_read %}read{% else %}unread{% endif %}">
-            <div class="notification-icon" onclick="handleNotificationClick('{{ notification.id }}', '{{ notification.link|default:'' }}')">
-                <i class="fas {% if notification.notification_type == 'assignment' %}fa-calendar-check{% elif notification.notification_type == 'application' %}fa-file-alt{% elif notification.notification_type == 'message' %}fa-envelope{% else %}fa-bell{% endif %}"></i>
+            <div class="notification-icon" onclick="handleNotificationClick('{{ notification.id|escapejs }}', '{{ notification.link|default:''|escapejs }}')">
+                <i class="fas {% if notification.icon and 'fa-' in notification.icon %}{{ notification.icon }}{% else %}fa-{{ notification.icon|default:'bell' }}{% endif %}"></i>
             </div>
-            <div class="notification-content" onclick="handleNotificationClick('{{ notification.id }}', '{{ notification.link|default:'' }}')">
+            <div class="notification-content" onclick="handleNotificationClick('{{ notification.id|escapejs }}', '{{ notification.link|default:''|escapejs }}')">
                 <div class="notification-title">{{ notification.title|default:"Notification" }}</div>
                 <div class="notification-message">{{ notification.message }}</div>
                 <div class="notification-meta">

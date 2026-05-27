@@ -16,19 +16,42 @@ def all_notifications(request):
         "-created_at"
     )
 
-    context = {"notifications": notifications}
+    base_template = "users/family_base.html"
+    if request.user.role == "admin":
+        base_template = "admin/admin_base.html"
+    elif request.user.role == "caretaker":
+        base_template = "users/nurse_base.html"
+
+    context = {"notifications": notifications, "base_template": base_template}
     return render(request, "notifications/all.html", context)
 
 
 @login_required
 @require_POST
 def mark_all_read(request):
-    """Mark all notifications as read"""
+    """Mark all notifications as read and also mark unread chat messages as read"""
+    # Mark all notifications as read
     updated_count = Notification.objects.filter(
         recipient=request.user, is_read=False
     ).update(
-        is_read=True, read_at=timezone.now()  # Optional: add timestamp
+        is_read=True, read_at=timezone.now()
     )
+
+    # Also mark chat messages as read to satisfy user requirement
+    try:
+        from apps.Chat.models import ChatMessage, ChatSession
+        if request.user.role == "admin":
+            # For admins, mark all messages from regular users as read
+            ChatMessage.objects.filter(is_read=False).exclude(sender__role="admin").update(is_read=True)
+        else:
+            # For regular users, mark all messages from admins in their session as read
+            try:
+                session = ChatSession.objects.get(user=request.user)
+                session.messages.filter(sender__role="admin", is_read=False).update(is_read=True)
+            except ChatSession.DoesNotExist:
+                pass
+    except ImportError:
+        pass
 
     return JsonResponse(
         {

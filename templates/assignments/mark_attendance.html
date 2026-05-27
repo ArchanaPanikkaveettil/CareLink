@@ -1,0 +1,595 @@
+{% extends 'users/nurse_base.html' %}
+
+{% load static %}
+
+{% block title %}Attendance - {{ assignment.care_request.display_patient_name }}{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-clock"></i> Shift Attendance
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-navy: #0a2a38;
+        --secondary-teal: #4bc3a3;
+        --accent-gold: #ffd700;
+        --soft-gray: #f8fafc;
+        --border-color: #e2e8f0;
+        --text-muted: #64748b;
+        --danger-red: #ef4444;
+        --success-green: #10b981;
+    }
+
+    .attendance-hero {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        border: 1px solid var(--border-color);
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .attendance-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, var(--secondary-teal), var(--primary-navy));
+    }
+
+    .digital-clock {
+        font-family: 'JetBrains Mono', 'Monaco', monospace;
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: var(--primary-navy);
+        margin: 15px 0;
+        letter-spacing: -2px;
+        text-shadow: 2px 2px 0px rgba(75, 195, 163, 0.1);
+    }
+
+    .date-display {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        margin-bottom: 25px;
+    }
+
+    /* Shift Timeline */
+    .shift-timeline {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        margin: 30px 0;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .timeline-point {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        position: relative;
+        z-index: 2;
+        width: 120px;
+    }
+
+    .point-circle {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border: 3px solid var(--border-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        transition: all 0.4s ease;
+    }
+
+    .point-line {
+        flex: 1;
+        height: 3px;
+        background: var(--border-color);
+        margin-top: -30px;
+        z-index: 1;
+        min-width: 80px;
+    }
+
+    .timeline-point.active .point-circle {
+        border-color: var(--secondary-teal);
+        color: var(--secondary-teal);
+        box-shadow: 0 0 15px rgba(75, 195, 163, 0.3);
+    }
+
+    .timeline-point.completed .point-circle {
+        background: var(--secondary-teal);
+        border-color: var(--secondary-teal);
+        color: white;
+    }
+
+    .timeline-point.completed + .point-line {
+        background: var(--secondary-teal);
+    }
+
+    .point-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+    }
+
+    .point-time {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--primary-navy);
+    }
+
+    /* Action Cards */
+    .action-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+
+    .glass-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary-navy);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Main Attendance Buttons */
+    .btn-main {
+        width: 100%;
+        padding: 20px;
+        border: none;
+        border-radius: 16px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: all 0.3s;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-in {
+        background: var(--secondary-teal);
+        color: white;
+    }
+
+    .btn-in:hover:not(:disabled) {
+        background: #3eb492;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(75, 195, 163, 0.3);
+    }
+
+    .btn-out {
+        background: var(--danger-red);
+        color: white;
+    }
+
+    .btn-out:hover:not(:disabled) {
+        background: #e03232;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-main:disabled {
+        background: #e2e8f0;
+        color: #94a3b8;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(75, 195, 163, 0.4); }
+        70% { box-shadow: 0 0 0 15px rgba(75, 195, 163, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(75, 195, 163, 0); }
+    }
+
+    /* Exceptions buttons */
+    .btn-exception {
+        padding: 12px 20px;
+        border: 1.5px solid var(--border-color);
+        background: transparent;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        width: 100%;
+        margin-bottom: 10px;
+        cursor: pointer;
+    }
+
+    .btn-exception:hover {
+        background: var(--soft-gray);
+        border-color: var(--primary-navy);
+        color: var(--primary-navy);
+    }
+
+    .btn-exception.active {
+        background: var(--primary-navy);
+        color: white;
+        border-color: var(--primary-navy);
+    }
+
+    /* History Table */
+    .history-card {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .history-table th {
+        background: var(--soft-gray);
+        padding: 15px 20px;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .history-table td {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.9rem;
+        color: var(--primary-navy);
+    }
+
+    .status-badge-mini {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .bg-present { background: #ecfdf5; color: #065f46; }
+    .bg-absent { background: #fef2f2; color: #991b1b; }
+    .bg-late { background: #fffbeb; color: #92400e; }
+    .bg-leave { background: #eff6ff; color: #1e40af; }
+
+    /* Forms */
+    .reason-box {
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.4s ease-out;
+    }
+
+    .reason-box.expanded {
+        max-height: 250px;
+        margin-top: 15px;
+    }
+
+    textarea.form-control-custom {
+        width: 100%;
+        background: var(--soft-gray);
+        border: 1.5px solid var(--border-color);
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+
+    textarea.form-control-custom:focus {
+        outline: none;
+        border-color: var(--secondary-teal);
+        background: white;
+    }
+
+    .info-bar {
+        background: #fffbeb;
+        border: 1px solid #fef3c7;
+        border-radius: 12px;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.85rem;
+        color: #92400e;
+        margin-bottom: 15px;
+    }
+
+    @media (max-width: 768px) {
+        .digital-clock { font-size: 2.5rem; }
+        .attendance-hero { padding: 30px 20px; }
+        .shift-timeline { display: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Status Info Bar -->
+    <div class="info-bar">
+        <i class="fas fa-info-circle"></i>
+        <span><strong>Help:</strong> <strong>Absent</strong> is for unexpected missed shifts. <strong>Leave</strong> is for pre-approved time off.</span>
+    </div>
+
+    <!-- Attendance Hero Section -->
+    <div class="attendance-hero">
+        <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
+            <span class="status-badge-mini {% if attendance.check_in_time %}bg-present{% elif attendance.status == 'absent' %}bg-absent{% elif attendance.status == 'leave' %}bg-leave{% else %}bg-late{% endif %}" style="padding: 6px 14px; font-size: 0.85rem;">
+                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                {% if not attendance.check_in_time and attendance.status == 'present' %}NOT STARTED{% else %}{{ attendance.get_status_display|upper }}{% endif %}
+            </span>
+            <div style="font-weight: 600; color: var(--primary-navy);">
+                Patient: <span style="color: var(--secondary-teal);">{{ assignment.care_request.display_patient_name }}</span>
+            </div>
+        </div>
+
+        <div id="currentTime" class="digital-clock">--:--:--</div>
+        <div class="date-display">{{ today|date:"l, d F Y" }}</div>
+
+        <!-- Visual Timeline -->
+        <div class="shift-timeline">
+            <!-- Start -->
+            <div class="timeline-point {% if attendance.check_in_time or attendance.status == 'absent' or attendance.status == 'leave' %}completed{% endif %}">
+                <div class="point-circle"><i class="fas fa-sign-in-alt"></i></div>
+                <div class="point-label">Shift Start</div>
+                <div class="point-time">{{ expected_start|default:"09:00 AM" }}</div>
+            </div>
+            
+            <div class="point-line"></div>
+
+            <!-- Current/Middle -->
+            <div class="timeline-point {% if attendance.check_in_time and not attendance.check_out_time %}active{% elif attendance.check_out_time %}completed{% endif %}">
+                <div class="point-circle"><i class="fas fa-user-nurse"></i></div>
+                <div class="point-label">In Progress</div>
+                <div class="point-time">
+                    {% if attendance.check_in_time %}Active: {{ attendance.check_in_time|time:"g:i A" }}{% else %}Wait{% endif %}
+                </div>
+            </div>
+
+            <div class="point-line"></div>
+
+            <!-- End -->
+            <div class="timeline-point {% if attendance.check_out_time %}completed{% endif %}">
+                <div class="point-circle"><i class="fas fa-sign-out-alt"></i></div>
+                <div class="point-label">Shift End</div>
+                <div class="point-time">{{ expected_end|default:"05:00 PM" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-container">
+        <!-- Main Actions Card -->
+        <div class="glass-card">
+            <div class="card-title">
+                <i class="fas fa-fingerprint" style="color: var(--secondary-teal);"></i>
+                Clock In / Out
+            </div>
+            
+            <div class="mb-4">
+                <form method="post" action="{% url 'assignments:mark_attendance' assignment.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="check_in">
+                    <button type="submit" class="btn-main btn-in {% if not attendance or not attendance.check_in_time %}pulse-animation{% endif %}" 
+                        {% if attendance.check_in_time or attendance.status == 'absent' or attendance.status == 'leave' %}disabled{% endif %}>
+                        <i class="fas fa-play"></i> Clock In Now
+                    </button>
+                </form>
+                <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">
+                    {% if attendance.check_in_time %}
+                        Logged in at {{ attendance.check_in_time|time:"g:i A" }}
+                        {% if attendance.late_minutes > 0 %} <span class="text-danger">(Late {{ attendance.late_minutes }}m)</span>{% endif %}
+                    {% else %}
+                        Mark your arrival for today's shift
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                <form method="post" action="{% url 'assignments:mark_attendance' assignment.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="check_out">
+                    <button type="submit" class="btn-main btn-out" 
+                        {% if not attendance.check_in_time or attendance.check_out_time %}disabled{% endif %}>
+                        <i class="fas fa-stop"></i> Clock Out Now
+                    </button>
+                </form>
+                <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">
+                    {% if attendance.check_out_time %}
+                        Logged out at {{ attendance.check_out_time|time:"g:i A" }}
+                    {% else %}
+                        Mark your departure to end the shift
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Exceptions & Reasons Card -->
+        <div class="glass-card">
+            <div class="card-title">
+                <i class="fas fa-exclamation-circle" style="color: var(--danger-red);"></i>
+                Report Exceptions
+            </div>
+            
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+                If you are unable to attend the shift today, please select a reason below.
+            </p>
+
+            <button type="button" class="btn-exception" id="btnAbsent" onclick="toggleReason('absent')" {% if attendance.check_in_time %}disabled title="Shift already started"{% endif %}>
+                <i class="fas fa-user-slash"></i> Mark Unexpected Absence
+            </button>
+            <div id="absentBox" class="reason-box">
+                <form method="post" action="{% url 'assignments:mark_attendance' assignment.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="mark_absent">
+                    <textarea name="notes" placeholder="Why are you unable to attend? (Family will be notified)" class="form-control-custom" required></textarea>
+                    <button type="submit" class="btn btn-danger w-100" style="border-radius: 10px; padding: 10px;">Confirm Absence</button>
+                </form>
+            </div>
+
+            <button type="button" class="btn-exception" id="btnLeave" onclick="toggleReason('leave')" {% if attendance.check_in_time %}disabled title="Shift already started"{% endif %}>
+                <i class="fas fa-umbrella-beach"></i> Mark Planned Leave
+            </button>
+            <div id="leaveBox" class="reason-box">
+                <form method="post" action="{% url 'assignments:mark_attendance' assignment.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="mark_leave">
+                    <textarea name="notes" placeholder="Status of approved leave application..." class="form-control-custom" required></textarea>
+                    <button type="submit" class="btn btn-primary w-100" style="border-radius: 10px; padding: 10px;">Confirm Leave</button>
+                </form>
+            </div>
+
+            {% if attendance and attendance.actual_hours_worked %}
+            <div style="margin-top: 30px; padding: 15px; background: #f0fdf4; border-radius: 12px; text-align: center;">
+                <div style="font-size: 0.75rem; color: #166534; font-weight: 700;">TOTAL HOURS WORKED</div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: #065f46;">{{ attendance.actual_hours_worked|floatformat:2 }}h</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Attendance History List -->
+    <div class="history-card">
+        <div style="padding: 20px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h5 style="margin: 0; font-weight: 700; color: var(--primary-navy);"><i class="fas fa-history"></i> Recent Activity</h5>
+            <a href="#" style="font-size: 0.8rem; font-weight: 600; color: var(--secondary-teal); text-decoration: none;">View Full Logs</a>
+        </div>
+        <div class="table-responsive">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Clock In</th>
+                        <th>Clock Out</th>
+                        <th>Effective Hours</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in assignment.attendance_records.all|slice:":10" %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ record.date|date:"d M, Y" }}</td>
+                        <td>
+                            <span class="status-badge-mini {% if record.check_in_time %}bg-present{% elif record.status == 'absent' %}bg-absent{% elif record.status == 'leave' %}bg-leave{% else %}bg-late{% endif %}">
+                                {% if not record.check_in_time and record.status == 'present' %}Not Started{% else %}{{ record.get_status_display }}{% endif %}
+                            </span>
+                        </td>
+                        <td>{% if record.check_in_time %}{{ record.check_in_time|time:"g:i A" }}{% else %}-{% endif %}</td>
+                        <td>{% if record.check_out_time %}{{ record.check_out_time|time:"g:i A" }}{% else %}-{% endif %}</td>
+                        <td>
+                            {% if record.actual_hours_worked %}
+                                <strong>{{ record.actual_hours_worked|floatformat:1 }} hrs</strong>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted); font-style: italic;">
+                            No attendance records found for this assignment.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="margin-top: 30px; display: flex; gap: 15px;">
+        <a href="{% url 'assignments:caretaker_assignment_detail' assignment.id %}" class="btn" style="background: white; border: 1.5px solid var(--border-color); color: var(--primary-navy); font-weight: 600; padding: 12px 25px; border-radius: 12px;">
+            <i class="fas fa-arrow-left"></i> Back to Patient Profile
+        </a>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Live digital clock
+    function startClock() {
+        const timeDisplay = document.getElementById('currentTime');
+        function update() {
+            const now = new Date();
+            timeDisplay.textContent = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+        }
+        setInterval(update, 1000);
+        update();
+    }
+
+    // Toggle reason forms
+    function toggleReason(type) {
+        const box = document.getElementById(type + 'Box');
+        const btn = document.getElementById('btn' + type.charAt(0).toUpperCase() + type.slice(1));
+        
+        // Close others
+        document.querySelectorAll('.reason-box').forEach(b => {
+            if (b.id !== type + 'Box') b.classList.remove('expanded');
+        });
+        document.querySelectorAll('.btn-exception').forEach(b => {
+            if (b.id !== 'btn' + type.charAt(0).toUpperCase() + type.slice(1)) b.classList.remove('active');
+        });
+
+        box.classList.toggle('expanded');
+        btn.classList.toggle('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', startClock);
+
+    // Auto-hide messages
+    setTimeout(() => {
+        document.querySelectorAll('.alert-success, .alert-warning').forEach(el => {
+            el.style.transition = 'opacity 0.6s ease';
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 600);
+        });
+    }, 5000);
+</script>
+{% endblock %}

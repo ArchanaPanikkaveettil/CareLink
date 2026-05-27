@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'apps.Applications',
     'apps.Dashboard',
     'apps.Notifications',
-     'apps.assignments',
+    'apps.assignments',
+    'apps.Chat',
     
 ]
 
@@ -77,9 +78,12 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'apps.Requests.context_processors.booking_counts',
                 'apps.Users.context_processors.profile_completion_status',
+                'apps.Users.context_processors.base_template_context',
                  'apps.Users.context_processors.admin_context',
-                'apps.Users.context_processors.notification_count',
-                # 'apps.Notifications.context_processors.notification_count',
+                # 'apps.Users.context_processors.notification_count',
+                'apps.Notifications.context_processors.notification_count',
+                'apps.Chat.context_processors.chat_context',
+                'apps.assignments.context_processors.unread_messages_count',
             ],
         },
     },
@@ -123,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 

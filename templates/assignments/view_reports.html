@@ -1,0 +1,497 @@
+{% extends base_template|default:'users/family_base.html' %}
+{% load static %}
+
+{% block title %}Daily Reports - {{ assignment.care_request.elder.name|default:"Patient" }}{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-clipboard-list"></i> Daily Care Reports
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reports-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .btn-create {
+        background: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);
+        color: white;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: transform 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-create:hover {
+        transform: translateY(-2px);
+        color: white;
+        background: linear-gradient(135deg, #1e4a7a 0%, #2c5a8a 100%);
+    }
+    
+    .report-card {
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .report-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .report-header {
+        background: #f8fafc;
+        padding: 1rem 1.5rem;
+        border-bottom: 2px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .report-date {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0f3460;
+    }
+    
+    .report-date i {
+        margin-right: 8px;
+        color: #1e4a7a;
+    }
+    
+    .mood-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .mood-excellent { background: #d4edda; color: #155724; }
+    .mood-good { background: #d1ecf1; color: #0c5460; }
+    .mood-fair { background: #fff3cd; color: #856404; }
+    .mood-poor { background: #f8d7da; color: #721c24; }
+    
+    .report-body {
+        padding: 1.5rem;
+    }
+    
+    .section-block {
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title {
+        font-weight: 600;
+        color: #0f3460;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+        font-size: 0.95rem;
+    }
+    
+    .section-title i {
+        margin-right: 8px;
+        color: #1e4a7a;
+    }
+    
+    .vitals-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 10px;
+    }
+    
+    .vital-item {
+        text-align: center;
+    }
+    
+    .vital-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #0f3460;
+    }
+    
+    .vital-label {
+        font-size: 0.7rem;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-top: 0.25rem;
+    }
+    
+    .activities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+    
+    .activity-item {
+        background: #f8fafc;
+        padding: 0.75rem;
+        border-radius: 8px;
+    }
+    
+    .activity-label {
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: #1e4a7a;
+        margin-bottom: 0.5rem;
+    }
+    
+    .activity-value {
+        font-size: 0.85rem;
+        color: #334155;
+        line-height: 1.4;
+    }
+    
+    .observations-text {
+        background: #fef9e3;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 3px solid #f59e0b;
+        font-size: 0.9rem;
+        color: #334155;
+        line-height: 1.5;
+    }
+    
+    .report-actions {
+        padding: 1rem 1.5rem;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .btn-view, .btn-edit {
+        padding: 0.4rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .btn-view {
+        background: #0f3460;
+        color: white;
+    }
+    
+    .btn-view:hover {
+        background: #1e4a7a;
+        color: white;
+    }
+    
+    .btn-edit {
+        background: #e2e8f0;
+        color: #334155;
+    }
+    
+    .btn-edit:hover {
+        background: #cbd5e1;
+        color: #0f3460;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        font-size: 1.3rem;
+        color: #334155;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+        color: #64748b;
+        margin-bottom: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .vitals-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .activities-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .report-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h2 style="color: #0f3460; margin: 0;">
+                <i class="fas fa-clipboard-list"></i> Daily Care Reports
+            </h2>
+            <p style="color: #64748b; margin: 5px 0 0 0;">
+                Patient: <strong>{{ assignment.care_request.elder_profile.name|default:assignment.care_request.display_patient_name }}</strong>
+            </p>
+        </div>
+        {% if request.user.role == 'caretaker' %}
+        <a href="{% url 'assignments:create_daily_report' assignment.id %}" class="btn-create">
+            <i class="fas fa-plus"></i> Create New Report
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Statistics Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-white shadow-sm border-0 rounded-4" style="border-left: 4px solid #0f3460 !important;">
+                <div class="card-body text-center">
+                    <div class="text-muted small text-uppercase fw-bold mb-1">Total Reports</div>
+                    <div class="h3 mb-0 fw-bold" style="color: #0f3460;">{{ stats.total_reports|default:0 }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-white shadow-sm border-0 rounded-4" style="border-left: 4px solid #ef4444 !important;">
+                <div class="card-body text-center">
+                    <div class="text-muted small text-uppercase fw-bold mb-1">Avg Heart Rate</div>
+                    <div class="h3 mb-0 fw-bold text-danger">{{ stats.avg_heart_rate|floatformat:0|default:"--" }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-white shadow-sm border-0 rounded-4" style="border-left: 4px solid #3b82f6 !important;">
+                <div class="card-body text-center">
+                    <div class="text-muted small text-uppercase fw-bold mb-1">Avg Sleep</div>
+                    <div class="h3 mb-0 fw-bold text-primary">{{ stats.avg_sleep|floatformat:1|default:"--" }}h</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-white shadow-sm border-0 rounded-4" style="border-left: 4px solid #f59e0b !important;">
+                <div class="card-body text-center">
+                    <div class="text-muted small text-uppercase fw-bold mb-1">Alerts/Concerns</div>
+                    <div class="h3 mb-0 fw-bold text-warning">{{ stats.reports_with_concerns|default:0 }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card bg-white shadow-sm border-0 rounded-4 mb-4" style="padding: 20px;">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">Start Date</label>
+                <input type="date" name="start_date" class="form-control rounded-3" value="{{ request.GET.start_date }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-muted">End Date</label>
+                <input type="date" name="end_date" class="form-control rounded-3" value="{{ request.GET.end_date }}">
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1 rounded-3" style="background: #0f3460;">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <a href="{% url 'assignments:view_reports' assignment.id %}" class="btn btn-light flex-grow-1 rounded-3">
+                    <i class="fas fa-redo"></i> Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Reports List -->
+    {% if reports %}
+        {% for report in reports %}
+        <div class="report-card">
+            <!-- Report Header -->
+            <div class="report-header">
+                <div class="report-date">
+                    <i class="far fa-calendar-alt"></i>
+                    {{ report.report_date|date:"l, F j, Y" }}
+                </div>
+                <div class="mood-badge mood-{{ report.get_mood_display|lower }}">
+                    <i class="fas fa-smile"></i> Mood: {{ report.get_mood_display }}
+                </div>
+            </div>
+            
+            <div class="report-body">
+                <!-- Vital Signs -->
+                <div class="section-block">
+                    <div class="section-title">
+                        <i class="fas fa-heartbeat"></i> Vital Signs
+                    </div>
+                    <div class="vitals-grid">
+                        <div class="vital-item">
+                            <div class="vital-value">{{ report.blood_pressure_systolic }}/{{ report.blood_pressure_diastolic }}</div>
+                            <div class="vital-label">Blood Pressure (mmHg)</div>
+                        </div>
+                        <div class="vital-item">
+                            <div class="vital-value">{{ report.heart_rate }}</div>
+                            <div class="vital-label">Heart Rate (bpm)</div>
+                        </div>
+                        {% if report.temperature %}
+                        <div class="vital-item">
+                            <div class="vital-value">{{ report.temperature }}°C</div>
+                            <div class="vital-label">Temperature</div>
+                        </div>
+                        {% endif %}
+                        {% if report.blood_sugar %}
+                        <div class="vital-item">
+                            <div class="vital-value">{{ report.blood_sugar }}</div>
+                            <div class="vital-label">Blood Sugar (mg/dL)</div>
+                        </div>
+                        {% endif %}
+                        {% if report.oxygen_saturation %}
+                        <div class="vital-item">
+                            <div class="vital-value">{{ report.oxygen_saturation }}%</div>
+                            <div class="vital-label">O₂ Saturation</div>
+                        </div>
+                        {% endif %}
+                        {% if report.weight %}
+                        <div class="vital-item">
+                            <div class="vital-value">{{ report.weight }} kg</div>
+                            <div class="vital-label">Weight</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Vital Activities -->
+                {% if report.meals_taken or report.water_intake or report.sleep_hours %}
+                <div class="section-block">
+                    <div class="section-title">
+                        <i class="fas fa-utensils"></i> Vital Activities
+                    </div>
+                    <div class="activities-grid">
+                        {% if report.meals_taken %}
+                        <div class="activity-item">
+                            <div class="activity-label"><i class="fas fa-apple-alt"></i> Meals Taken</div>
+                            <div class="activity-value">{{ report.meals_taken|truncatewords:30 }}</div>
+                        </div>
+                        {% endif %}
+                        {% if report.water_intake %}
+                        <div class="activity-item">
+                            <div class="activity-label"><i class="fas fa-tint"></i> Water Intake</div>
+                            <div class="activity-value">{{ report.water_intake }}</div>
+                        </div>
+                        {% endif %}
+                        {% if report.sleep_hours %}
+                        <div class="activity-item">
+                            <div class="activity-label"><i class="fas fa-bed"></i> Sleep</div>
+                            <div class="activity-value">{{ report.sleep_hours }} hours 
+                                {% if report.sleep_quality %}({{ report.get_sleep_quality_display }}){% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Care Activities -->
+                {% if report.medications_given or report.exercises_done or report.activities_done %}
+                <div class="section-block">
+                    <div class="section-title">
+                        <i class="fas fa-notes-medical"></i> Care Activities
+                    </div>
+                    <div class="activities-grid">
+                        {% if report.medications_given %}
+                        <div class="activity-item">
+                            <div class="activity-label"><i class="fas fa-capsules"></i> Medications Given</div>
+                            <div class="activity-value">{{ report.medications_given|truncatewords:40 }}</div>
+                        </div>
+                        {% endif %}
+                        {% if report.exercises_done %}
+                        <div class="activity-item">
+                            <div class="activity-label"><i class="fas fa-running"></i> Exercises Done</div>
+                            <div class="activity-value">{{ report.exercises_done|truncatewords:30 }}</div>
+                        </div>
+                        {% endif %}
+                        {% if report.activities_done %}
+                        <div class="activity-item">
+                            <div class="activity-label"><i class="fas fa-palette"></i> Activities Done</div>
+                            <div class="activity-value">{{ report.activities_done|truncatewords:30 }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Observations -->
+                {% if report.observations %}
+                <div class="section-block">
+                    <div class="section-title">
+                        <i class="fas fa-sticky-note"></i> Observations & Notes
+                    </div>
+                    <div class="observations-text">
+                        {{ report.observations|linebreaks|truncatewords:80 }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="report-actions">
+                <a href="{% url 'assignments:report_detail' report.id %}" class="btn-view">
+                    <i class="fas fa-eye"></i> View Full Report
+                </a>
+                {% if request.user.role == 'caretaker' and report.report_date == today %}
+                <a href="{% url 'assignments:create_daily_report' assignment.id %}" class="btn-edit">
+                    <i class="fas fa-edit"></i> Edit Today's Report
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <i class="fas fa-clipboard-list"></i>
+            <h3>No Reports Yet</h3>
+            <p>No daily care reports have been submitted for this patient.</p>
+            {% if request.user.role == 'caretaker' %}
+            <a href="{% url 'assignments:create_daily_report' assignment.id %}" class="btn-create" style="display: inline-flex;">
+                <i class="fas fa-plus"></i> Create First Report
+            </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Optional: Add any additional JavaScript for the reports page
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Reports page loaded');
+    });
+</script>
+{% endblock %}

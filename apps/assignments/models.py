@@ -4,6 +4,8 @@ from django.utils import timezone
 from datetime import timedelta, date
 from decimal import Decimal
 
+from CareLink import settings
+
 User = get_user_model()
 
 
@@ -209,7 +211,8 @@ class CareTask(models.Model):
     STATUS_CHOICES = [
         ('pending', '⏳ Pending'),
         ('in_progress', '🔄 In Progress'),
-        ('completed', '✅ Completed'),
+        ('completed', '✅ Completed (Action Required)'),
+        ('verified', '🛡️ Verified'),
         ('cancelled', '❌ Cancelled'),
     ]
     
@@ -227,6 +230,13 @@ class CareTask(models.Model):
     # Status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='assigned_tasks')
+    
+    # Proof of Work
+    proof_image = models.ImageField(upload_to='tasks/proof/%Y/%m/%d/', blank=True, null=True)
+    
+    # Escalation & Notifications
+    escalation_level = models.IntegerField(default=0, help_text="0: None, 1: Nurse, 2: Family, 3: Admin")
+    missed_notification_sent = models.BooleanField(default=False)
     
     # Notes
     caretaker_notes = models.TextField(blank=True)
@@ -386,7 +396,11 @@ class Attendance(models.Model):
                 self.actual_hours_worked = hours
                 self.overtime_hours = 0
             
-            expected_check_in = datetime.combine(self.date, datetime.strptime("09:00", "%H:%M").time())
+            if self.assignment.application and self.assignment.application.work_start_time:
+                expected_start_time = self.assignment.application.work_start_time
+            else:
+                expected_start_time = datetime.strptime("09:00", "%H:%M").time()
+            expected_check_in = datetime.combine(self.date, expected_start_time)
             if check_in > expected_check_in:
                 self.late_minutes = int((check_in - expected_check_in).total_seconds() / 60)
             
@@ -453,3 +467,27 @@ class SalaryPayment(models.Model):
     
     def get_month_name(self):
         return self.payment_month.strftime('%B %Y')
+
+
+class CaregiverReview(models.Model):
+    """Review for caregiver after assignment termination"""
+    RATING_CHOICES = [
+        (1, '1 Star - Poor'),
+        (2, '2 Stars - Fair'),
+        (3, '3 Stars - Good'),
+        (4, '4 Stars - Very Good'),
+        (5, '5 Stars - Excellent'),
+    ]
+    
+    assignment = models.OneToOneField('CareAssignment', on_delete=models.CASCADE, related_name='review')
+    caregiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews_received')
+    family = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews_given')
+    rating = models.IntegerField(choices=RATING_CHOICES)
+    review_text = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"{self.caregiver.get_full_name()} - {self.rating} stars"

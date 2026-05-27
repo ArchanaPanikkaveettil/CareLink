@@ -1,0 +1,361 @@
+{% extends base_template|default:'base.html' %}
+
+{% load static %}
+
+{% block title %}My Messages - CareLink{% endblock %}
+
+{% block page_title %}Messages & Conversations{% endblock %}
+
+{% block extra_css %}
+<style>
+    .messages-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .conversations-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .conversation-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s;
+        cursor: pointer;
+        overflow: hidden;
+    }
+
+    .conversation-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 52, 96, 0.1);
+    }
+
+    .conversation-card.unread {
+        background: #f0f9ff;
+        border-left: 4px solid #0f3460;
+    }
+
+    .conversation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid #e2e8f0;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .person-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .avatar {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #0f3460, #1e4a7a);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .person-details h3 {
+        color: #0f3460;
+        font-size: 1.1rem;
+        margin-bottom: 4px;
+    }
+
+    .person-details p {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+    .badge-count {
+        background: #0f3460;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .badge-count.unread {
+        background: #ef4444;
+    }
+
+    .last-message {
+        padding: 15px 20px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .last-message-text {
+        color: #475569;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+
+    .last-message-meta {
+        display: flex;
+        gap: 15px;
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+
+    .last-message-meta i {
+        margin-right: 4px;
+    }
+
+    .message-preview {
+        padding: 15px 20px;
+        background: white;
+    }
+
+    .message-preview p {
+        color: #64748b;
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+
+    .conversation-footer {
+        padding: 15px 20px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .btn-view {
+        background: #0f3460;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+
+    .btn-view:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: #0f3460;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        margin-bottom: 25px;
+    }
+
+    .btn-start-chat {
+        background: #0f3460;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 10px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-start-chat:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .conversation-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .person-info {
+            flex-direction: column;
+        }
+
+        .last-message-meta {
+            flex-direction: column;
+            gap: 5px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+    <h2 style="color: #0f3460; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-envelope"></i> My Conversations
+        {% if unread_messages_count %}
+        <span class="badge-count unread" style="font-size: 0.8rem;">{{ unread_messages_count }} unread</span>
+        {% endif %}
+    </h2>
+
+    {% if conversations %}
+    <div class="conversations-list">
+        {% for conv in conversations %}
+        <div class="conversation-card {% if conv.unread_count > 0 %}unread{% endif %}">
+            <div class="conversation-header">
+                <div class="person-info">
+                    <div class="avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="person-details">
+                        <h3>
+                            {% if user.role == 'family' %}
+                                {{ conv.assignment.caretaker.get_full_name|default:conv.assignment.caretaker.username }}
+                            {% else %}
+                                {{ conv.assignment.family.get_full_name|default:conv.assignment.family.username }}
+                            {% endif %}
+                        </h3>
+                        <p>
+                            <i class="fas fa-briefcase"></i> 
+                            {% if conv.assignment.care_request %}
+                                Patient: {{ conv.assignment.care_request.display_patient_name }}
+                            {% else %}
+                                Care Assignment #{{ conv.assignment.id }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                {% if conv.unread_count > 0 %}
+                <div class="badge-count unread">
+                    {{ conv.unread_count }} new message{% if conv.unread_count > 1 %}s{% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="last-message">
+                <div class="last-message-text">
+                    <strong>
+                        {% if conv.last_message.created_by == user %}
+                            You:
+                        {% else %}
+                            {{ conv.last_message.created_by.get_full_name|default:conv.last_message.created_by.username }}:
+                        {% endif %}
+                    </strong>
+                    {{ conv.last_message.content|truncatechars:100 }}
+                </div>
+                <div class="last-message-meta">
+                    <span>
+                        <i class="far fa-clock"></i>
+                        {{ conv.last_message.created_at|date:"M d, Y" }} at {{ conv.last_message.created_at|time:"g:i A" }}
+                    </span>
+                    <span>
+                        <i class="fas fa-tag"></i>
+                        {{ conv.last_message.get_note_type_display }}
+                    </span>
+                    {% if conv.last_message.is_important %}
+                    <span style="color: #f59e0b;">
+                        <i class="fas fa-star"></i> Important
+                    </span>
+                    {% endif %}
+                    {% if conv.last_message.is_urgent %}
+                    <span style="color: #dc2626;">
+                        <i class="fas fa-exclamation-triangle"></i> Urgent
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="conversation-footer">
+                <a href="{% url 'assignments:note_list' conv.assignment.id %}" class="btn-view">
+                    <i class="fas fa-comments"></i> View Conversation
+                    {% if conv.unread_count > 0 %}
+                    <span style="background: white; color: #0f3460; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem;">
+                        {{ conv.unread_count }}
+                    </span>
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if conversations.has_other_pages %}
+    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 30px;">
+        {% if conversations.has_previous %}
+        <a href="?page={{ conversations.previous_page_number }}" class="btn-view" style="background: #64748b;">
+            <i class="fas fa-chevron-left"></i> Previous
+        </a>
+        {% endif %}
+
+        <span style="padding: 8px 16px; background: white; border-radius: 8px; border: 1px solid #e2e8f0;">
+            Page {{ conversations.number }} of {{ conversations.paginator.num_pages }}
+        </span>
+
+        {% if conversations.has_next %}
+        <a href="?page={{ conversations.next_page_number }}" class="btn-view" style="background: #64748b;">
+            Next <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <i class="fas fa-comments"></i>
+        <h3>No Messages Yet</h3>
+        <p>Start a conversation with your care partner.</p>
+        <div>
+            {% if user.role == 'family' %}
+                <a href="{% url 'assignments:my_caregivers' %}" class="btn-start-chat">
+                    <i class="fas fa-hand-holding-heart"></i> View Your Caregivers
+                </a>
+            {% else %}
+                <a href="{% url 'assignments:caretaker_assignments' %}" class="btn-start-chat">
+                    <i class="fas fa-users"></i> View Your Patients
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add click handlers for conversation cards
+    document.querySelectorAll('.conversation-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Don't navigate if clicking on the button
+            if (e.target.closest('.btn-view')) {
+                return;
+            }
+            const btn = this.querySelector('.btn-view');
+            if (btn) {
+                window.location.href = btn.href;
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -357,20 +357,20 @@
             <a href="{% url 'dashboard:family_dashboard' %}" class="nav-item">
                 <i class="fas fa-chart-pie"></i> <span>Dashboard</span>
             </a>
-            <a href="{% url 'post_request' %}" class="nav-item">
+            <a href="{% url 'requests:post_request' %}" class="nav-item">
                 <i class="fas fa-plus-circle"></i> <span>Post Care Request</span>
             </a>
-            <a href="{% url 'my_requests' %}" class="nav-item">
+            <a href="{% url 'requests:my_requests' %}" class="nav-item">
                 <i class="fas fa-clipboard-list"></i> <span>My Requests</span>
             </a>
-            <a href="{% url 'search_caretakers' %}" class="nav-item">
+            <a href="{% url 'users:search_caretakers' %}" class="nav-item">
                 <i class="fas fa-search"></i> <span>Find Caretakers</span>
             </a>
-            <a href="{% url 'family_profile' %}" class="nav-item">
+            <a href="{% url 'users:family_profile' %}" class="nav-item">
                 <i class="fas fa-id-badge"></i> <span>My Profile</span>
             </a>
             <div class="logout-item">
-                <a href="{% url 'index' %}" class="nav-item">
+                <a href="{% url 'users:index' %}" class="nav-item">
                     <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
                 </a>
             </div>
@@ -421,14 +421,14 @@
                     <div class="info-box-title">About this Offer</div>
                     <div class="info-box-text">
                         This offer will be sent to the candidate. They will have 
-                        <strong>{{ request.POST.offer_expiry_hours|default:48 }} hours</strong> to respond. 
+                        <strong id="expiry-hours-display">48 hours</strong> to respond. 
                         Other shortlisted candidates will be put on hold.
                     </div>
                 </div>
             </div>
 
             <!-- Offer Form -->
-            <form method="POST" action="{% url 'send_offer' application.id %}">
+            <form method="POST" action="{% url 'applications:send_offer' application.id %}">
                 {% csrf_token %}
                 
                 <div class="form-grid">
@@ -455,16 +455,17 @@
                         <label for="reporting_address">
                             <i class="fas fa-map-marker-alt"></i> Reporting Address <span class="required">*</span>
                         </label>
+                        <!-- Debug: Profile Address: {{ profile_address }} -->
                         <textarea class="form-control" id="reporting_address" name="reporting_address" 
-                                  rows="2" required>{{ care_request.address }}</textarea>
+                                  rows="2" required>{{ profile_address_full|default:care_request_address_full }}</textarea>
                     </div>
-
+ 
                     <div class="form-group full-width">
                         <label for="daily_duties">
                             <i class="fas fa-tasks"></i> Daily Duties / Responsibilities <span class="required">*</span>
                         </label>
                         <textarea class="form-control" id="daily_duties" name="daily_duties" 
-                                  rows="4" required>{{ care_request.care_details|default:care_request.special_requirements }}</textarea>
+                                  rows="4" required>{{ care_request.medical_condition }}{% if care_request.special_requirements %}. Requirements: {{ care_request.special_requirements }}{% endif %}</textarea>
                         <div class="help-text">
                             <i class="fas fa-info-circle"></i> List the daily tasks and responsibilities
                         </div>
@@ -499,7 +500,7 @@
                             <i class="fas fa-tag"></i> Final Rate (₹/day) <span class="required">*</span>
                         </label>
                         <input type="number" class="form-control" id="final_rate" name="final_rate" 
-                               value="{{ application.proposed_rate }}" min="0" step="0.01" required>
+                               value="{{ final_rate|default:application.proposed_rate|default:default_final_rate }}" min="0" step="0.01" required>
                     </div>
 
                     <div class="form-group">
@@ -539,11 +540,28 @@
                             <option value="96">96 hours (4 days)</option>
                             <option value="168">7 days</option>
                         </select>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const expirySelect = document.getElementById('offer_expiry_hours');
+                                const expiryDisplay = document.getElementById('expiry-hours-display');
+                                if (expirySelect && expiryDisplay) {
+                                    const updateDisplay = () => {
+                                        const hours = expirySelect.value;
+                                        let text = hours + ' hours';
+                                        if (hours === '168') text = '7 days';
+                                        if (hours === '96') text = '4 days';
+                                        expiryDisplay.textContent = text;
+                                    };
+                                    expirySelect.addEventListener('change', updateDisplay);
+                                    updateDisplay();
+                                }
+                            });
+                        </script>
                     </div>
                 </div>
 
                 <div class="form-actions">
-                    <a href="{% url 'shortlisted_candidates' care_request.id %}" class="btn btn-outline">
+                    <a href="{% url 'applications:shortlisted_candidates' care_request.id %}" class="btn btn-outline">
                         <i class="fas fa-times"></i> Cancel
                     </a>
                     <button type="submit" class="btn btn-success">

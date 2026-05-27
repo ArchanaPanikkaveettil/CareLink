@@ -1,0 +1,147 @@
+{% extends 'users/nurse_base.html' %}
+
+{% block title %}Decline Offer - CareLink{% endblock %}
+
+{% block page_title %}Decline Job Offer{% endblock %}
+
+{% block content %}
+<style>
+    .decline-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .decline-header {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    
+    .decline-header i {
+        font-size: 3rem;
+        color: #ef4444;
+        margin-bottom: 15px;
+    }
+    
+    .decline-header h2 {
+        color: #0a2a38;
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+    
+    .decline-header p {
+        color: #64748b;
+    }
+    
+    .offer-summary {
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 25px;
+        border-left: 4px solid #0f3460;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #0a2a38;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: inherit;
+        resize: vertical;
+        transition: border-color 0.2s;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #4bc3a3;
+        box-shadow: 0 0 0 3px rgba(75, 195, 163, 0.1);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    
+    .btn {
+        flex: 1;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+    
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+</style>
+
+<div class="decline-container">
+    <div class="decline-header">
+        <i class="fas fa-times-circle"></i>
+        <h2>Decline Offer</h2>
+        <p>Please provide a reason for declining this offer. This will be shared with the family.</p>
+    </div>
+    
+    <div class="offer-summary">
+        <strong>Patient:</strong> {{ application.request.display_patient_name }}<br>
+        <strong>Care Type:</strong> {{ application.request.get_care_type_display }}<br>
+        <strong>Family:</strong> {{ application.request.family.get_full_name|default:application.request.family.username }}
+    </div>
+    
+    <form method="POST" action="{% url 'applications:respond_to_offer' application.id 'decline' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="decline_reason" class="form-label">Reason for Declining (Optional but recommended)</label>
+            <textarea id="decline_reason" name="decline_reason" class="form-control" rows="4" placeholder="e.g., The schedule no longer works for me, the location is too far, etc."></textarea>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="{% url 'applications:view_offer' application.id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Go Back
+            </a>
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-times"></i> Confirm Decline
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

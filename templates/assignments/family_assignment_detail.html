@@ -1,0 +1,810 @@
+{% extends 'users/family_base.html' %}
+{% load static %}
+
+{% block title %}Assignment Details - {{ assignment.caretaker.get_full_name }} - CareLink{% endblock %}
+
+{% block page_title %}
+Caregiver Details
+{% endblock %}
+
+{% block page_icon %}
+<i class="fas fa-user-nurse"></i>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Assignment Header Card -->
+    <div class="caregiver-card" style="margin-bottom: 25px;">
+        <div class="card-header" style="background: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="font-size: 1.3rem; margin-bottom: 5px;">{{ assignment.caretaker.get_full_name|default:assignment.caretaker.username }}</h3>
+                    <p style="font-size: 0.85rem; opacity: 0.9;">
+                        <i class="fas fa-id-card"></i> Caregiver ID: {{ assignment.caretaker.id }}
+                    </p>
+                </div>
+                <span class="status-badge status-active">
+                    <i class="fas fa-circle" style="font-size: 0.6rem; margin-right: 4px;"></i>
+                    {{ assignment.get_status_display|upper }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div>
+                    <p class="info-label">Start Date</p>
+                    <p class="info-value"><strong>{{ assignment.start_date|date:"M d, Y" }}</strong></p>
+                </div>
+                <div>
+                    <p class="info-label">Shift Type</p>
+                    <p class="info-value"><strong>{{ assignment.get_shift_type_display }}</strong></p>
+                </div>
+                <div>
+                    <p class="info-label">Work Hours/Day</p>
+                    <p class="info-value">
+                        <strong>{{ assignment.work_hours_per_day }} hours</strong>
+                        {% if assignment.application.work_start_time and assignment.application.work_end_time %}
+                            <br><span style="font-size: 0.85em; color: #64748b;">({{ assignment.application.work_start_time|time:"H:i" }} - {{ assignment.application.work_end_time|time:"H:i" }})</span>
+                        {% elif assignment.care_request and assignment.care_request.shift_timing %}
+                            <br><span style="font-size: 0.85em; color: #64748b;">({{ assignment.care_request.shift_timing }})</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="info-label">Monthly Salary</p>
+                    <p class="info-value" style="color: #10b981;">
+                        <strong>
+                        {% if assignment.monthly_salary %}
+                            ₹{{ assignment.monthly_salary|floatformat:2 }}
+                        {% else %}
+                            ₹{{ assignment.hourly_rate|floatformat:2 }}/hour
+                        {% endif %}
+                        </strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div style="background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 25px; overflow: hidden;">
+        <div style="border-bottom: 1px solid #e2e8f0; display: flex; gap: 0; overflow-x: auto;">
+            <button class="tab-btn active" onclick="showTab('tasks', this)" style="padding: 15px 25px; background: none; border: none; cursor: pointer; font-size: 1rem; border-bottom: 3px solid #0f3460; color: #0f3460; font-weight: 600;">
+                <i class="fas fa-tasks"></i> Tasks
+                {% if pending_tasks %}
+                <span style="background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; margin-left: 5px;">{{ pending_tasks|length }}</span>
+                {% endif %}
+            </button>
+            <button class="tab-btn" onclick="showTab('reports', this)" style="padding: 15px 25px; background: none; border: none; cursor: pointer; font-size: 1rem; border-bottom: 3px solid transparent; color: #64748b;">
+                <i class="fas fa-chart-line"></i> Reports
+                <span style="margin-left: 5px; color: #94a3b8;">({{ recent_reports|length }})</span>
+            </button>
+            <button class="tab-btn" onclick="showTab('attendance', this)" style="padding: 15px 25px; background: none; border: none; cursor: pointer; font-size: 1rem; border-bottom: 3px solid transparent; color: #64748b;">
+                <i class="fas fa-calendar-check"></i> Attendance
+            </button>
+            <button class="tab-btn" onclick="showTab('notes', this)" style="padding: 15px 25px; background: none; border: none; cursor: pointer; font-size: 1rem; border-bottom: 3px solid transparent; color: #64748b;">
+                <i class="fas fa-comments"></i> Messages
+                {% if assignment.unread_notes_count %}
+                <span style="background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; margin-left: 5px;">{{ assignment.unread_notes_count }}</span>
+                {% endif %}
+            </button>
+        </div>
+        
+        <div class="tab-content" style="padding: 25px;">
+            <!-- Tasks Tab -->
+            <div id="tasks-tab" class="tab-pane active">
+                <!-- Task Header & Navigation -->
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <div style="flex: 1;">
+                        <h3 style="font-size: 1.3rem; color: #0f3460; font-weight: 700; margin-bottom: 5px;">
+                            <i class="fas fa-clipboard-list" style="margin-right: 8px;"></i>Care Schedule
+                        </h3>
+                        <p class="text-muted mb-0" style="font-size: 0.85rem;">
+                            Reviewing tasks for: <strong>{{ selected_date|date:"l, M d" }}</strong>
+                        </p>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="date" id="familyTaskDatePicker" value="{{ selected_date|date:'Y-m-d' }}" 
+                               class="form-control" style="width: auto; height: 42px; border-radius: 12px; font-size: 0.9rem;"
+                               onchange="window.location.href='?date=' + this.value">
+                        <a href="?date={{ today|date:'Y-m-d' }}" class="btn btn-outline-primary" style="border-radius: 12px; height: 42px; display: flex; align-items: center; padding: 0 15px; font-weight: 600; text-decoration: none;">Today</a>
+                        <button onclick="openCreateTaskModal()" class="btn btn-primary" style="border-radius: 12px; height: 42px; box-shadow: 0 4px 12px rgba(15, 52, 96, 0.15);">
+                            <i class="fas fa-plus"></i> New Task
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 1. Tasks Needing Verification (Only show on Today's view to avoid clutter) -->
+                {% if is_today and tasks_need_verification %}
+                <div class="task-section mb-5" style="background: #fffafa; padding: 20px; border-radius: 20px; border: 1px solid #fee2e2; position: relative;">
+                    <div class="section-header d-flex align-items-center gap-3 mb-4">
+                        <div style="width: 42px; height: 42px; background: #fee2e2; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(239, 68, 68, 0.15);">
+                            <i class="fas fa-certificate" style="color: #ef4444; font-size: 1.2rem;"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0" style="color: #991b1b; font-weight: 700;">Action Required</h5>
+                            <p class="mb-0 text-muted" style="font-size: 0.8rem; color: #b91c1c90 !important;">Completed records awaiting your verification</p>
+                        </div>
+                        <div style="margin-left: auto; background: #ef4444; color: white; padding: 5px 15px; border-radius: 25px; font-weight: 700; font-size: 0.85rem;">
+                            {{ tasks_need_verification|length }} Pending Review
+                        </div>
+                    </div>
+                    <div class="care-task-vertical-list">
+                        {% for task in tasks_need_verification %}
+                            {% include 'assignments/partials/task_item.html' with task=task %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 2. Today's Focus -->
+                <div class="task-section mb-5">
+                    <div class="section-header d-flex align-items-center gap-3 mb-4">
+                        <div style="width: 42px; height: 42px; background: #e0edf5; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 15px rgba(15, 52, 96, 0.1);">
+                            <i class="fas fa-calendar-day" style="color: #0f3460; font-size: 1.1rem;"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0" style="color: #1e293b; font-weight: 700;">{% if is_today %}Today's Care Focus{% else %}Tasks for {{ selected_date|date:"M d" }}{% endif %}</h5>
+                            <p class="mb-0 text-muted" style="font-size: 0.8rem;">Scheduled activities for this period</p>
+                        </div>
+                        <div style="margin-left: auto; background: #0f3460; color: white; padding: 5px 15px; border-radius: 25px; font-weight: 600; font-size: 0.85rem;">
+                            {{ tasks_today|length }} Tasks
+                        </div>
+                    </div>
+                    {% if tasks_today %}
+                        <div class="care-task-vertical-list">
+                            {% for task in tasks_today %}
+                                {% include 'assignments/partials/task_item.html' with task=task %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state" style="padding: 40px; background: #f8fafc; border-radius: 24px; border: 2px dashed #e2e8f0; text-align: center;">
+                            <i class="fas fa-check-double" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 15px;"></i>
+                            <h4 style="color: #64748b; font-weight: 600;">No tasks scheduled for this day</h4>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 3. Future Schedule -->
+                {% if tasks_future %}
+                <div class="task-section mb-5">
+                    <div class="section-header d-flex align-items-center gap-3 mb-4">
+                        <div style="width: 42px; height: 42px; background: #f0fdf4; border-radius: 14px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-clock" style="color: #10b981;"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0" style="color: #1e293b; font-weight: 700;">Upcoming Schedule</h5>
+                            <p class="mb-0 text-muted" style="font-size: 0.8rem;">Future activities for the coming week</p>
+                        </div>
+                    </div>
+                    <div class="care-task-vertical-list" style="opacity: 0.9;">
+                        {% for task in tasks_future %}
+                            {% include 'assignments/partials/task_item.html' with task=task is_other=True %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 4. Care History -->
+                {% if tasks_past %}
+                <div class="task-section">
+                    <div class="section-header d-flex align-items-center gap-3 mb-4">
+                        <div style="width: 42px; height: 42px; background: #f1f5f9; border-radius: 14px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-history" style="color: #64748b;"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0" style="color: #1e293b; font-weight: 700;">Past Care History</h5>
+                            <p class="mb-0 text-muted" style="font-size: 0.8rem;">Historical records and missed tasks</p>
+                        </div>
+                    </div>
+                    <div class="care-task-vertical-list" style="opacity: 0.7;">
+                        {% for task in tasks_past %}
+                            {% include 'assignments/partials/task_item.html' with task=task is_other=True %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Reports Tab -->
+            <div id="reports-tab" class="tab-pane" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="font-size: 1.2rem; color: #0f3460;">
+                        <i class="fas fa-chart-line"></i> Daily Care Reports
+                    </h3>
+                    <a href="{% url 'assignments:view_reports' assignment.id %}" class="btn btn-primary">View All Reports</a>
+                </div>
+                
+                {% if recent_reports %}
+                    {% for report in recent_reports %}
+                    <div class="caregiver-card" style="margin-bottom: 15px; cursor: pointer;" onclick="window.location.href='{% url 'assignments:report_detail' report.id %}'">
+                        <div class="card-body">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <h4 style="font-weight: 600; margin-bottom: 5px;">{{ report.report_date|date:"l, M d, Y" }}</h4>
+                                    {% if report.mood %}
+                                    <p style="color: #475569; font-size: 0.9rem;">
+                                        <i class="fas fa-smile"></i> Mood: {{ report.get_mood_display }}
+                                    </p>
+                                    {% endif %}
+                                    {% if report.observations %}
+                                    <p style="color: #64748b; margin-top: 8px;">{{ report.observations|truncatechars:150 }}</p>
+                                    {% endif %}
+                                    <div style="display: flex; gap: 15px; margin-top: 10px; font-size: 0.8rem; color: #94a3b8;">
+                                        {% if report.blood_pressure %}
+                                        <span><i class="fas fa-heartbeat"></i> BP: {{ report.blood_pressure }}</span>
+                                        {% endif %}
+                                        {% if report.heart_rate %}
+                                        <span><i class="fas fa-heart"></i> HR: {{ report.heart_rate }}</span>
+                                        {% endif %}
+                                        {% if report.temperature %}
+                                        <span><i class="fas fa-thermometer-half"></i> Temp: {{ report.temperature }}°C</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if not report.family_read %}
+                                <span class="status-badge" style="background: #3b82f6;">New</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>No Reports Yet</h3>
+                    <p>No daily care reports have been submitted yet.</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Attendance Tab -->
+            <div id="attendance-tab" class="tab-pane" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="font-size: 1.2rem; color: #0f3460;">
+                        <i class="fas fa-calendar-check"></i> Attendance Summary
+                    </h3>
+                    <a href="{% url 'assignments:view_attendance' assignment.id %}" class="btn btn-primary">View Full History</a>
+                </div>
+                
+                <!-- Attendance Stats -->
+                <div class="stats-grid" style="margin-bottom: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                    <div class="stat-card" style="background: white; padding: 15px; text-align: center; border-radius: 10px;">
+                        <div class="stat-number" style="font-size: 2rem; font-weight: bold; color: #0f3460;">{{ attendance_summary.present_days }}</div>
+                        <div class="stat-label">Present</div>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 15px; text-align: center; border-radius: 10px;">
+                        <div class="stat-number" style="font-size: 2rem; font-weight: bold; color: #ef4444;">{{ attendance_summary.absent_days }}</div>
+                        <div class="stat-label">Absent</div>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 15px; text-align: center; border-radius: 10px;">
+                        <div class="stat-number" style="font-size: 2rem; font-weight: bold; color: #f59e0b;">{{ attendance_summary.late_days }}</div>
+                        <div class="stat-label">Late</div>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 15px; text-align: center; border-radius: 10px;">
+                        <div class="stat-number" style="font-size: 2rem; font-weight: bold; color: #3b82f6;">{{ attendance_summary.leave_days }}</div>
+                        <div class="stat-label">Leave</div>
+                    </div>
+                    <div class="stat-card" style="background: white; padding: 15px; text-align: center; border-radius: 10px;">
+                        <div class="stat-number" style="font-size: 2rem; font-weight: bold; color: #10b981;">{{ attendance_summary.attendance_percentage|floatformat:0 }}%</div>
+                        <div class="stat-label">Attendance</div>
+                    </div>
+                </div>
+                
+                <!-- This Week's Attendance -->
+                {% if week_attendance %}
+                <h4 style="margin-bottom: 15px;">This Week</h4>
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px;">
+                    {% for att in week_attendance %}
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 5px;">{{ att.date|date:"D" }}</div>
+                        <div style="width: 40px; height: 40px; margin: 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                            {% if att.status == 'present' %}background: #10b98120; color: #10b981;
+                            {% elif att.status == 'absent' %}background: #ef444420; color: #ef4444;
+                            {% elif att.status == 'leave' %}background: #f59e0b20; color: #f59e0b;
+                            {% else %}background: #e2e8f0; color: #94a3b8;{% endif %}">
+                            <i class="fas 
+                                {% if att.status == 'present' %}fa-check
+                                {% elif att.status == 'absent' %}fa-times
+                                {% elif att.status == 'leave' %}fa-umbrella-beach
+                                {% else %}fa-question{% endif %}">
+                            </i>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Messages Tab -->
+            <div id="notes-tab" class="tab-pane" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="font-size: 1.2rem; color: #0f3460;">
+                        <i class="fas fa-comments"></i> Messages & Notes
+                    </h3>
+                    <a href="{% url 'assignments:create_note' assignment.id %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Send Message
+                    </a>
+                </div>
+                
+                {% if recent_notes %}
+                    {% for note in recent_notes %}
+                    <div class="caregiver-card" style="margin-bottom: 15px;">
+                        <div class="card-body">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center; flex-wrap: wrap;">
+                                        <h4 style="font-weight: 600;">{{ note.title }}</h4>
+                                        {% if note.is_urgent %}
+                                        <span class="status-badge" style="background: #dc2626;">
+                                            <i class="fas fa-exclamation-circle"></i> Urgent
+                                        </span>
+                                        {% elif note.is_important %}
+                                        <span class="status-badge" style="background: #f59e0b;">
+                                            <i class="fas fa-star"></i> Important
+                                        </span>
+                                        {% endif %}
+                                        <span class="status-badge" style="background: 
+                                            {% if note.note_type == 'medical' %}#3b82f6
+                                            {% elif note.note_type == 'emergency' %}#ef4444
+                                            {% elif note.note_type == 'feedback' %}#10b981
+                                            {% else %}#6b7280{% endif %};">
+                                            {{ note.get_note_type_display }}
+                                        </span>
+                                    </div>
+                                    <p style="color: #475569; margin-bottom: 8px;">{{ note.content|truncatechars:200 }}</p>
+                                    <p style="font-size: 0.75rem; color: #94a3b8;">
+                                        <i class="fas fa-user"></i> {{ note.created_by.get_full_name }}
+                                        <i class="fas fa-clock" style="margin-left: 10px;"></i> {{ note.created_at|date:"M d, Y H:i" }}
+                                    </p>
+                                </div>
+                                <!-- Direct attribute check without filter -->
+                                {% if request.user.role == 'family' %}
+                                    {% if not note.read_by_family %}
+                                    <span class="status-badge" style="background: #3b82f6;">New</span>
+                                    {% endif %}
+                                {% else %}
+                                    {% if not note.read_by_caretaker %}
+                                    <span class="status-badge" style="background: #3b82f6;">New</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-comments"></i>
+                    <h3>No Messages Yet</h3>
+                    <p>Send a message to the caregiver.</p>
+                    <a href="{% url 'assignments:create_note' assignment.id %}" class="btn btn-primary">Send Message</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="{% url 'assignments:my_caregivers' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to My Caregivers
+        </a>
+        <a href="{% url 'assignments:terminate_assignment' assignment.id %}" 
+           class="btn btn-danger"
+           onclick="return confirm('Are you sure you want to terminate this assignment? This action cannot be undone.')">
+            <i class="fas fa-times-circle"></i> Terminate Assignment
+        </a>
+    </div>
+</div>
+
+<!-- Edit Task Modal -->
+<div id="editTaskModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; overflow-y: auto; padding: 20px 10px; align-items: center; justify-content: center;">
+    <div style="background: white; width: 100%; max-width: 500px; margin: 0 auto; border-radius: 15px; padding: 25px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <h3 style="margin-bottom: 20px; color: #0f3460;"><i class="fas fa-edit"></i> Edit Task Details</h3>
+        <form id="editTaskForm" method="post">
+            {% csrf_token %}
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem;">Task Title *</label>
+                <input type="text" name="title" required style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 10px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem;">Description</label>
+                <textarea name="description" rows="3" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 10px;"></textarea>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem;">Priority</label>
+                <select name="priority" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem;">Schedule (Date & Time) *</label>
+                <input type="datetime-local" name="due_date" required style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 10px;">
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="closeEditTaskModal()" class="btn btn-secondary" style="border-radius: 10px; padding: 10px 20px;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="border-radius: 10px; padding: 10px 25px; background: #0f3460;">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Create Task Modal -->
+<div id="createTaskModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px 10px;">
+    <div style="background: white; width: 100%; max-width: 500px; margin: 0 auto; border-radius: 15px; padding: 25px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <h3 style="margin-bottom: 20px;">Create New Task</h3>
+        <form method="post" id="createTaskFormNew" action="{% url 'assignments:create_task' assignment.id %}" onsubmit="return validateWorkingHours(event)">
+            {% csrf_token %}
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Task Title *</label>
+                <input type="text" name="title" required style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Description</label>
+                <textarea name="description" rows="3" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;"></textarea>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Priority</label>
+                <select name="priority" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Start Date & Time *</label>
+                <input type="datetime-local" name="due_date" id="due_date_input" required 
+                       {% with end_limit=assignment.end_date|default:assignment.care_request.end_date %}
+                       {% if end_limit %}max="{{ end_limit|date:'Y-m-d' }}T23:59"{% endif %}
+                       {% endwith %}
+                       style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            </div>
+
+            <!-- Recurring Task Options -->
+            <div style="margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <input type="checkbox" id="is_recurring" name="is_recurring" onchange="toggleRecurringOptions()" style="width: 18px; height: 18px;">
+                    <label for="is_recurring" style="font-weight: 600; cursor: pointer;">Repeat this task</label>
+                </div>
+
+                <div id="recurring_options" style="display: none;">
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Repeat Until (End Date) *</label>
+                        <input type="date" name="end_date" id="end_date_input" 
+                               {% with end_limit=assignment.end_date|default:assignment.care_request.end_date %}
+                               {% if end_limit %}max="{{ end_limit|date:'Y-m-d' }}"{% endif %}
+                               {% endwith %}
+                               style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <small style="color: #64748b;">The task will be created for each day until this date.</small>
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">On Specific Days (Optional)</label>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <label style="display: flex; align-items: center; gap: 5px; font-weight: normal; font-size: 0.85rem;">
+                                <input type="checkbox" name="days_of_week" value="0"> Mon
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; font-weight: normal; font-size: 0.85rem;">
+                                <input type="checkbox" name="days_of_week" value="1"> Tue
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; font-weight: normal; font-size: 0.85rem;">
+                                <input type="checkbox" name="days_of_week" value="2"> Wed
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; font-weight: normal; font-size: 0.85rem;">
+                                <input type="checkbox" name="days_of_week" value="3"> Thu
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; font-weight: normal; font-size: 0.85rem;">
+                                <input type="checkbox" name="days_of_week" value="4"> Fri
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; font-weight: normal; font-size: 0.85rem;">
+                                <input type="checkbox" name="days_of_week" value="5"> Sat
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; font-weight: normal; font-size: 0.85rem;">
+                                <input type="checkbox" name="days_of_week" value="6"> Sun
+                            </label>
+                        </div>
+                        <small style="color: #64748b;">If none selected, it will repeat every day.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="closeCreateTaskModal()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Task(s)</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .tab-btn {
+        transition: all 0.3s;
+    }
+    .tab-btn:hover {
+        background: #f8fafc;
+    }
+    .modal {
+        animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #64748b;
+    }
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #cbd5e1;
+    }
+    .empty-state h3 {
+        margin-bottom: 10px;
+        color: #1e293b;
+    }
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s;
+        cursor: pointer;
+        border: none;
+        font-size: 0.9rem;
+    }
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+    }
+    .btn-primary:hover {
+        background: #1e4a7a;
+    }
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+    .btn-secondary:hover {
+        background: #cbd5e1;
+    }
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+    .caregiver-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    .card-header {
+        padding: 20px;
+    }
+    .card-body {
+        padding: 20px;
+    }
+    .info-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-bottom: 4px;
+    }
+    .info-value {
+        font-size: 0.9rem;
+    }
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    .status-active {
+        background: #10b981;
+        color: white;
+    }
+    
+    /* Task List Vertical Flow Fix */
+    .care-task-vertical-list {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 15px !important;
+        width: 100% !important;
+    }
+
+    .badge-completed {
+        background: #fff7ed !important;
+        color: #ea580c !important;
+        border: 1px solid #ffedd5 !important;
+    }
+
+    .badge {
+        white-space: nowrap !important;
+    }
+</style>
+
+<script>
+    function showTab(tabName, btnElement) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-pane').forEach(tab => {
+            tab.style.display = 'none';
+        });
+        // Show selected tab
+        document.getElementById(`${tabName}-tab`).style.display = 'block';
+        
+        // Update button styles
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.style.borderBottom = '3px solid transparent';
+            btn.style.color = '#64748b';
+        });
+        btnElement.style.borderBottom = '3px solid #0f3460';
+        btnElement.style.color = '#0f3460';
+    }
+
+    function openEditTaskModal(taskId) {
+        const modal = document.getElementById('editTaskModal');
+        const form = document.getElementById('editTaskForm');
+        form.action = `/assignments/task/${taskId}/edit/`;
+        
+        // Fetch task details
+        fetch(`/assignments/task/${taskId}/details/`)
+            .then(response => response.json())
+            .then(data => {
+                form.querySelector('input[name="title"]').value = data.title;
+                form.querySelector('textarea[name="description"]').value = data.description || '';
+                form.querySelector('select[name="priority"]').value = data.priority;
+                
+                // Format date for datetime-local
+                if (data.due_date) {
+                    form.querySelector('input[name="due_date"]').value = data.due_date;
+                }
+                
+                modal.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error fetching task details:', error);
+                alert('Could not load task details. Please try again.');
+            });
+    }
+    
+    function closeEditTaskModal() {
+        document.getElementById('editTaskModal').style.display = 'none';
+    }
+    
+    function openCreateTaskModal() {
+        const modal = document.getElementById('createTaskModal');
+        modal.style.display = 'block';
+        
+        // Set default values for dates
+        const now = new Date();
+        let tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(9, 0, 0, 0); // Default to 9:00 AM
+        
+        const formatDateTime = (date) => {
+            const pad = (num) => String(num).padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        };
+
+        const formatDate = (date) => {
+            const pad = (num) => String(num).padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+        };
+
+        // Determine the minimum allowed date (either now or the assignment start date)
+        let minDate = new Date(now);
+        const startDateStr = "{{ assignment.start_date|date:'Y-m-d' }}";
+        if (startDateStr) {
+            const startDateParts = startDateStr.split('-');
+            // Create date using local time
+            const startDate = new Date(startDateParts[0], startDateParts[1] - 1, startDateParts[2], 0, 0, 0);
+            if (startDate > now) {
+                minDate = startDate;
+                // If the minDate is in the future, tomorrow should be relative to minDate, not now
+                tomorrow = new Date(minDate);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(9, 0, 0, 0);
+            }
+        }
+
+        const dueDateInput = document.getElementById('due_date_input');
+        if (!dueDateInput.value) {
+            dueDateInput.value = formatDateTime(tomorrow);
+        }
+        
+        // Set MIN date to prevent past task assignment or assignment before start_date
+        dueDateInput.min = formatDateTime(minDate);
+        
+        // If recurring, also set default end date to a week from tomorrow
+        const nextWeek = new Date(tomorrow);
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        const endDateInput = document.getElementById('end_date_input');
+        if (!endDateInput.value) {
+            endDateInput.value = formatDate(nextWeek);
+        }
+    }
+    
+    function closeCreateTaskModal() {
+        document.getElementById('createTaskModal').style.display = 'none';
+    }
+
+    function toggleRecurringOptions() {
+        const isRecurring = document.getElementById('is_recurring').checked;
+        const recurringOptions = document.getElementById('recurring_options');
+        const endDateInput = document.getElementById('end_date_input');
+        
+        if (isRecurring) {
+            recurringOptions.style.display = 'block';
+            endDateInput.required = true;
+        } else {
+            recurringOptions.style.display = 'none';
+            endDateInput.required = false;
+        }
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const createModal = document.getElementById('createTaskModal');
+        if (event.target === createModal) {
+            closeCreateTaskModal();
+        }
+    }
+
+    // Validate task time against working hours
+    function validateWorkingHours(event) {
+        const workStartStr = "{{ assignment.application.work_start_time|time:'H:i' }}";
+        const workEndStr = "{{ assignment.application.work_end_time|time:'H:i' }}";
+        
+        if (!workStartStr || !workEndStr) return true;
+        
+        const dueDateInput = document.getElementById('due_date_input').value;
+        if (!dueDateInput) return true;
+        
+        const taskDate = new Date(dueDateInput);
+        const taskTime = taskDate.getHours() * 60 + taskDate.getMinutes();
+        
+        const startParts = workStartStr.split(':');
+        const endParts = workEndStr.split(':');
+        const startMins = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+        const endMins = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
+        
+        let isValid = false;
+        if (startMins <= endMins) {
+            isValid = taskTime >= startMins && taskTime <= endMins;
+        } else {
+            // Overnight shift
+            isValid = taskTime >= startMins || taskTime <= endMins;
+        }
+        
+        if (!isValid) {
+            // Format for display
+            const formatAmPm = (h, m) => {
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const fHours = h % 12 || 12;
+                const fMins = m.toString().padStart(2, '0');
+                return `${fHours}:${fMins} ${ampm}`;
+            };
+            
+            const startDisplay = formatAmPm(parseInt(startParts[0]), parseInt(startParts[1]));
+            const endDisplay = formatAmPm(parseInt(endParts[0]), parseInt(endParts[1]));
+            
+            alert(`Tasks must be scheduled during the caretaker's working hours (${startDisplay} to ${endDisplay}).`);
+            return false;
+        }
+        
+        return true;
+    }
+</script>
+{% endblock %}

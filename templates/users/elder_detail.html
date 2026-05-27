@@ -223,7 +223,7 @@
 
 {% block content %}
 <div class="detail-container">
-    <a href="{% url 'elder_list' %}" class="back-link">
+    <a href="{% url 'users:elder_list' %}" class="back-link">
         <i class="fas fa-arrow-left"></i> Back to Elders
     </a>
 
@@ -346,13 +346,13 @@
 
     <!-- Action Buttons -->
     <div class="action-buttons">
-        <a href="{% url 'elder_edit' elder.id %}" class="btn btn-primary">
+        <a href="{% url 'users:elder_edit' elder.id %}" class="btn btn-primary">
             <i class="fas fa-edit"></i> Edit Profile
         </a>
-        <a href="{% url 'elder_list' %}" class="btn btn-outline">
+        <a href="{% url 'users:elder_list' %}" class="btn btn-outline">
             <i class="fas fa-users"></i> All Elders
         </a>
-        <a href="{% url 'elder_delete' elder.id %}" class="btn btn-danger" 
+        <a href="{% url 'users:elder_delete' elder.id %}" class="btn btn-danger" 
            onclick="return confirm('Are you sure you want to delete {{ elder.name }}\'s profile?')">
             <i class="fas fa-trash"></i> Delete
         </a>

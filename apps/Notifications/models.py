@@ -13,7 +13,10 @@ class Notification(models.Model):
         ('offer_declined', 'Offer Declined'),
         ('care_started', 'Care Started'),
         ('care_completed', 'Care Completed'),
+        ('task_assigned', 'Task Assigned'),
         ('reminder', 'Reminder'),
+        ('chat_message', 'New Chat Message'),
+        ('new_chat', 'New Chat Session'),
     ]
     
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')

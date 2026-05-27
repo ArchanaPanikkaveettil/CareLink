@@ -78,6 +78,14 @@ class User(AbstractUser):
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}".strip() or self.username
 
+    @property
+    def is_caretaker(self):
+        return self.role == "caretaker"
+
+    @property
+    def is_family(self):
+        return self.role == "family"
+
 
 # ---------------------------
 # Elder Profile Model (define BEFORE FamilyProfile)
@@ -524,6 +532,11 @@ class CaretakerProfile(models.Model):
         return "No ratings yet"
 
     @property
+    def is_complete(self):
+        """Check if profile has been completed with basic info"""
+        return all([self.bio, self.skills, self.experience_years > 0, self.city])
+
+    @property
     def availability_badge(self):
         """Return CSS class for availability status"""
         status_classes = {
@@ -633,56 +646,8 @@ class FamilyProfile(models.Model):
         max_length=20, choices=RESIDENCE_TYPE, default="apartment"
     )
 
-    # Patient Information
-    patient_name = models.CharField(max_length=100, blank=True, default="")
-    patient_age = models.IntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(120)], null=True, blank=True
-    )
-    patient_gender = models.CharField(
-        max_length=10, choices=GENDER_CHOICES, blank=True, default=""
-    )
-    patient_blood_group = models.CharField(
-        max_length=20,
-        blank=True,
-        default="",
-        choices=[
-            ("A+", "A+"),
-            ("A-", "A-"),
-            ("B+", "B+"),
-            ("B-", "B-"),
-            ("O+", "O+"),
-            ("O-", "O-"),
-            ("AB+", "AB+"),
-            ("AB-", "AB-"),
-            ("unknown", "Unknown"),
-            ("not_specified", "Not Specified"),
-        ],
-    )
-
-    # Medical Information
-    primary_medical_condition = models.CharField(max_length=200, blank=True, default="")
-    secondary_conditions = models.TextField(blank=True, default="")
-    allergies = models.TextField(blank=True, default="")
-    medications = models.TextField(
-        blank=True, default="", help_text="Current medications"
-    )
-    dietary_restrictions = models.TextField(blank=True, default="")
-
-    # Care Requirements
-    care_required = models.TextField(
-        blank=True, default="", help_text="Detailed description of care needed"
-    )
-    care_frequency = models.CharField(
-        max_length=50,
-        choices=[
-            ("24x7", "24/7 Care"),
-            ("daily", "Daily"),
-            ("weekly", "Weekly"),
-            ("occasional", "Occasional"),
-            ("not_specified", "Not Specified"),
-        ],
-        default="not_specified",
-    )
+    # Note: Patient information is now handled through ElderProfile model
+    # This keeps the family profile clean and focused on family details
 
     # Home Environment
     pets_at_home = models.BooleanField(default=False)
@@ -732,12 +697,17 @@ class FamilyProfile(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
 
+    @property
+    def is_complete(self):
+        """Check if family profile is complete (has at least one elder added)"""
+        return self.user.elder_profiles.exists()
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.user.get_full_name()} - {self.patient_name or 'No patient specified'}"
+        return f"{self.user.get_full_name()} - {self.family_type} Family"
 
 
 # ---------------------------
@@ -838,6 +808,13 @@ class CaretakerReview(models.Model):
     )
     application = models.OneToOneField(
         Application,
+        on_delete=models.CASCADE,
+        related_name="review",
+        null=True,
+        blank=True,
+    )
+    booking = models.OneToOneField(
+        "Requests.CareBooking",
         on_delete=models.CASCADE,
         related_name="review",
         null=True,

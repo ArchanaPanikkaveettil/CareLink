@@ -1,0 +1,173 @@
+{% extends 'users/family_base.html' %}
+{% load static %}
+
+{% block title %}Create Task - CareLink{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-plus-circle"></i> Create New Task
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm" style="border-radius: 15px; border: none;">
+                <div class="card-header bg-primary text-white" style="border-radius: 15px 15px 0 0; background: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%) !important;">
+                    <h4 class="mb-0"><i class="fas fa-tasks"></i> New Task for {{ assignment.caretaker.get_full_name }}</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label" style="font-weight: 500;">Task Title *</label>
+                            <input type="text" name="title" class="form-control" required placeholder="e.g., Morning Medication">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" style="font-weight: 500;">Description</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Additional details about the task..."></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label" style="font-weight: 500;">Priority</label>
+                                    <select name="priority" class="form-control">
+                                        <option value="low">Low</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label" style="font-weight: 500;">Start Date & Time *</label>
+                                    <input type="datetime-local" name="due_date" id="due_date_input" class="form-control" required
+                                           {% with end_limit=assignment.end_date|default:assignment.care_request.end_date %}
+                                           {% if end_limit %}max="{{ end_limit|date:'Y-m-d' }}T23:59"{% endif %}
+                                           {% endwith %}>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recurring Task Options -->
+                        <div class="p-3 mb-4 mt-2" style="background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="is_recurring" name="is_recurring" onchange="toggleRecurringOptions()" style="width: 20px; height: 20px;">
+                                <label class="form-check-label ms-2" for="is_recurring" style="font-weight: 600; cursor: pointer;">
+                                    Repeat this task
+                                </label>
+                            </div>
+
+                            <div id="recurring_options" style="display: none;">
+                                <div class="mb-3">
+                                    <label class="form-label" style="font-weight: 500;">Repeat Until (End Date) *</label>
+                                    <input type="date" name="end_date" id="end_date_input" class="form-control"
+                                           {% with end_limit=assignment.end_date|default:assignment.care_request.end_date %}
+                                           {% if end_limit %}max="{{ end_limit|date:'Y-m-d' }}"{% endif %}
+                                           {% endwith %}>
+                                    <small class="text-muted">The task will be created for each day until this date.</small>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label" style="font-weight: 500;">On Specific Days (Optional)</label>
+                                    <div class="d-flex flex-wrap gap-3 mt-1">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="days_of_week" value="0" id="mon">
+                                            <label class="form-check-label" for="mon">Mon</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="days_of_week" value="1" id="tue">
+                                            <label class="form-check-label" for="tue">Tue</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="days_of_week" value="2" id="wed">
+                                            <label class="form-check-label" for="wed">Wed</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="days_of_week" value="3" id="thu">
+                                            <label class="form-check-label" for="thu">Thu</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="days_of_week" value="4" id="fri">
+                                            <label class="form-check-label" for="fri">Fri</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="days_of_week" value="5" id="sat">
+                                            <label class="form-check-label" for="sat">Sat</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="days_of_week" value="6" id="sun">
+                                            <label class="form-check-label" for="sun">Sun</label>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">If none selected, it will repeat every day in the range.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'assignments:family_assignment_detail' assignment.id %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary" style="background: #0f3460; border: none;">
+                                <i class="fas fa-plus"></i> Create Task(s)
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 0, 0, 0); 
+    
+    const formatDateTime = (date) => {
+        const pad = (num) => String(num).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    };
+
+    const formatDate = (date) => {
+        const pad = (num) => String(num).padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    };
+
+    const dueDateInput = document.getElementById('due_date_input');
+    if (!dueDateInput.value) {
+        dueDateInput.value = formatDateTime(tomorrow);
+    }
+    
+    // Min date set to NOW
+    dueDateInput.min = formatDateTime(now);
+    
+    // Set default end date for recurring
+    const nextWeek = new Date(now);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    const endDateInput = document.getElementById('end_date_input');
+    if (!endDateInput.value) {
+        endDateInput.value = formatDate(nextWeek);
+    }
+});
+
+function toggleRecurringOptions() {
+    const isRecurring = document.getElementById('is_recurring').checked;
+    const recurringOptions = document.getElementById('recurring_options');
+    const endDateInput = document.getElementById('end_date_input');
+    
+    if (isRecurring) {
+        recurringOptions.style.display = 'block';
+        endDateInput.required = true;
+    } else {
+        recurringOptions.style.display = 'none';
+        endDateInput.required = false;
+    }
+}
+</script>
+{% endblock %}

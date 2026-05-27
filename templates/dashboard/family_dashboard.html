@@ -54,10 +54,10 @@
         font-size: 1.5rem;
     }
 
-    /* Action Grid - 4 cards in a single row */
+    /* Action Grid - 5 cards in a single row */
     .action-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
         gap: 1.5rem;
         margin-bottom: 2.5rem;
     }
@@ -391,7 +391,13 @@
     }
 
     /* Responsive Design */
-    @media (max-width: 1024px) {
+    @media (max-width: 1200px) {
+        .action-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 900px) {
         .action-grid {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -438,13 +444,35 @@
 <div class="welcome-section">
     <h1>
         <i class="fas fa-hand-wave"></i>
-        Welcome back, {{ user.get_full_name|default:user.username }}!
+        Welcome, {{ user.get_full_name|default:user.username }}!
     </h1>
     <p>
         <i class="fas fa-info-circle"></i>
         Manage your care requests, find caretakers, and track applications from your family dashboard.
     </p>
 </div>
+
+<!-- PROFILE UPDATE NOTIFICATION -->
+{% if not profile.is_complete %}
+<div style="background: #fff8eb; border-left: 6px solid #f59e0b; padding: 22px 28px; margin-bottom: 2.5rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.1); border: 1px solid #fef3c7;">
+    <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+        <div style="background: #f59e0b; color: white; width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div style="flex: 1; min-width: 250px;">
+            <h4 style="margin: 0; color: #92400e; font-weight: 700; font-size: 1.25rem;">Action Required</h4>
+            <p style="margin: 6px 0 0; color: #b45309; font-size: 1rem; line-height: 1.5;">
+                <strong>Instruction:</strong> Please update your profile and add your loved one (elder) details first to start posting care requests.
+            </p>
+        </div>
+        <div style="flex-shrink: 0;">
+            <a href="{% url 'users:update_family_profile' %}" class="view-btn" style="background: #92400e; color: white; border: none; padding: 14px 26px; border-radius: 12px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 0.95rem;">
+                <i class="fas fa-user-edit"></i> Update Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Quick Actions - 4 cards in a single row -->
 <div class="action-grid">
@@ -478,8 +506,16 @@
         </div>
         <h3>View All Applications</h3>
         <p>Review all applications received for your care requests.</p>
-        {% if pending_applications_count %}
-        <span class="pending-badge">{{ pending_applications_count }} pending</span>
+    </a>
+
+    <a href="{% url 'user_chat' %}" class="action-card">
+        <div class="action-icon">
+            <i class="fas fa-comments"></i>
+        </div>
+        <h3>Chat Support</h3>
+        <p>Connect with admin support for assistance and queries.</p>
+        {% if unread_chat_count %}
+        <span class="pending-badge">{{ unread_chat_count }} new</span>
         {% endif %}
     </a>
 </div>
@@ -511,7 +547,7 @@
             <tbody>
                 {% for request in recent_requests %}
                 <tr>
-                    <td>{{ request.patient_name }}</td>
+                    <td>{{ request.display_patient_name }}</td>
                     <td>{{ request.get_care_type_display }}</td>
                     <td>{{ request.start_date|date:"M d, Y" }}</td>
                     <td>{{ request.duration_days }} days</td>
@@ -569,7 +605,7 @@
             <div class="card-body">
                 <div class="request-detail">
                     <i class="fas fa-user-injured"></i>
-                    <span><strong>Patient:</strong> {{ application.request.patient_name }}</span>
+                    <span><strong>Patient:</strong> {{ application.request.display_patient_name }}</span>
                 </div>
                 <div class="request-detail">
                     <i class="fas fa-calendar-alt"></i>

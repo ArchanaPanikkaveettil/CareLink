@@ -1,0 +1,464 @@
+{% extends base_template|default:"users/family_base.html" %}
+{% load static %}
+
+{% block title %}Admin Support Chat - CareLink{% endblock %}
+{% block page_icon %}<i class="fas fa-comments"></i>{% endblock %}
+{% block page_title %}Admin Support Chat{% endblock %}
+
+
+{% block extra_css %}
+<style>
+    .chat-wrapper {
+        padding: 10px 20px 20px 20px;
+        background: #f8fafc;
+        min-height: calc(100vh - 200px);
+    }
+
+    .chat-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        height: calc(100vh - 250px);
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 25px rgba(15, 52, 96, 0.1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+
+    .chat-header {
+        padding: 24px 30px;
+        background: linear-gradient(135deg, #0f3460, #1a4a7a);
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .chat-header .admin-avatar {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+    }
+
+    .chat-header h3 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    .chat-header p {
+        margin: 4px 0 0 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
+
+    .refresh-btn {
+        margin-left: auto;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+    }
+
+    .refresh-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+    }
+
+    .messages-area {
+        flex: 1;
+        padding: 20px 30px;
+        overflow-y: auto;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .message {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        word-wrap: break-word;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    .message.admin {
+        align-self: flex-start;
+        background: #e2e8f0;
+        color: #334155;
+        border-bottom-left-radius: 6px;
+    }
+
+    .message.user {
+        align-self: flex-end;
+        background: #0f3460;
+        color: white;
+        border-bottom-right-radius: 6px;
+    }
+
+    .timestamp {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        margin-top: 6px;
+        display: block;
+    }
+
+    .chat-input-area {
+        padding: 20px 30px;
+        background: white;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .chat-input-area input {
+        flex: 1;
+        padding: 12px 20px !important;
+        border: 1px solid #e2e8f0;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: all 0.3s;
+        text-indent: 0 !important;
+        padding-left: 20px !important;
+        line-height: 1.4;
+        min-height: 44px;
+        box-sizing: border-box;
+        margin: 0;
+    }
+
+    .chat-input-area input:focus {
+        border-color: #0f3460;
+        box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
+        padding-left: 20px;
+        caret-color: #0f3460;
+    }
+
+    .chat-input-area input::placeholder {
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    /* Force cursor visibility and spacing */
+    #messageInput {
+        padding-left: 20px !important;
+        text-indent: 0 !important;
+        caret-color: #0f3460 !important;
+        border: 2px solid #e2e8f0 !important;
+    }
+
+    #messageInput:focus {
+        border-color: #0f3460 !important;
+        box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1) !important;
+    }
+
+    .chat-input-area button {
+        padding: 12px 20px;
+        background: #0f3460;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        align-self: center;
+        margin-top: 0;
+    }
+
+    .chat-input-area button:hover {
+        background: #1a4a7a;
+        transform: translateY(-1px);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Override conflicting styles - keep consistent */
+    .message.admin {
+        align-self: flex-start;
+        background: #e2e8f0;
+        color: #334155;
+        border-bottom-left-radius: 6px;
+    }
+
+    .message.user {
+        align-self: flex-end;
+        background: #0f3460;
+        color: white;
+        border-bottom-right-radius: 6px;
+    }
+
+    .timestamp {
+        font-size: 0.7rem;
+        margin-top: 5px;
+        opacity: 0.7;
+        display: block;
+    }
+
+    .chat-input-area {
+        padding: 20px 30px;
+        background: white;
+        border-top: 1px solid #eee;
+    }
+
+    .input-wrapper {
+        display: flex;
+        gap: 15px;
+        background: #f5f7fb;
+        padding: 8px 8px 8px 20px;
+        border-radius: 50px;
+        border: 1px solid #e1e8f0;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .input-wrapper:focus-within {
+        background: white;
+        border-color: #0f3460;
+        box-shadow: 0 0 0 4px rgba(15, 52, 96, 0.1);
+    }
+
+    .input-wrapper input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        outline: none;
+        padding: 10px 0;
+        font-size: 1rem;
+        color: #333;
+    }
+
+    .input-wrapper input::placeholder {
+        color: #94a3b8;
+    }
+
+    .send-btn {
+        background: #0f3460;
+        color: white;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .send-btn:hover {
+        transform: scale(1.05);
+        background: #1a4a7a;
+    }
+
+    .send-btn i {
+        font-size: 1.1rem;
+    }
+
+    /* Scrollbar */
+    .messages-area::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .messages-area::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .messages-area::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 10px;
+    }
+
+    /* Empty state icon */
+    .empty-chat-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        opacity: 0.3;
+    }
+
+    /* Hidden system message class - additional safety */
+    .system-message-filtered {
+        display: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-wrapper">
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="admin-avatar">
+                <i class="fas fa-headset"></i>
+            </div>
+            <div>
+                <h3>CareLink Support</h3>
+                <p>We typically reply within a few hours</p>
+            </div>
+            <button type="button" onclick="refreshMessages()" class="refresh-btn" title="Check for new messages">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+
+        <div class="messages-area" id="messagesArea">
+            {% for message in chat_messages %}
+            {% if "Message from" not in message.message %}
+            <div class="message {% if message.sender.role == 'admin' %}admin{% else %}user{% endif %}">
+                {{ message.message }}
+                <span class="timestamp">{{ message.created_at|date:"M d, H:i" }}</span>
+            </div>
+            {% endif %}
+            {% empty %}
+            <div style="text-align: center; color: #999; margin-top: 50px;">
+                <i class="fas fa-comments empty-chat-icon"></i>
+                <p>Start a conversation with our support team.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="chat-input-area">
+            <form id="chatForm" onsubmit="sendMessage(event)">
+                {% csrf_token %}
+                <div class="input-wrapper">
+                    <input type="text" id="messageInput" name="message" placeholder="Type your message here..."
+                        autocomplete="off" required>
+                    <button type="submit" class="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const messagesArea = document.getElementById('messagesArea');
+    const messageInput = document.getElementById('messageInput');
+    const chatForm = document.getElementById('chatForm');
+
+    // Scroll to bottom on load
+    if (messagesArea) {
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    function sendMessage(event) {
+        event.preventDefault();
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        const formData = new FormData();
+        formData.append('message', message);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        // Clear input immediately for better UX
+        messageInput.value = '';
+
+        fetch('{% url "send_message" session.id %}', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `message ${data.message.is_admin ? 'admin' : 'user'}`;
+                    msgDiv.innerHTML = `
+                        ${escapeHtml(data.message.content)}
+                        <span class="timestamp">Just now</span>
+                    `;
+                    messagesArea.appendChild(msgDiv);
+                    messagesArea.scrollTop = messagesArea.scrollHeight;
+                } else if (data.status === 'error') {
+                    console.error('Server error:', data.message);
+                    // Optionally show user feedback
+                    alert('Failed to send message. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+                alert('Network error. Please check your connection and try again.');
+            });
+    }
+
+    // Helper function to prevent XSS
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Intelligent Refresh for Users
+    function refreshMessages() {
+        // Don't refresh if user is typing
+        if (document.activeElement === messageInput && messageInput.value.trim() !== '') {
+            return;
+        }
+
+        fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Update Messages
+                const newMessagesArea = doc.getElementById('messagesArea');
+                if (newMessagesArea && messagesArea) {
+                    if (messagesArea.innerHTML.trim() !== newMessagesArea.innerHTML.trim()) {
+                        const wasAtBottom = messagesArea.scrollHeight - messagesArea.scrollTop <= messagesArea.clientHeight + 50;
+                        messagesArea.innerHTML = newMessagesArea.innerHTML;
+                        if (wasAtBottom) {
+                            messagesArea.scrollTop = messagesArea.scrollHeight;
+                        }
+                    }
+                }
+
+                // Sync Notification Count (Family/Caretaker side)
+                const newBadge = doc.querySelector('.notification-badge .badge') || doc.querySelector('.badge-count');
+                const currentBadge = document.querySelector('.notification-badge .badge') || document.querySelector('.badge-count');
+                if (newBadge && currentBadge) {
+                    currentBadge.innerHTML = newBadge.innerHTML;
+                }
+            })
+            .catch(err => console.warn('Refresh failed:', err));
+    }
+
+    // Check for updates every 10 seconds for users
+    setInterval(refreshMessages, 10000);
+
+    // Ensure input is focused on page load for better UX
+    if (messageInput) {
+        messageInput.focus();
+    }
+</script>
+{% endblock %}

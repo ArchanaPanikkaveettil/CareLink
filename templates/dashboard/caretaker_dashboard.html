@@ -24,12 +24,12 @@
     <span>My applications</span>
 </a>
 
-<a href="#" class="nav-item">
+<a href="{% url 'assignments:caretaker_assignments' %}" class="nav-item">
     <i class="fas fa-briefcase"></i>
     <span>My assignments</span>
 </a>
 
-<a href="#" class="nav-item">
+<a href="{% url 'requests:set_availability' %}" class="nav-item">
     <i class="fas fa-calendar-check"></i>
     <span>Update availability</span>
 </a>
@@ -258,116 +258,261 @@
 {% endblock %}
 
 {% block content %}
-<!-- OVERVIEW CARD - Dynamic -->
-<div class="card">
-    <h3>
-        <i class="fas fa-activity"></i> Overview
-    </h3>
-    <div class="stats-grid">
-        <div class="stat-item">
-            <div class="stat-number" id="applications-count">
-                {% if total_applications is not None %}
-                {{ total_applications }}
-                {% else %}
-                <span class="loading-placeholder"></span>
-                {% endif %}
+<!-- Shift Status Card -->
+{% if today_assignment %}
+<div style="background: white; border-radius: 20px; padding: 25px; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; border-left: 6px solid #4bc3a3;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+        <div>
+            <h4 style="margin: 0; color: #0a2a38; font-weight: 700; font-size: 1.1rem;">
+                <i class="fas fa-clock" style="color: #4bc3a3; margin-right: 8px;"></i>
+                Today's Shift Status
+            </h4>
+            <div style="margin-top: 8px; display: flex; align-items: center; gap: 15px;">
+                <span class="badge" style="background: {% if today_attendance.check_in_time %}#dcfce7; color: #166534{% else %}#fef3c7; color: #92400e{% endif %}; border: 1px solid {% if today_attendance.check_in_time %}#bbf7d0{% else %}#fde68a{% endif %};">
+                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                    {% if today_attendance.check_in_time %}In Progress{% else %}Not Started{% endif %}
+                </span>
+                <span style="font-size: 0.9rem; color: #64748b;">
+                    Patient: <strong>{{ today_assignment.care_request.display_patient_name }}</strong>
+                </span>
             </div>
-            <div class="stat-label"><i class="fas fa-paper-plane"></i> Applications sent</div>
         </div>
-        <div class="stat-item">
-            <div class="stat-number">
-                {% if assigned_jobs is not None %}
-                {{ assigned_jobs }}
-                {% else %}
-                0
-                {% endif %}
-            </div>
-            <div class="stat-label"><i class="fas fa-user-check"></i> Active assignments</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number" id="pending-count">
-                {% if pending_applications is not None %}
-                {{ pending_applications }}
-                {% else %}
-                <span class="loading-placeholder"></span>
-                {% endif %}
-            </div>
-            <div class="stat-label"><i class="fas fa-clock"></i> Pending applications</div>
-        </div>
-    </div>
-
-    <!-- Dynamic extra info based on real data -->
-    <div style="margin-top: 22px;">
-        {% if nearby_requests_count %}
-        <span class="pill-info"><i class="fas fa-bell"></i> {{ nearby_requests_count }} new care requests near
-            you</span>
-        {% endif %}
-        {% if profile_strength %}
-        <span class="pill-info" style="margin-left: 12px;"><i class="fas fa-star"></i> {{ profile_strength }}% profile
-            strength</span>
-        {% endif %}
-        {% if not nearby_requests_count and not profile_strength %}
-        <span class="pill-info"><i class="fas fa-info-circle"></i> Complete your profile to get more matches</span>
-        {% endif %}
-    </div>
-</div>
-
-<!-- JOB & WORK MANAGEMENT SECTION - Dynamic -->
-<div class="card">
-    <h3>
-        <i class="fas fa-briefcase-clock"></i> Job & work
-    </h3>
-    <div style="display: flex; flex-direction: column; gap: 16px;">
-        <!-- Dynamic assignment preview -->
-        {% if today_assignment %}
-        <div class="assignment-preview">
-            <div>
-                <span style="font-weight: 600; font-size: 1.1rem; color: #0a2a38;">Today's assignment</span>
-                <div style="display: flex; gap: 15px; margin-top: 8px; color: #2c6d88; flex-wrap: wrap;">
-                    <span><i class="far fa-clock"></i> {{ today_assignment.start_time|time:"H:i" }} – {{
-                        today_assignment.end_time|time:"H:i" }}</span>
-                    <span><i class="fas fa-location-dot"></i> {{ today_assignment.distance_km|default:"4" }} km · {{
-                        today_assignment.location|default:"Maple Ave" }}</span>
-                </div>
-            </div>
-            <span class="badge"><i class="fas fa-sun"></i> {{ today_assignment.shift_type|default:"morning shift"
-                }}</span>
-        </div>
-        {% else %}
-        <div class="assignment-preview">
-            <div>
-                <span style="font-weight: 600; font-size: 1.1rem; color: #0a2a38;">No assignments today</span>
-                <div style="margin-top: 8px; color: #2c6d88;">
-                    <span><i class="fas fa-calendar-alt"></i> Browse available requests in your area</span>
-                </div>
-            </div>
-            <a href="{% url 'requests:browse_requests' %}" class="badge" style="text-decoration: none;">
-                <i class="fas fa-search"></i> Find work
+        <div style="display: flex; gap: 12px;">
+            <a href="{% url 'assignments:mark_attendance' today_assignment.id %}" class="btn" style="background: #0a2a38; color: white; border-radius: 12px; padding: 12px 25px; font-weight: 600; display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                <i class="fas {% if today_attendance.check_in_time %}fa-stop-circle{% else %}fa-play-circle{% endif %}"></i>
+                {% if today_attendance.check_in_time %}End Session{% else %}Start Session{% endif %}
+            </a>
+            <a href="{% url 'assignments:create_daily_report' today_assignment.id %}" class="btn" style="background: white; border: 1.5px solid #0a2a38; color: #0a2a38; border-radius: 12px; padding: 12px 25px; font-weight: 600; display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                <i class="fas fa-file-medical"></i> Submit Report
             </a>
         </div>
-        {% endif %}
+    </div>
+</div>
+{% endif %}
 
-        <div class="info-row">
-            {% if next_pending_interview %}
-            <span class="pill-info"><i class="fas fa-hourglass-half"></i> next: interview with {{
-                next_pending_interview.client_name }}</span>
-            {% endif %}
-            {% if is_available_today %}
-            <span class="pill-info success"><i class="fas fa-check-circle"></i> available today</span>
-            {% endif %}
-            {% if not next_pending_interview and not is_available_today %}
-            <span class="pill-info"><i class="fas fa-bell"></i> Update your availability to receive more matches</span>
-            {% endif %}
+<!-- STATS GRID -->
+<div class="stats-grid" style="margin-bottom: 30px;">
+    <div class="stat-item">
+        <div class="stat-number">{{ assigned_jobs }}</div>
+        <div class="stat-label"><i class="fas fa-briefcase"></i> Active Jobs</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">{{ completed_tasks_today }}</div>
+        <div class="stat-label"><i class="fas fa-check-double"></i> Activities Done</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">{{ pending_applications }}</div>
+        <div class="stat-label"><i class="fas fa-file-invoice"></i> Pending Apps</div>
+    </div>
+</div>
+
+<!-- PROFILE UPDATE NOTIFICATION -->
+{% if not profile.is_complete %}
+<div class="card" style="background: #eef9f6; border-left: 6px solid #4bc3a3; padding: 20px 28px;">
+    <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+        <div style="background: #4bc3a3; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+            <i class="fas fa-user-edit"></i>
         </div>
-
-        <!-- quick actions info -->
-        <hr>
-        <div class="muted" style="display: flex; gap: 24px; flex-wrap: wrap;">
-            <span><i class="fas fa-circle-check" style="color: #4bc3a3;"></i> Use sidebar to browse requests</span>
-            <span><i class="fas fa-bell" style="color: #4bc3a3;"></i> Quick actions in left menu</span>
+        <div style="flex: 1; min-width: 250px;">
+            <h4 style="margin: 0; color: #153e4d; font-weight: 600; font-size: 1.2rem;">Complete Your Profile</h4>
+            <p style="margin: 5px 0 0; color: #3d687b; font-size: 0.95rem;">
+                Keep your profile updated with your latest experience and skills to attract more families and get better matches.
+            </p>
+        </div>
+        <div style="flex-shrink: 0;">
+            <a href="{% url 'users:caretaker_profile' %}" class="btn btn-primary" style="background: #153e4d; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; text-decoration: none; display: inline-block;">
+                <i class="fas fa-arrow-right"></i> Update Now
+            </a>
         </div>
     </div>
 </div>
+{% endif %}
+
+
+
+
+
+
+<!-- TASKS MANAGEMENT SECTION - Dynamic -->
+<div class="card">
+    <h3>
+        <i class="fas fa-tasks"></i> Task Management
+    </h3>
+    
+    <!-- Today's Tasks -->
+    <div style="margin-bottom: 25px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h4 style="font-size: 1.1rem; color: #0e4b62;">
+                <i class="fas fa-calendar-day"></i> Today's Tasks
+                <span class="badge" style="background: {% if today_tasks_count > 0 %}#ef4444{% else %}#10b981{% endif %}; margin-left: 10px;">
+                    {{ today_tasks_count }} pending
+                </span>
+            </h4>
+            {% if completed_tasks_today > 0 %}
+            <span class="pill-info success">
+                <i class="fas fa-check-circle"></i> {{ completed_tasks_today }} completed today
+            </span>
+            {% endif %}
+        </div>
+        
+        {% if today_tasks %}
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                {% for task in today_tasks %}
+                <div style="background: #f8fafc; border-radius: 16px; padding: 15px; border-left: 4px solid 
+                    {% if task.priority == 'high' %}#ef4444
+                    {% elif task.priority == 'medium' %}#f59e0b
+                    {% else %}#10b981{% endif %};">
+                    <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 10px;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
+                                <strong style="font-size: 1rem;">{{ task.title }}</strong>
+                                <span class="badge" style="background: 
+                                    {% if task.priority == 'high' %}#ef4444
+                                    {% elif task.priority == 'medium' %}#f59e0b
+                                    {% else %}#10b981{% endif %};">
+                                    {{ task.get_priority_display }}
+                                </span>
+                                <span class="badge" style="background: 
+                                    {% if task.status == 'in_progress' %}#3b82f6
+                                    {% else %}#6b7280{% endif %};">
+                                    {{ task.get_status_display }}
+                                </span>
+                            </div>
+                            <p style="color: #475569; font-size: 0.9rem; margin-bottom: 8px;">
+                                {{ task.description|default:"No description provided."|truncatechars:100 }}
+                            </p>
+                            <div style="display: flex; gap: 15px; font-size: 0.75rem; color: #64748b;">
+                                <span>
+                                    <i class="fas fa-clock"></i> 
+                                    Due: {{ task.due_date|date:"g:i A" }}
+                                </span>
+                                <span>
+                                    <i class="fas fa-user-md"></i> 
+                                    Patient: {{ task.assignment.care_request.elder.name|default:task.assignment.family.get_full_name }}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="{% url 'assignments:update_task_status' task.id %}" 
+                               class="btn btn-sm btn-primary" 
+                               style="padding: 6px 12px; font-size: 0.75rem;">
+                                <i class="fas fa-edit"></i> Update
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 30px; background: #f8fafc; border-radius: 16px;">
+                <i class="fas fa-check-circle" style="font-size: 2rem; color: #10b981; margin-bottom: 10px;"></i>
+                <p style="color: #64748b; margin-bottom: 0;">No pending tasks for today!</p>
+                {% if completed_tasks_today > 0 %}
+                <p class="muted" style="margin-top: 5px;">You've completed {{ completed_tasks_today }} tasks today.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Upcoming Tasks -->
+    {% if upcoming_tasks %}
+    <div style="margin-top: 20px;">
+        <h4 style="font-size: 1rem; color: #0e4b62; margin-bottom: 15px;">
+            <i class="fas fa-calendar-week"></i> Upcoming Tasks (Next 7 Days)
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% for task in upcoming_tasks %}
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f9fdff; border-radius: 12px;">
+                <div>
+                    <strong>{{ task.title }}</strong>
+                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">
+                        <i class="fas fa-calendar-alt"></i> {{ task.due_date|date:"M d, Y - g:i A" }}
+                    </div>
+                </div>
+                <span class="badge" style="background: 
+                    {% if task.priority == 'high' %}#ef4444
+                    {% elif task.priority == 'medium' %}#f59e0b
+                    {% else %}#10b981{% endif %};">
+                    {{ task.get_priority_display }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Overdue Tasks Alert -->
+    {% if overdue_tasks > 0 and today_assignment %}
+    <div style="margin-top: 20px; padding: 12px 16px; background: #fee2e2; border-radius: 12px; border-left: 4px solid #ef4444;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+            <span style="color: #991b1b;">
+                <strong>Attention!</strong> You have {{ overdue_tasks }} overdue task{% if overdue_tasks > 1 %}s{% endif %}. 
+                <a href="{% url 'assignments:task_list' today_assignment.id %}" style="color: #dc2626; text-decoration: underline;">View overdue tasks</a>
+            </span>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Quick Actions -->
+    <div style="margin-top: 30px;">
+        <h4 style="font-size: 1rem; color: #0e4b62; margin-bottom: 15px;">
+            <i class="fas fa-bolt"></i> Quick Access
+        </h4>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="{% url 'assignments:caretaker_assignments' %}" class="pill-info">
+                <i class="fas fa-briefcase"></i> My Assignments
+            </a>
+            {% if today_assignment %}
+            <a href="{% url 'assignments:task_list' today_assignment.id %}" class="pill-info">
+                <i class="fas fa-tasks"></i> All Tasks
+            </a>
+            <a href="{% url 'assignments:mark_attendance' today_assignment.id %}" class="pill-info">
+                <i class="fas fa-history"></i> Attendance Logs
+            </a>
+            {% endif %}
+            <a href="{% url 'requests:set_availability' %}" class="pill-info">
+                <i class="fas fa-calendar-alt"></i> Set Availability
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Add CSS for buttons if not already present -->
+<style>
+    .btn-sm {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #1e4a7a;
+    }
+    
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #059669;
+    }
+</style>
+
+
+
 
 <!-- ACCOUNT / PROFILE CARD - Dynamic -->
 <div class="card">

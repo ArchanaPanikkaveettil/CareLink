@@ -409,13 +409,13 @@
                 <i class="fas fa-star" style="margin-right: 10px;"></i>Shortlisted Candidates
             </h1>
             <p style="color: #64748b;">
-                For: <strong>{{ care_request.patient_name }}</strong> 
+                For: <strong>{{ care_request.display_patient_name }}</strong> 
                 <span class="job-type-badge job-type-{{ care_request.care_type }}">
                     {{ care_request.get_care_type_display }}
                 </span>
             </p>
         </div>
-        <a href="{% url 'request_applications' care_request.id %}" class="btn btn-outline">
+        <a href="{% url 'applications:request_applications' care_request.id %}" class="btn btn-outline">
             <i class="fas fa-arrow-left"></i> Back to All Applications
         </a>
     </div>
@@ -592,20 +592,27 @@
             </div>
             {% endif %}
 
+            {% if app.status == 'offer_declined' and app.offer_response_note %}
+            <div style="background: #fee2e2; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                <i class="fas fa-comment-dots" style="color: #b91c1c;"></i>
+                <small><strong>Decline Reason:</strong> {{ app.offer_response_note }}</small>
+            </div>
+            {% endif %}
+
             <!-- Rank Controls (only for shortlisted) -->
             {% if app.status == 'shortlisted' %}
             <div class="rank-controls">
-                <a href="{% url 'update_shortlist_rank' app.id 'up' %}" 
+                <a href="{% url 'applications:update_shortlist_rank' app.id 'up' %}" 
                    class="rank-btn {% if app.shortlist_rank == 1 %}disabled{% endif %}" 
                    title="Move up">
                     <i class="fas fa-chevron-up"></i>
                 </a>
-                <a href="{% url 'update_shortlist_rank' app.id 'down' %}" 
+                <a href="{% url 'applications:update_shortlist_rank' app.id 'down' %}" 
                    class="rank-btn {% if app.shortlist_rank == shortlisted_count %}disabled{% endif %}" 
                    title="Move down">
                     <i class="fas fa-chevron-down"></i>
                 </a>
-                <a href="{% url 'add_shortlist_notes' app.id %}" class="rank-btn" title="Add notes">
+                <a href="{% url 'applications:add_shortlist_notes' app.id %}" class="rank-btn" title="Add notes">
                     <i class="fas fa-pen"></i>
                 </a>
             </div>
@@ -613,13 +620,13 @@
 
             <!-- Action Buttons -->
             <div class="action-buttons">
-                <a href="{% url 'caretaker_profile_detail' app.caretaker.id %}" class="btn btn-outline btn-sm">
+                <a href="{% url 'applications:caretaker_profile_detail' app.caretaker.id %}" class="btn btn-outline btn-sm">
                     <i class="fas fa-eye"></i> Profile
                 </a>
                 
                 {% if app.status == 'shortlisted' %}
                     {% if care_request.can_send_offer %}
-                    <a href="{% url 'send_offer' app.id %}" class="btn btn-success btn-sm">
+                    <a href="{% url 'applications:send_offer' app.id %}" class="btn btn-success btn-sm">
                         <i class="fas fa-paper-plane"></i> Send Offer
                     </a>
                     {% else %}
@@ -627,7 +634,7 @@
                         <i class="fas fa-ban"></i> Cannot Send Offer
                     </span>
                     {% endif %}
-                    <a href="{% url 'remove_shortlist' app.id %}" class="btn btn-danger btn-sm"
+                    <a href="{% url 'applications:remove_shortlist' app.id %}" class="btn btn-danger btn-sm"
                        onclick="return confirm('Remove this candidate from shortlist?')">
                         <i class="fas fa-times"></i> Remove
                     </a>
@@ -673,7 +680,7 @@
             <i class="fas fa-star" style="font-size: 4rem; color: #cbd5e1;"></i>
             <h3>No Shortlisted Candidates</h3>
             <p>You haven't shortlisted any candidates yet. Go back to applications and shortlist candidates you're interested in.</p>
-            <a href="{% url 'request_applications' care_request.id %}" class="btn btn-outline">
+            <a href="{% url 'applications:request_applications' care_request.id %}" class="btn btn-outline">
                 <i class="fas fa-arrow-left"></i> View All Applications
             </a>
         </div>

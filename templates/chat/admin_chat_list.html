@@ -1,0 +1,176 @@
+{% extends "admin/admin_base.html" %}
+{% load static %}
+
+{% block title %}Chat Support - CareLink Admin{% endblock %}
+
+{% block page_title %}Chat Support{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">Active Chat Sessions</h5>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary" onclick="filterByRole('all')">
+                <i class="fas fa-users me-1"></i>All Users
+            </button>
+            <button class="btn btn-sm btn-outline-success" onclick="filterByRole('family')">
+                <i class="fas fa-home me-1"></i>Families
+            </button>
+            <button class="btn btn-sm btn-outline-info" onclick="filterByRole('caretaker')">
+                <i class="fas fa-user-nurse me-1"></i>Caretakers
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover" id="chatSessionsTable">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Last Message</th>
+                    <th>Last Activity</th>
+                    <th>Unread</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in sessions %}
+                <tr class="chat-session-row" data-role="{{ session.user.role }}">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="user-avatar me-3" style="width: 40px; height: 40px;">
+                                {% if session.user.profile_picture %}
+                                <img src="{{ session.user.profile_picture.url }}" alt="Profile"
+                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                {% else %}
+                                <i class="fas fa-user"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="fw-bold">{{ session.user.get_full_name|default:session.user.username }}</div>
+                                <small class="text-muted">{{ session.user.email }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span
+                            class="badge {% if session.user.role == 'family' %}bg-success{% elif session.user.role == 'caretaker' %}bg-info{% else %}bg-secondary{% endif %}">
+                            {% if session.user.role == 'family' %}
+                            <i class="fas fa-home me-1"></i>Family
+                            {% elif session.user.role == 'caretaker' %}
+                            <i class="fas fa-user-nurse me-1"></i>Caretaker
+                            {% else %}
+                            <i class="fas fa-user me-1"></i>{{ session.user.role|title }}
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        {% with last_message=session.messages.last %}
+                        {% if last_message %}
+                        <div class="text-truncate" style="max-width: 200px;">
+                            {{ last_message.message|truncatechars:50 }}
+                        </div>
+                        {% else %}
+                        <span class="text-muted">No messages yet</span>
+                        {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        <small class="text-muted">
+                            {% with last_message=session.messages.last %}
+                            {% if last_message %}
+                            {{ last_message.created_at|timesince }} ago
+                            {% else %}
+                            {{ session.created_at|timesince }} ago
+                            {% endif %}
+                            {% endwith %}
+                        </small>
+                    </td>
+                    <td>
+                        {% if session.unread_count > 0 %}
+                        <span class="badge bg-danger">{{ session.unread_count }}</span>
+                        {% else %}
+                        <span class="text-muted">0</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_chat_detail' session.id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-comment me-1"></i>Chat
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No active chat sessions yet.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="text-center p-3 bg-light rounded">
+                <h4 class="text-primary mb-1">{{ sessions.count }}</h4>
+                <small class="text-muted">Total Sessions</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-3 bg-light rounded">
+                <h4 class="text-success mb-1">{{ family_sessions_count }}</h4>
+                <small class="text-muted">Family Users</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-3 bg-light rounded">
+                <h4 class="text-info mb-1">{{ caretaker_sessions_count }}</h4>
+                <small class="text-muted">Caretaker Users</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center p-3 bg-light rounded">
+                <h4 class="text-danger mb-1">{{ total_unread_count }}</h4>
+                <small class="text-muted">Unread Messages</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterByRole(role) {
+        const rows = document.querySelectorAll('.chat-session-row');
+
+        rows.forEach(row => {
+            if (role === 'all') {
+                row.style.display = '';
+            } else {
+                row.style.display = row.dataset.role === role ? '' : 'none';
+            }
+        });
+
+
+        // Update button states
+        document.querySelectorAll('[onclick^="filterByRole"]').forEach(btn => {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-outline-primary');
+        });
+        event.target.classList.remove('btn-outline-primary');
+        event.target.classList.add('btn-primary');
+    }
+
+    // Auto-refresh every 30 seconds, but only if the user isn't interacting
+    setInterval(() => {
+        // Only reload if the window is active/focused to save resources and avoid surprises
+        if (document.visibilityState === 'visible') {
+            location.reload();
+        }
+    }, 30000);
+</script>
+{% endblock %}

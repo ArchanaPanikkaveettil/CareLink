@@ -186,12 +186,19 @@
                             <option value="en" selected>English</option>
                             <option value="hi">Hindi</option>
                             <option value="ml">Malayalam</option>
+                            <option value="ta">Tamil</option>
+                            <option value="te">Telugu</option>
+                            <option value="kn">Kannada</option>
+                            <option value="mr">Marathi</option>
+                            <option value="gu">Gujarati</option>
+                            <option value="bn">Bengali</option>
+                            <option value="pa">Punjabi</option>
+                            <option value="ur">Urdu</option>
+                            <option value="sd">Sindhi</option>
                         </select>
                     </div>
 
                     <hr>
-
-                    <h6 class="mb-3">Theme Settings</h6>
 
                     <div class="row mb-3">
                         <div class="col-md-4">
@@ -386,15 +393,14 @@
     });
 
     // Theme Selection
-    function selectTheme(theme) {
-        document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
-        event.currentTarget.classList.add('active');
+    document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
+    event.currentTarget.classList.add('active');
 
-        // Here you would implement theme switching logic
-        document.body.setAttribute('data-theme', theme);
-        localStorage.setItem('adminTheme', theme);
+    // Here you would implement theme switching logic
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('adminTheme', theme);
 
-        showNotification('Theme preference saved', 'success');
+    showNotification('Theme preference saved', 'success');
     }
 
     // Load saved theme

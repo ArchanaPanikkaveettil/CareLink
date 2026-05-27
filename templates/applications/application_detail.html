@@ -165,7 +165,7 @@
 
             <div class="info-row">
                 <span class="info-label">Care Request</span>
-                <span class="info-value">{{ application.request.patient_name }}</span>
+                <span class="info-value">{{ application.request.display_patient_name }}</span>
             </div>
 
             <div class="info-row">
@@ -177,6 +177,13 @@
                 <span class="info-label">Proposed Rate</span>
                 <span class="info-value">₹{{ application.proposed_rate }}/day</span>
             </div>
+
+            {% if application.status == 'offer_declined' and application.offer_response_note %}
+            <div class="info-row">
+                <span class="info-label">Decline Reason</span>
+                <span class="info-value" style="color: #ef4444;">{{ application.offer_response_note }}</span>
+            </div>
+            {% endif %}
 
             <div class="info-row">
                 <span class="info-label">Status History</span>

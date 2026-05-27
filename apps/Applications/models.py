@@ -210,7 +210,7 @@ class CareApplication(models.Model):
     
     def can_receive_offer(self):
         """Check if can receive an offer"""
-        if self.status not in ['shortlisted']:
+        if self.status not in ["shortlisted", "pending"]:
             return False, f"Cannot send offer to application with status: {self.get_status_display()}"
         return True, "Can receive offer"
     
@@ -248,6 +248,10 @@ class CareApplication(models.Model):
     
     def can_mark_care_started(self, user_role):
         """Check if care can be marked as started"""
+        # Allow 'auto' role for automatic starts
+        if user_role == 'auto':
+            return True, "Auto start allowed"
+        
         if self.status not in ['accepted', 'offer_accepted']:
             return False, f"Cannot start care with status: {self.get_status_display()}"
         
@@ -335,7 +339,7 @@ class CareApplication(models.Model):
         return True
     
     def accept_offer(self, note=""):
-        """Caretaker accepts the offer"""
+        """Caretaker accepts the offer - automatically creates assignment"""
         can, reason = self.can_accept_offer()
         if not can:
             raise ValueError(f"Cannot accept offer: {reason}")
@@ -363,6 +367,55 @@ class CareApplication(models.Model):
                 status='rejected',
                 rejection_note='Position filled by another candidate'
             )
+            
+            # ========== CREATE ASSIGNMENT AUTOMATICALLY ==========
+            from apps.assignments.models import CareAssignment
+            from decimal import Decimal
+            
+            # Get hourly rate from offer details or proposed rate
+            hourly_rate = Decimal('100')  # Default
+            work_hours = 8  # Default work hours per day
+            
+            if self.offer_details:
+                final_rate = self.offer_details.get('final_rate')
+                if final_rate:
+                    try:
+                        # If final_rate is daily rate, convert to hourly
+                        hourly_rate = Decimal(str(final_rate)) / Decimal('8')
+                    except:
+                        hourly_rate = Decimal(str(final_rate))
+            elif self.proposed_rate:
+                hourly_rate = Decimal(str(self.proposed_rate)) / Decimal('8')
+            
+            monthly_salary = hourly_rate * Decimal(str(work_hours)) * Decimal('30')
+            
+            # Check if assignment already exists
+            existing_assignment = CareAssignment.objects.filter(application=self).first()
+            
+            if not existing_assignment:
+                # Create the assignment
+                assignment = CareAssignment.objects.create(
+                    family=care_request.family,
+                    caretaker=self.caretaker,
+                    care_request=care_request,
+                    application=self,
+                    assigned_date=timezone.now(),
+                    start_date=care_request.start_date if care_request.start_date else timezone.now().date(),
+                    shift_type='full_time',
+                    work_hours_per_day=Decimal(str(work_hours)),
+                    hourly_rate=hourly_rate,
+                    monthly_salary=monthly_salary,
+                    notes=f'Automatically created from accepted offer #{self.id}',
+                    status='active'
+                )
+                
+                # Mark care as started automatically
+                self.mark_care_started('auto')
+                
+                # Update care request to in_progress
+                care_request.status = 'in_progress'
+                care_request.save()
+            # ======================================================
             
             # TODO: Send notifications
             # send_offer_accepted_notification(self)
@@ -406,11 +459,28 @@ class CareApplication(models.Model):
         return True
     
     def mark_care_started(self, user_role):
-        """Mark that care has started"""
+        """Mark that care has started - supports auto role"""
         can, reason = self.can_mark_care_started(user_role)
         if not can:
             raise ValueError(f"Cannot mark care started: {reason}")
         
+        # Handle auto start
+        if user_role == 'auto':
+            with transaction.atomic():
+                self.care_started_at = timezone.now()
+                self.care_started_by = 'auto'
+                self.care_start_confirmed_by_family = True
+                self.care_start_confirmed_by_caretaker = True
+                self.status = 'care_started'
+                self.save()
+                
+                # Update request status if available
+                if hasattr(self, 'request') and self.request:
+                    self.request.status = 'in_progress'
+                    self.request.save()
+            return True
+        
+        # Handle manual start
         if user_role == 'family':
             self.care_start_confirmed_by_family = True
         elif user_role == 'caretaker':
@@ -422,9 +492,9 @@ class CareApplication(models.Model):
                 self.care_started_at = timezone.now()
                 self.care_started_by = 'both'
                 self.status = 'care_started'
+                self.save()
                 self.request.status = 'in_progress'
                 self.request.save()
-                self.save()
         else:
             # One has confirmed, store who
             self.care_started_by = user_role

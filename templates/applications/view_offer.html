@@ -416,7 +416,7 @@
                     <strong>Conflicting Assignments:</strong>
                     <ul style="margin-top: 5px; margin-left: 20px;">
                     {% for assignment in conflict_check.2 %}
-                        <li>{{ assignment.request.patient_name }} - {{ assignment.get_job_type_display }}</li>
+                        <li>{{ assignment.request.display_patient_name }} - {{ assignment.get_job_type_display }}</li>
                     {% endfor %}
                     </ul>
                 </div>
@@ -458,7 +458,7 @@
         <div class="offer-grid">
             <div class="offer-item">
                 <div class="offer-label"><i class="fas fa-user"></i> Patient Name</div>
-                <div class="offer-value">{{ application.request.patient_name }}</div>
+                <div class="offer-value">{{ application.request.display_patient_name }}</div>
             </div>
             <div class="offer-item">
                 <div class="offer-label"><i class="fas fa-venus-mars"></i> Age / Gender</div>
@@ -599,7 +599,7 @@
     </div>
     
     <div class="action-buttons">
-        <a href="{% url 'my_applications' %}" class="btn btn-secondary">
+        <a href="{% url 'applications:my_applications' %}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Back to Applications
         </a>
         
@@ -608,12 +608,11 @@
                 <i class="fas fa-clock"></i> Offer Expired
             </span>
         {% else %}
-            <a href="{% url 'respond_to_offer' application.id 'accept' %}" class="btn btn-accept" 
+            <a href="{% url 'applications:respond_to_offer' application.id 'accept' %}" class="btn btn-accept" 
                onclick="return confirm('Accept this offer? You will be committed to this position and any other active applications will be withdrawn.')">
                 <i class="fas fa-check-circle"></i> Accept Offer
             </a>
-            <a href="{% url 'respond_to_offer' application.id 'decline' %}" class="btn btn-decline" 
-               onclick="return confirm('Decline this offer? This action cannot be undone.')">
+            <a href="{% url 'applications:respond_to_offer' application.id 'decline' %}" class="btn btn-decline">
                 <i class="fas fa-times-circle"></i> Decline Offer
             </a>
         {% endif %}

@@ -365,16 +365,14 @@
                         {% if date_key in availability_by_date %}
                         {% for slot in availability_by_date|get_item:date_key %}
                         {% if slot.status == 'available' %}
-                        <a href="{% url 'requests:book_caretaker' caretaker.id slot.id %}" class="slot"
+                        <a href="{% url 'requests:book_caretaker_multi' caretaker.id %}?highlight={{ slot.date|date:'Y-m-d' }}" class="slot"
                             data-date="{{ slot.date|date:'Y-m-d' }}" data-start="{{ slot.start_time|time:'H:i' }}"
                             data-end="{{ slot.end_time|time:'H:i' }}">
-                            <i class="fas fa-clock"></i> {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i
-                            A" }}
+                            <i class="fas fa-clock"></i> {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}
                         </a>
                         {% else %}
                         <div class="slot booked">
-                            <i class="fas fa-lock"></i> {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i
-                            A" }}
+                            <i class="fas fa-lock"></i> {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}
                             <small>(Booked)</small>
                         </div>
                         {% endif %}
@@ -410,11 +408,21 @@
 
 <div class="booking-note">
     <i class="fas fa-info-circle"></i>
-    <strong>How to book:</strong> Click on any green time slot to book an appointment with this caretaker.
+    <strong>How to book:</strong> Click any green slot to open the multi-date booking page where you can select
+    one day, a date range, or random individual dates — all in one go.
     {% if availability_by_date|length > 0 %}
-    <br><small>Tip: You can click on any available slot to start the booking process.</small>
+    <br><small>Tip: You can also use the button below to go straight to the booking page.</small>
     {% endif %}
 </div>
+
+{% if user.role == 'family' %}
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{% url 'requests:book_caretaker_multi' caretaker.id %}" 
+       style="display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #0f3460, #1e4a7a); color: white; padding: 14px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 12px rgba(15,52,96,0.3);">
+        <i class="fas fa-calendar-plus"></i> Book Multiple Dates
+    </a>
+</div>
+{% endif %}
 
 <div style="text-align: center; margin-top: 20px;">
     <a href="{% url 'requests:caretaker_detail' caretaker.id %}" class="btn-back">

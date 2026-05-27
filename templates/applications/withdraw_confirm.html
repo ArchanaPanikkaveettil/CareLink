@@ -259,7 +259,7 @@
         <div class="application-detail-card">
             <div class="patient-name">
                 <i class="fas fa-user-circle"></i>
-                {{ application.request.patient_name }}
+                {{ application.request.display_patient_name }}
             </div>
 
             <div class="detail-row">
@@ -323,7 +323,7 @@
         <form method="POST" id="withdrawForm">
             {% csrf_token %}
             <div class="action-buttons">
-                <a href="{% url 'my_applications' %}" class="btn btn-cancel">
+                <a href="{% url 'applications:my_applications' %}" class="btn btn-cancel">
                     <i class="fas fa-arrow-left"></i>
                     Keep Application
                 </a>

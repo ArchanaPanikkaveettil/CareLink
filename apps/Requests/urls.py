@@ -37,9 +37,21 @@ urlpatterns = [
     ),
     # Booking actions
     path(
-        "caretaker/<int:caretaker_id>/book/<int:request_id>/",
+        "caretaker/<int:caretaker_id>/book/<int:slot_id>/",
         views.book_caretaker,
         name="book_caretaker",
+    ),
+    # Multi-slot booking (range / random days)
+    path(
+        "caretaker/<int:caretaker_id>/book-multi/",
+        views.book_caretaker_multi,
+        name="book_caretaker_multi",
+    ),
+    # Inline care request creation during booking
+    path(
+        "caretaker/<int:caretaker_id>/create-request/",
+        views.create_booking_request,
+        name="create_booking_request",
     ),
     # Manage bookings
     path("my-bookings/", views.my_bookings, name="my_bookings"),
@@ -57,6 +69,11 @@ urlpatterns = [
         "booking/<int:booking_id>/complete/",
         views.complete_booking,
         name="complete_booking",
+    ),
+    path(
+        "booking/<int:booking_id>/review/",
+        views.submit_booking_review,
+        name="submit_review",
     ),
     # Caretaker availability management
     path(

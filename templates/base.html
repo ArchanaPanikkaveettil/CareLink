@@ -284,7 +284,8 @@
             {% if user.is_authenticated %}
             {% if user.role == "family" %}
             <a href="{% url 'dashboard:family_dashboard' %}">Dashboard</a>
-            
+            {% elif user.role == "caretaker" %}
+            <a href="{% url 'dashboard:caretaker_dashboard' %}">Dashboard</a>
             {% endif %}
             <a href="{% url 'users:logout' %}">Logout</a>
             {% else %}

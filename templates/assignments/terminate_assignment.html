@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-slash text-danger me-2"></i>
+                        End Service
+                    </h4>
+                    <p class="text-muted mb-0">Terminate service with {{ assignment.caretaker.get_full_name }}</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <!-- Caregiver Info -->
+                        <div class="alert alert-info mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-user-md fa-2x"></i>
+                                </div>
+                                <div>
+                                    <strong>{{ assignment.caretaker.get_full_name }}</strong><br>
+                                    <small>Assigned: {{ assignment.assigned_date|date:"M d, Y" }}</small><br>
+                                    <small>Shift: {{ assignment.get_shift_type_display }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Termination Reason -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-comment me-2 text-danger"></i>
+                                Reason for Ending Service
+                            </label>
+                            <select name="reason" class="form-control" required>
+                                <option value="">Select a reason...</option>
+                                <option value="completed">Service completed as planned</option>
+                                <option value="family_request">Family requested change</option>
+                                <option value="performance">Performance issues</option>
+                                <option value="schedule">Schedule conflicts</option>
+                                <option value="budget">Budget constraints</option>
+                                <option value="other">Other reasons</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Review Section -->
+                        <div class="border-top pt-4 mt-3">
+                            <h5 class="mb-3">
+                                <i class="fas fa-star text-warning me-2"></i>
+                                Rate Your Experience
+                            </h5>
+                            <p class="text-muted small">Your feedback helps us improve service quality.</p>
+                            
+                            <!-- Rating Stars -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Rating</label>
+                                <div class="rating-stars">
+                                    <input type="radio" name="rating" value="5" id="star5" required>
+                                    <label for="star5" class="star">★</label>
+                                    <input type="radio" name="rating" value="4" id="star4">
+                                    <label for="star4" class="star">★</label>
+                                    <input type="radio" name="rating" value="3" id="star3">
+                                    <label for="star3" class="star">★</label>
+                                    <input type="radio" name="rating" value="2" id="star2">
+                                    <label for="star2" class="star">★</label>
+                                    <input type="radio" name="rating" value="1" id="star1">
+                                    <label for="star1" class="star">★</label>
+                                </div>
+                                <small class="text-muted">Click to rate 1-5 stars</small>
+                            </div>
+                            
+                            <!-- Review Text -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Your Review (Optional)</label>
+                                <textarea name="review_text" class="form-control" rows="4" 
+                                          placeholder="Share your experience with {{ assignment.caretaker.get_full_name }}..."></textarea>
+                            </div>
+                            
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Note:</strong> Once terminated, this caregiver will be removed from your active list.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer bg-white">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'assignments:my_caregivers' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('End service with this caregiver?');">
+                                <i class="fas fa-user-slash me-1"></i> End Service & Submit Review
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .rating-stars {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+    
+    .rating-stars input {
+        display: none;
+    }
+    
+    .rating-stars .star {
+        font-size: 2rem;
+        color: #ddd;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .rating-stars .star:hover,
+    .rating-stars .star:hover ~ .star,
+    .rating-stars input:checked ~ .star {
+        color: #ffc107;
+    }
+    
+    .card {
+        border-radius: 15px;
+    }
+    
+    .alert-info {
+        background: #e3f2fd;
+        border: none;
+        border-radius: 12px;
+    }
+</style>
+{% endblock %}

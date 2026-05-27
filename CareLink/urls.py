@@ -16,6 +16,7 @@ urlpatterns = [
         "logout/", auth_views.LogoutView.as_view(next_page="users:index"), name="logout"
     ),
     path("assignments/", include("apps.assignments.urls")), 
+    path("chat/", include("apps.Chat.urls")),
 ]
 
 

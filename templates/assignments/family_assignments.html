@@ -1,9 +1,308 @@
 {% extends "users/family_base.html" %}
 
+{% load static %}
+
 {% block title %}My Caregivers - CareLink{% endblock %}
 
 {% block page_icon %}<i class="fas fa-hand-holding-heart"></i>{% endblock %}
 {% block page_title %}My Caregivers{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 16px;
+        text-align: center;
+        border: 1px solid #e2e8f0;
+        transition: transform 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(15, 52, 96, 0.1);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0f3460;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-top: 5px;
+    }
+
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        gap: 25px;
+    }
+
+    .caregiver-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s;
+    }
+
+    .caregiver-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(15, 52, 96, 0.1);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #0f3460 0%, #1e4a7a 100%);
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-badge.status-active {
+        background: #10b981;
+        color: white;
+    }
+
+    .status-badge.status-terminated {
+        background: #ef4444;
+        color: white;
+    }
+
+    .status-badge.status-completed {
+        background: #6b7280;
+        color: white;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    .info-value {
+        color: #0f3460;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    /* Attendance Details Section */
+    .attendance-details {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 15px;
+        margin: 15px 0;
+        border-left: 3px solid #0f3460;
+    }
+
+    .attendance-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #0f3460;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .attendance-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .attendance-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .attendance-label {
+        font-size: 0.7rem;
+        color: #64748b;
+    }
+
+    .attendance-value {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #0f3460;
+    }
+
+    .attendance-value.late {
+        color: #f59e0b;
+    }
+
+    .attendance-value.absent {
+        color: #ef4444;
+    }
+
+    .attendance-value.present {
+        color: #10b981;
+    }
+
+    .progress-bar-container {
+        background: #e2e8f0;
+        border-radius: 10px;
+        height: 6px;
+        margin: 10px 0;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        background: #10b981;
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.3s;
+    }
+
+    .badge-warning {
+        background: #fef3c7;
+        color: #92400e;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .badge-success {
+        background: #dcfce7;
+        color: #166534;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .card-actions {
+        padding: 15px 20px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-primary {
+        background: #0f3460;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #1e4a7a;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+
+    .btn-secondary:hover {
+        background: #cbd5e1;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        grid-column: 1 / -1;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: #0f3460;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #64748b;
+        margin-bottom: 25px;
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .cards-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .attendance-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="stats-grid">
@@ -12,7 +311,7 @@
         <div class="stat-label">Total Caregivers</div>
     </div>
     <div class="stat-card">
-        <div class="stat-number">{{ assignments|length }}</div>
+        <div class="stat-number">{{ active_assignments_count|default:assignments|length }}</div>
         <div class="stat-label">Active Caregivers</div>
     </div>
     <div class="stat-card">
@@ -29,73 +328,169 @@
     {% for assignment in assignments %}
     <div class="caregiver-card">
         <div class="card-header">
-            <h3>{{ assignment.caretaker.get_full_name }}</h3>
+            <h3>{{ assignment.caretaker.get_full_name|default:assignment.caretaker.username }}</h3>
             <span class="status-badge status-{{ assignment.status }}">
                 {{ assignment.get_status_display }}
             </span>
         </div>
         <div class="card-body">
+            <!-- Basic Info -->
             <div class="info-row">
                 <span class="info-label">Shift Type:</span>
                 <span class="info-value">{{ assignment.get_shift_type_display }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Started:</span>
-                <span class="info-value">{{ assignment.start_date|date:"d M Y" }}</span>
+                <span class="info-value">{{ assignment.assigned_date|date:"d M Y" }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Rate:</span>
                 <span class="info-value">
                     {% if assignment.monthly_salary %}
-                    ₹{{ assignment.monthly_salary }}/month
+                    ₹{{ assignment.monthly_salary|floatformat:2 }}/month
                     {% else %}
-                    ₹{{ assignment.hourly_rate }}/hour
+                    ₹{{ assignment.hourly_rate|floatformat:2 }}/hour
                     {% endif %}
                 </span>
             </div>
-            <div class="info-row">
-                <span class="info-label">Today's Status:</span>
-                <span class="info-value">
-                    {% if assignment.today_attendance %}
-                        {% if assignment.today_attendance.status == 'present' %}
-                            ✅ Checked In
-                        {% elif assignment.today_attendance.status == 'absent' %}
-                            ❌ Absent
-                        {% elif assignment.today_attendance.status == 'late' %}
-                            ⏰ Late
-                        {% else %}
-                            {{ assignment.today_attendance.get_status_display }}
-                        {% endif %}
-                    {% else %}
-                        ⏳ Not Marked
+
+            <!-- Today's Attendance Details -->
+            <div class="attendance-details">
+                <div class="attendance-title">
+                    <i class="fas fa-calendar-day"></i> Today's Attendance
+                    <span class="badge-{{ assignment.today_attendance.status|default:'warning' }}" style="margin-left: auto; font-size: 0.65rem;">
+                        {{ assignment.today_attendance.get_status_display|default:"Not Marked" }}
+                    </span>
+                </div>
+                
+                {% if assignment.today_attendance %}
+                    {% if assignment.today_attendance.status == 'present' %}
+                    <div class="attendance-grid">
+                        <div class="attendance-item">
+                            <span class="attendance-label"><i class="fas fa-sign-in-alt"></i> Check In:</span>
+                            <span class="attendance-value">
+                                {{ assignment.today_attendance.check_in_time|time:"g:i A"|default:"-" }}
+                            </span>
+                        </div>
+                        <div class="attendance-item">
+                            <span class="attendance-label"><i class="fas fa-sign-out-alt"></i> Check Out:</span>
+                            <span class="attendance-value">
+                                {% if assignment.today_attendance.check_out_time %}
+                                    {{ assignment.today_attendance.check_out_time|time:"g:i A" }}
+                                {% else %}
+                                    <span class="badge-warning">In Progress</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="attendance-item">
+                            <span class="attendance-label"><i class="fas fa-clock"></i> Hours Worked:</span>
+                            <span class="attendance-value present">
+                                {{ assignment.today_attendance.actual_hours_worked|default:"0" }} hrs
+                            </span>
+                        </div>
+                        <div class="attendance-item">
+                            <span class="attendance-label"><i class="fas fa-hourglass-half"></i> Status:</span>
+                            <span class="attendance-value">
+                                {% if assignment.today_attendance.check_out_time %}
+                                    ✅ Completed
+                                {% else %}
+                                    🔄 In Progress
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% if assignment.today_attendance.late_minutes > 0 %}
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: {{ assignment.today_attendance.late_minutes|default:0 }}%; background: #f59e0b;"></div>
+                    </div>
+                    <div class="attendance-item">
+                        <span class="attendance-label"><i class="fas fa-exclamation-triangle"></i> Late By:</span>
+                        <span class="attendance-value late">{{ assignment.today_attendance.late_minutes }} minutes</span>
+                    </div>
                     {% endif %}
-                </span>
+                    {% elif assignment.today_attendance.status == 'absent' %}
+                    <div class="attendance-item">
+                        <span class="attendance-label"><i class="fas fa-user-slash"></i> Reason:</span>
+                        <span class="attendance-value absent">{{ assignment.today_attendance.notes|default:"No reason provided" }}</span>
+                    </div>
+                    {% elif assignment.today_attendance.status == 'leave' %}
+                    <div class="attendance-item">
+                        <span class="attendance-label"><i class="fas fa-umbrella-beach"></i> Reason:</span>
+                        <span class="attendance-value">{{ assignment.today_attendance.notes|default:"Planned leave" }}</span>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="attendance-item">
+                        <span class="attendance-label"><i class="fas fa-clock"></i> Status:</span>
+                        <span class="attendance-value">⏳ Not marked yet</span>
+                    </div>
+                {% endif %}
             </div>
+
+            <!-- Weekly Summary -->
+            <div class="attendance-details" style="border-left-color: #10b981;">
+                <div class="attendance-title">
+                    <i class="fas fa-chart-line"></i> Weekly Summary
+                </div>
+                <div class="attendance-grid">
+                    <div class="attendance-item">
+                        <span class="attendance-label"><i class="fas fa-calendar-week"></i> This Week:</span>
+                        <span class="attendance-value">
+                            {% if assignment.weekly_summary %}
+                                {{ assignment.weekly_summary.present_days }}/{{ assignment.weekly_summary.total_days }} days present
+                            {% else %}
+                                No data
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="attendance-item">
+                        <span class="attendance-label"><i class="fas fa-chart-simple"></i> Attendance Rate:</span>
+                        <span class="attendance-value present">
+                            {% if assignment.weekly_summary and assignment.weekly_summary.total_days > 0 %}
+                                {{ assignment.weekly_summary.attendance_percentage|floatformat:0 }}%
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% if assignment.weekly_summary and assignment.weekly_summary.total_hours %}
+                <div class="progress-bar-container" style="margin-top: 10px;">
+                    <div class="progress-bar" style="width: {% widthratio assignment.weekly_summary.present_days assignment.weekly_summary.total_days 100 %}%;"></div>
+                </div>
+                <div class="attendance-item" style="margin-top: 8px;">
+                    <span class="attendance-label"><i class="fas fa-hourglass-half"></i> Total Hours:</span>
+                    <span class="attendance-value">{{ assignment.weekly_summary.total_hours|floatformat:1 }} hrs</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Tasks Summary -->
             <div class="info-row">
-                <span class="info-label">Pending Tasks:</span>
+                <span class="info-label"><i class="fas fa-tasks"></i> Pending Tasks:</span>
                 <span class="info-value">
                     {% if assignment.pending_tasks_count > 0 %}
-                    <span style="color: #ef4444;">{{ assignment.pending_tasks_count }}</span>
+                    <span class="badge-danger">{{ assignment.pending_tasks_count }}</span>
                     {% else %}
-                    ✅ All Complete
+                    <span class="badge-success">✅ All Complete</span>
                     {% endif %}
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-label">Unread Notes:</span>
+                <span class="info-label"><i class="fas fa-envelope"></i> Unread Messages:</span>
                 <span class="info-value">
                     {% if assignment.unread_notes_count > 0 %}
-                    <span style="color: #f59e0b;">{{ assignment.unread_notes_count }}</span>
+                    <span class="badge-warning">{{ assignment.unread_notes_count }} new</span>
                     {% else %}
-                    ✓ No new notes
+                    ✓ No new messages
                     {% endif %}
                 </span>
             </div>
             <div class="info-row">
-                <span class="info-label">Unread Reports:</span>
+                <span class="info-label"><i class="fas fa-file-alt"></i> Unread Reports:</span>
                 <span class="info-value">
                     {% if assignment.unread_reports_count > 0 %}
-                    <span style="color: #ef4444;">{{ assignment.unread_reports_count }}</span>
+                    <span class="badge-warning">{{ assignment.unread_reports_count }} new</span>
                     {% else %}
                     ✓ All read
                     {% endif %}
@@ -109,9 +504,7 @@
             <a href="{% url 'assignments:view_reports' assignment.id %}" class="btn btn-secondary">
                 <i class="fas fa-chart-line"></i> Reports
             </a>
-            <a href="{% url 'assignments:manage_salary' assignment.id %}" class="btn btn-secondary">
-                <i class="fas fa-rupee-sign"></i> Salary
-            </a>
+            {# Salary management — coming soon #}
         </div>
     </div>
     {% empty %}

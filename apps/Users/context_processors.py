@@ -62,14 +62,39 @@ def admin_context(request):
 
 
 def notification_count(request):
-    """Add notification count to context"""
+    """Add notification count and recent notifications to context"""
     if request.user.is_authenticated:
         try:
             unread_count = Notification.objects.filter(
                 recipient=request.user,
                 is_read=False
             ).count()
-            return {'unread_notifications_count': unread_count}
-        except:
-            return {'unread_notifications_count': 0}
-    return {'unread_notifications_count': 0}
+            # Fetch latest 10 notifications for the dropdown
+            notifications = Notification.objects.filter(
+                recipient=request.user
+            ).order_by('-created_at')[:10]
+            
+            # Debug logging
+            # print(f"DEBUG: Notification count for {request.user.username}: {unread_count}")
+            
+            return {
+                'unread_notifications_count': unread_count,
+                'notifications': notifications
+            }
+        except Exception as e:
+            return {'unread_notifications_count': 0, 'notifications': []}
+
+
+def base_template_context(request):
+    """Add base_template to all templates based on user role"""
+    if not request.user.is_authenticated:
+        return {"base_template": "base.html"}
+
+    if request.user.role == "caretaker":
+        return {"base_template": "users/nurse_base.html"}
+    elif request.user.role == "family":
+        return {"base_template": "users/family_base.html"}
+    elif request.user.is_staff or request.user.is_superuser:
+        return {"base_template": "admin/admin_base.html"}
+
+    return {"base_template": "base.html"}

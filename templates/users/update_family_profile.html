@@ -38,8 +38,9 @@
         font-size: 0.95rem;
     }
 
-    
-    .form-control, .form-select {
+
+    .form-control,
+    .form-select {
         width: 100%;
         padding: 12px 15px;
         border: 1.5px solid #e2e8f0;
@@ -50,7 +51,8 @@
         background: white;
     }
 
-    .form-control:focus, .form-select:focus {
+    .form-control:focus,
+    .form-select:focus {
         outline: none;
         border-color: #0f3460;
         box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
@@ -179,12 +181,12 @@
 
     <!-- Messages -->
     {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        {% endfor %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
     {% endif %}
 
     <form method="POST" enctype="multipart/form-data" id="profileForm">
@@ -199,11 +201,13 @@
             </div>
             <div class="col-md-6 mb-3">
                 <label class="form-label">Alternate Phone</label>
-                <input type="tel" class="form-control" name="alternate_phone" value="{{ profile.alternate_phone|default:'' }}">
+                <input type="tel" class="form-control" name="alternate_phone"
+                    value="{{ profile.alternate_phone|default:'' }}">
             </div>
             <div class="col-md-6 mb-3">
                 <label class="form-label">Emergency Contact</label>
-                <input type="tel" class="form-control" name="emergency_contact" value="{{ profile.emergency_contact|default:'' }}">
+                <input type="tel" class="form-control" name="emergency_contact"
+                    value="{{ profile.emergency_contact|default:'' }}">
                 <div class="help-text">In case of emergency</div>
             </div>
         </div>
@@ -238,8 +242,10 @@
             <div class="col-md-6 mb-3">
                 <label class="form-label">Residence Type</label>
                 <select class="form-select" name="residence_type">
-                    <option value="apartment" {% if profile.residence_type == 'apartment' %}selected{% endif %}>Apartment</option>
-                    <option value="independent" {% if profile.residence_type == 'independent' %}selected{% endif %}>Independent House</option>
+                    <option value="apartment" {% if profile.residence_type == 'apartment' %}selected{% endif %}>Apartment
+                    </option>
+                    <option value="independent" {% if profile.residence_type == 'independent' %}selected{% endif %}>
+                        Independent House</option>
                     <option value="villa" {% if profile.residence_type == 'villa' %}selected{% endif %}>Villa</option>
                     <option value="others" {% if profile.residence_type == 'others' %}selected{% endif %}>Others</option>
                 </select>
@@ -252,120 +258,37 @@
             <div class="col-md-6 mb-3">
                 <label class="form-label">Family Type</label>
                 <select class="form-select" name="family_type">
-                    <option value="nuclear" {% if profile.family_type == 'nuclear' %}selected{% endif %}>Nuclear Family</option>
+                    <option value="nuclear" {% if profile.family_type == 'nuclear' %}selected{% endif %}>Nuclear Family
+                    </option>
                     <option value="joint" {% if profile.family_type == 'joint' %}selected{% endif %}>Joint Family</option>
-                    <option value="single" {% if profile.family_type == 'single' %}selected{% endif %}>Single Parent</option>
-                    <option value="elderly" {% if profile.family_type == 'elderly' %}selected{% endif %}>Elderly Couple</option>
+                    <option value="single" {% if profile.family_type == 'single' %}selected{% endif %}>Single Parent
+                    </option>
+                    <option value="elderly" {% if profile.family_type == 'elderly' %}selected{% endif %}>Elderly Couple
+                    </option>
                 </select>
             </div>
             <div class="col-md-6 mb-3">
                 <label class="form-label">Family Size</label>
-                <input type="number" class="form-control" name="family_size" min="1" value="{{ profile.family_size|default:'1' }}">
+                <input type="number" class="form-control" name="family_size" min="1"
+                    value="{{ profile.family_size|default:'1' }}">
             </div>
         </div>
 
-        <!-- Patient Information -->
-        <h4 class="section-title"><i class="fas fa-user me-2"></i>Patient Information</h4>
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Patient Name</label>
-                <input type="text" class="form-control" name="patient_name" value="{{ profile.patient_name|default:'' }}">
-            </div>
-            <div class="col-md-3 mb-3">
-                <label class="form-label">Age</label>
-                <input type="number" class="form-control" name="patient_age" min="0" max="120" value="{{ profile.patient_age|default:'' }}">
-            </div>
-            <div class="col-md-3 mb-3">
-                <label class="form-label">Gender</label>
-                <select class="form-select" name="patient_gender">
-                    <option value="">Select</option>
-                    <option value="male" {% if profile.patient_gender == 'male' %}selected{% endif %}>Male</option>
-                    <option value="female" {% if profile.patient_gender == 'female' %}selected{% endif %}>Female</option>
-                    <option value="other" {% if profile.patient_gender == 'other' %}selected{% endif %}>Other</option>
-                </select>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Blood Group</label>
-                <select class="form-select" name="patient_blood_group">
-                    <option value="">Select</option>
-                    <option value="A+" {% if profile.patient_blood_group == 'A+' %}selected{% endif %}>A+</option>
-                    <option value="A-" {% if profile.patient_blood_group == 'A-' %}selected{% endif %}>A-</option>
-                    <option value="B+" {% if profile.patient_blood_group == 'B+' %}selected{% endif %}>B+</option>
-                    <option value="B-" {% if profile.patient_blood_group == 'B-' %}selected{% endif %}>B-</option>
-                    <option value="O+" {% if profile.patient_blood_group == 'O+' %}selected{% endif %}>O+</option>
-                    <option value="O-" {% if profile.patient_blood_group == 'O-' %}selected{% endif %}>O-</option>
-                    <option value="AB+" {% if profile.patient_blood_group == 'AB+' %}selected{% endif %}>AB+</option>
-                    <option value="AB-" {% if profile.patient_blood_group == 'AB-' %}selected{% endif %}>AB-</option>
-                    <option value="unknown" {% if profile.patient_blood_group == 'unknown' %}selected{% endif %}>Unknown</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Medical Information -->
-        <h4 class="section-title"><i class="fas fa-notes-medical me-2"></i>Medical Information</h4>
-        <div class="row">
-            <div class="col-12 mb-3">
-                <label class="form-label">Primary Medical Condition</label>
-                <input type="text" class="form-control" name="primary_medical_condition" value="{{ profile.primary_medical_condition|default:'' }}">
-                <div class="help-text">e.g., Diabetes, Paralysis, Alzheimer's, etc.</div>
-            </div>
-            <div class="col-12 mb-3">
-                <label class="form-label">Secondary Conditions</label>
-                <textarea class="form-control" name="secondary_conditions" rows="2">{{ profile.secondary_conditions|default:'' }}</textarea>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Allergies</label>
-                <input type="text" class="form-control" name="allergies" value="{{ profile.allergies|default:'' }}">
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Current Medications</label>
-                <input type="text" class="form-control" name="medications" value="{{ profile.medications|default:'' }}">
-            </div>
-            <div class="col-12 mb-3">
-                <label class="form-label">Dietary Restrictions</label>
-                <input type="text" class="form-control" name="dietary_restrictions" value="{{ profile.dietary_restrictions|default:'' }}">
-            </div>
-        </div>
-
-        <!-- Care Requirements -->
-        <h4 class="section-title"><i class="fas fa-heartbeat me-2"></i>Care Requirements</h4>
-        <div class="row">
-            <div class="col-12 mb-3">
-                <label class="form-label">Care Needed</label>
-                <textarea class="form-control" name="care_required" rows="3">{{ profile.care_required|default:'' }}</textarea>
-                <div class="help-text">Describe the type of care needed (bathing, feeding, medication reminders, etc.)</div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Care Frequency</label>
-                <select class="form-select" name="care_frequency">
-                    <option value="24x7" {% if profile.care_frequency == '24x7' %}selected{% endif %}>24/7 Care</option>
-                    <option value="daily" {% if profile.care_frequency == 'daily' %}selected{% endif %}>Daily</option>
-                    <option value="weekly" {% if profile.care_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
-                    <option value="occasional" {% if profile.care_frequency == 'occasional' %}selected{% endif %}>Occasional</option>
-                </select>
-            </div>
-        </div>
 
         <!-- Home Environment -->
         <h4 class="section-title"><i class="fas fa-home me-2"></i>Home Environment</h4>
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="pets_at_home" id="petsAtHome" {% if profile.pets_at_home %}checked{% endif %}>
-                    <label class="form-check-label" for="petsAtHome">Pets at Home</label>
-                </div>
+        <div class="d-flex flex-wrap gap-4 mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="pets_at_home" id="petsAtHome" {% if profile.pets_at_home %}checked{% endif %}>
+                <label class="form-check-label" for="petsAtHome">Pets at Home</label>
             </div>
-            <div class="col-md-4 mb-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="smokers_in_home" id="smokersInHome" {% if profile.smokers_in_home %}checked{% endif %}>
-                    <label class="form-check-label" for="smokersInHome">Smokers in Home</label>
-                </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="smokers_in_home" id="smokersInHome" {% if profile.smokers_in_home %}checked{% endif %}>
+                <label class="form-check-label" for="smokersInHome">Smokers in Home</label>
             </div>
-            <div class="col-md-4 mb-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="previous_caretaker" id="previousCaretaker" {% if profile.previous_caretaker %}checked{% endif %}>
-                    <label class="form-check-label" for="previousCaretaker">Previous Caretaker Experience</label>
-                </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="previous_caretaker" id="previousCaretaker" {% if profile.previous_caretaker %}checked{% endif %}>
+                <label class="form-check-label" for="previousCaretaker">Any Previous Caretaker Experience?</label>
             </div>
         </div>
 
@@ -373,19 +296,23 @@
         <div class="pet-details-section" id="petDetailsSection" {% if profile.pets_at_home %}style="display:block;"{% endif %}>
             <div class="mb-3">
                 <label class="form-label">Pet Details</label>
-                <input type="text" class="form-control" name="pet_details" value="{{ profile.pet_details|default:'' }}" placeholder="Type of pets, temperament, etc.">
+                <input type="text" class="form-control" name="pet_details" value="{{ profile.pet_details|default:'' }}"
+                    placeholder="Type of pets, temperament, etc.">
             </div>
         </div>
 
         <!-- Previous Caretaker Feedback (conditional) -->
         <div class="mb-3" id="previousCaretakerSection" {% if profile.previous_caretaker %}style="display:block;"{% else %}style="display:none;"{% endif %}>
             <label class="form-label">Previous Caretaker Feedback</label>
-            <textarea class="form-control" name="previous_caretaker_feedback" rows="2">{{ profile.previous_caretaker_feedback|default:'' }}</textarea>
+            <textarea class="form-control" name="previous_caretaker_feedback"
+                rows="2">{{ profile.previous_caretaker_feedback|default:'' }}</textarea>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Accessibility Requirements</label>
-            <input type="text" class="form-control" name="accessibility_requirements" value="{{ profile.accessibility_requirements|default:'' }}" placeholder="e.g., Wheelchair ramp, Ground floor needed">
+            <input type="text" class="form-control" name="accessibility_requirements"
+                value="{{ profile.accessibility_requirements|default:'' }}"
+                placeholder="e.g., Wheelchair ramp, Ground floor needed">
         </div>
 
         <!-- Preferences -->
@@ -394,18 +321,23 @@
             <div class="col-md-4 mb-3">
                 <label class="form-label">Preferred Caretaker Gender</label>
                 <select class="form-select" name="preferred_caretaker_gender">
-                    <option value="any" {% if profile.preferred_caretaker_gender == 'any' %}selected{% endif %}>Any</option>
-                    <option value="male" {% if profile.preferred_caretaker_gender == 'male' %}selected{% endif %}>Male</option>
-                    <option value="female" {% if profile.preferred_caretaker_gender == 'female' %}selected{% endif %}>Female</option>
+                    <option value="any" {% if profile.preferred_caretaker_gender == 'any' %}selected{% endif %}>Any
+                    </option>
+                    <option value="male" {% if profile.preferred_caretaker_gender == 'male' %}selected{% endif %}>Male
+                    </option>
+                    <option value="female" {% if profile.preferred_caretaker_gender == 'female' %}selected{% endif %}>
+                        Female</option>
                 </select>
             </div>
             <div class="col-md-4 mb-3">
                 <label class="form-label">Preferred Language</label>
-                <input type="text" class="form-control" name="preferred_language" value="{{ profile.preferred_language|default:'' }}" placeholder="e.g., Hindi, English, Tamil">
+                <input type="text" class="form-control" name="preferred_language"
+                    value="{{ profile.preferred_language|default:'' }}" placeholder="e.g., Hindi, English, Tamil">
             </div>
             <div class="col-md-4 mb-3">
                 <label class="form-label">Monthly Budget (₹)</label>
-                <input type="number" class="form-control" name="monthly_budget" value="{{ profile.monthly_budget|default:'' }}" step="1000" placeholder="Optional">
+                <input type="number" class="form-control" name="monthly_budget"
+                    value="{{ profile.monthly_budget|default:'' }}" step="1000" placeholder="Optional">
             </div>
         </div>
 
@@ -417,9 +349,9 @@
                 <input type="file" class="form-control" name="identity_proof" accept=".pdf,.jpg,.jpeg,.png">
                 <div class="file-upload-info">Upload Aadhar Card, Passport, or Driver's License</div>
                 {% if profile.identity_proof %}
-                    <div class="current-file">
-                        Current: <a href="{{ profile.identity_proof.url }}" target="_blank">View File</a>
-                    </div>
+                <div class="current-file">
+                    Current: <a href="{{ profile.identity_proof.url }}" target="_blank">View File</a>
+                </div>
                 {% endif %}
             </div>
             <div class="col-md-4 mb-3">
@@ -427,9 +359,9 @@
                 <input type="file" class="form-control" name="address_proof" accept=".pdf,.jpg,.jpeg,.png">
                 <div class="file-upload-info">Upload utility bill or rental agreement (optional)</div>
                 {% if profile.address_proof %}
-                    <div class="current-file">
-                        Current: <a href="{{ profile.address_proof.url }}" target="_blank">View File</a>
-                    </div>
+                <div class="current-file">
+                    Current: <a href="{{ profile.address_proof.url }}" target="_blank">View File</a>
+                </div>
                 {% endif %}
             </div>
             <div class="col-md-4 mb-3">
@@ -437,9 +369,9 @@
                 <input type="file" class="form-control" name="medical_reports" accept=".pdf">
                 <div class="file-upload-info">Upload patient's medical reports (optional)</div>
                 {% if profile.medical_reports %}
-                    <div class="current-file">
-                        Current: <a href="{{ profile.medical_reports.url }}" target="_blank">View File</a>
-                    </div>
+                <div class="current-file">
+                    Current: <a href="{{ profile.medical_reports.url }}" target="_blank">View File</a>
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -458,21 +390,21 @@
 
 <script>
     // Show/hide pet details section
-    document.getElementById('petsAtHome').addEventListener('change', function() {
+    document.getElementById('petsAtHome').addEventListener('change', function () {
         const petDetails = document.getElementById('petDetailsSection');
         petDetails.style.display = this.checked ? 'block' : 'none';
     });
-    
+
     // Show/hide previous caretaker feedback
-    document.getElementById('previousCaretaker').addEventListener('change', function() {
+    document.getElementById('previousCaretaker').addEventListener('change', function () {
         const prevCaretakerSection = document.getElementById('previousCaretakerSection');
         prevCaretakerSection.style.display = this.checked ? 'block' : 'none';
     });
-    
+
     // Auto-hide alerts after 5 seconds
-    setTimeout(function() {
+    setTimeout(function () {
         let alerts = document.querySelectorAll('.alert');
-        alerts.forEach(function(alert) {
+        alerts.forEach(function (alert) {
             alert.style.transition = 'opacity 0.5s';
             alert.style.opacity = '0';
             setTimeout(() => alert.style.display = 'none', 500);

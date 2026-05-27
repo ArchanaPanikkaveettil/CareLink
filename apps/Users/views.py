@@ -102,6 +102,8 @@ def caretaker_register(request):
             gender = request.POST.get("gender")
             certificate = request.FILES.get("certificate")
             identity_proof = request.FILES.get("identity_proof")
+            resume = request.FILES.get("resume")
+            background_check = request.FILES.get("background_check")
             qualification = request.POST.get("qualification")
             experience_years = request.POST.get("experience_years")
             address = request.POST.get("address")
@@ -165,6 +167,8 @@ def caretaker_register(request):
                 qualification=qualification,
                 certificate=certificate,
                 identity_proof=identity_proof,
+                resume=resume,
+                background_check=background_check,
                 address=address,
                 city=city,
                 state=state,
@@ -243,10 +247,6 @@ def family_register(request):
                 user=user,
                 phone=phone,
                 address="",
-                patient_name="",
-                patient_age=None,
-                primary_medical_condition="",
-                care_required="",
             )
 
             messages.success(request, "Registration successful! You can now login.")
@@ -266,10 +266,19 @@ def custom_login(request):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
+        remember_me = request.POST.get("remember")
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
+
+            # Set session expiration based on remember me
+            if remember_me:
+                # Session expires after 30 days (in seconds)
+                request.session.set_expiry(30 * 24 * 60 * 60)
+            else:
+                # Session expires when browser closes
+                request.session.set_expiry(0)
 
             if user.is_superuser or user.is_staff:
                 return redirect("users:admin_dashboard")
@@ -318,6 +327,16 @@ def admin_dashboard(request):
         user__verification_status="pending"
     ).select_related("user")[:10]
 
+    # Get notifications for admin
+    from apps.Notifications.models import Notification
+
+    notifications = Notification.objects.filter(recipient=request.user).order_by(
+        "-created_at"
+    )[:10]
+    unread_notifications_count = Notification.objects.filter(
+        recipient=request.user, is_read=False
+    ).count()
+
     context = {
         "total_users": total_users,
         "total_caretakers": total_caretakers,
@@ -326,6 +345,8 @@ def admin_dashboard(request):
         "pending_verifications_count": pending_verifications,
         "recent_users": recent_users,
         "pending_caretakers": pending_caretakers,
+        "notifications": notifications,
+        "unread_notifications_count": unread_notifications_count,
     }
     return render(request, "admin/admin_dashboard.html", context)
 
@@ -1590,12 +1611,16 @@ def caretaker_profile(request):
 
     availability = profile.availability_schedule.all().order_by("day_of_week")
 
+    # Get reviews for this caretaker
+    reviews = profile.reviews.all().order_by("-created_at")
+
     context = {
         "profile": profile,
         "user": request.user,
         "availability": availability,
         "skills_list": skills_list,
         "languages_list": languages_list,
+        "reviews": reviews,
     }
     return render(request, "users/caretaker_profile.html", context)
 
@@ -1678,83 +1703,13 @@ def update_caretaker_profile(request):
             profile.save()
             request.user.save()
 
-            # Availability Schedule
-            profile.availability_schedule.all().delete()
-            days = [
-                "monday",
-                "tuesday",
-                "wednesday",
-                "thursday",
-                "friday",
-                "saturday",
-                "sunday",
-            ]
-            day_map = {
-                "monday": 0,
-                "tuesday": 1,
-                "wednesday": 2,
-                "thursday": 3,
-                "friday": 4,
-                "saturday": 5,
-                "sunday": 6,
-            }
-
-            for day in days:
-                if request.POST.get(f"{day}_available") == "on":
-                    start_time = request.POST.get(f"{day}_start")
-                    end_time = request.POST.get(f"{day}_end")
-                    if start_time and end_time:
-                        CaretakerAvailability.objects.create(
-                            caretaker=profile,
-                            day_of_week=day_map[day],
-                            start_time=start_time,
-                            end_time=end_time,
-                            is_available=True,
-                        )
-
             messages.success(request, "Profile updated successfully!")
-            return redirect("caretaker_profile")
+            return redirect("users:caretaker_profile")
 
         except Exception as e:
             messages.error(request, f"Error updating profile: {str(e)}")
 
-    availability_dict = {}
-    for avail in profile.availability_schedule.all():
-        days = [
-            "monday",
-            "tuesday",
-            "wednesday",
-            "thursday",
-            "friday",
-            "saturday",
-            "sunday",
-        ]
-        day_name = days[avail.day_of_week]
-        availability_dict[day_name] = {
-            "available": True,
-            "start": avail.start_time.strftime("%H:%M") if avail.start_time else "",
-            "end": avail.end_time.strftime("%H:%M") if avail.end_time else "",
-        }
-
     context = {"profile": profile}
-    days = [
-        "monday",
-        "tuesday",
-        "wednesday",
-        "thursday",
-        "friday",
-        "saturday",
-        "sunday",
-    ]
-    for day in days:
-        if day in availability_dict:
-            context[f"{day}_available"] = True
-            context[f"{day}_start"] = availability_dict[day]["start"]
-            context[f"{day}_end"] = availability_dict[day]["end"]
-        else:
-            context[f"{day}_available"] = False
-            context[f"{day}_start"] = ""
-            context[f"{day}_end"] = ""
 
     return render(request, "users/update_caretaker_profile.html", context)
 
@@ -1808,14 +1763,33 @@ def caretaker_detail(request, id):
         caretaker = User.objects.get(id=id, role="caretaker")
     except User.DoesNotExist:
         messages.error(request, f"Caretaker with ID {id} not found.")
-        return redirect("search_caretakers")
+        return redirect("users:search_caretakers")
 
     try:
         profile = CaretakerProfile.objects.get(user=caretaker)
     except CaretakerProfile.DoesNotExist:
         profile = None
 
-    context = {"caretaker": caretaker, "profile": profile}
+    # Get reviews for this caregiver
+    from apps.assignments.models import CaregiverReview
+
+    reviews = CaregiverReview.objects.filter(caregiver=caretaker).select_related(
+        "family"
+    )
+
+    # Calculate average rating
+    if reviews.exists():
+        total_rating = sum(review.rating for review in reviews)
+        average_rating = total_rating / reviews.count()
+    else:
+        average_rating = 0
+
+    context = {
+        "caretaker": caretaker,
+        "profile": profile,
+        "reviews": reviews,
+        "average_rating": average_rating,
+    }
     return render(request, "users/caretaker_detail.html", context)
 
 
@@ -1908,25 +1882,8 @@ def update_family_profile(request):
             if request.POST.get("family_size"):
                 profile.family_size = int(request.POST.get("family_size"))
 
-            # Patient
-            profile.patient_name = request.POST.get("patient_name", "")
-            if request.POST.get("patient_age"):
-                profile.patient_age = int(request.POST.get("patient_age"))
-            profile.patient_gender = request.POST.get("patient_gender", "")
-            profile.patient_blood_group = request.POST.get("patient_blood_group", "")
-
-            # Medical
-            profile.primary_medical_condition = request.POST.get(
-                "primary_medical_condition", ""
-            )
-            profile.secondary_conditions = request.POST.get("secondary_conditions", "")
-            profile.allergies = request.POST.get("allergies", "")
-            profile.medications = request.POST.get("medications", "")
-            profile.dietary_restrictions = request.POST.get("dietary_restrictions", "")
-
-            # Care
-            profile.care_required = request.POST.get("care_required", "")
-            profile.care_frequency = request.POST.get("care_frequency", "daily")
+            # Note: Patient information is now handled through ElderProfile model
+            # These fields have been removed from FamilyProfile
 
             # Home
             profile.pets_at_home = request.POST.get("pets_at_home") == "on"
@@ -2195,7 +2152,7 @@ def elder_delete(request, elder_id):
                 )
 
         messages.success(request, f"Elder profile for {name} deleted successfully!")
-        return redirect("elder_list")
+        return redirect("users:elder_list")
 
     context = {"elder": elder}
     return render(request, "users/elder_confirm_delete.html", context)

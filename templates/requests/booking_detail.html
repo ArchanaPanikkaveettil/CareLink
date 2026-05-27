@@ -1,5 +1,5 @@
 <!-- templates/requests/booking_detail.html -->
-{% extends 'users/family_base.html' %}
+{% extends base_template|default:'users/family_base.html' %}
 
 {% load static %}
 
@@ -206,7 +206,7 @@
             {% if booking.get_total_amount %}
             <div class="info-row">
                 <span class="info-label">Total Amount:</span>
-                <span class="info-value">${{ booking.get_total_amount|floatformat:2 }}</span>
+                <span class="info-value">₹{{ booking.get_total_amount|floatformat:2 }}</span>
             </div>
             {% endif %}
         </div>
@@ -215,7 +215,7 @@
             <h3><i class="fas fa-info-circle"></i> Care Details</h3>
             <div class="info-row">
                 <span class="info-label">Care Request:</span>
-                <span class="info-value">{{ booking.care_request.title|default:booking.care_request.patient_name }}</span>
+                <span class="info-value">{{ booking.care_request.title|default:booking.care_request.display_patient_name }}</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Care Type:</span>
@@ -251,6 +251,57 @@
         </div>
         {% endif %}
         
+        {% if booking.confirmation_message %}
+        <div class="info-section">
+            <h3><i class="fas fa-check-circle" style="color: #10b981;"></i> Confirmation Message</h3>
+            <div class="message-box" style="background: #ecfdf5; border-left-color: #10b981;">
+                {{ booking.confirmation_message }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if booking.cancellation_reason %}
+        <div class="info-section">
+            <h3><i class="fas fa-times-circle" style="color: #ef4444;"></i> Cancellation Reason</h3>
+            <div class="message-box" style="background: #fef2f2; border-left-color: #ef4444;">
+                {{ booking.cancellation_reason }}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if booking.start_notes %}
+        <div class="info-section">
+            <h3><i class="fas fa-play-circle" style="color: #667eea;"></i> Start Session Notes</h3>
+            <div class="message-box" style="background: #eef2ff; border-left-color: #667eea;">
+                {{ booking.start_notes }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if booking.completion_notes %}
+        <div class="info-section">
+            <h3><i class="fas fa-check-double" style="color: #10b981;"></i> Completion Notes</h3>
+            <div class="message-box" style="background: #ecfdf5; border-left-color: #10b981;">
+                {{ booking.completion_notes }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if booking.review %}
+        <div class="info-section">
+            <h3><i class="fas fa-star" style="color: #f59e0b;"></i> Family Review</h3>
+            <div class="message-box" style="background: #fffbeb; border-left-color: #f59e0b;">
+                <div style="color: #f59e0b; font-weight: bold; margin-bottom: 5px;">
+                    {% for i in "12345"|make_list %}
+                        <i class="{% if forloop.counter <= booking.review.rating %}fas{% else %}far{% endif %} fa-star"></i>
+                    {% endfor %}
+                    ({{ booking.review.rating }}/5)
+                </div>
+                {{ booking.review.comment|default:"No comment provided." }}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="info-section">
             <h3><i class="fas fa-history"></i> Timeline</h3>
             <div class="timeline">
@@ -288,38 +339,61 @@
         <h3><i class="fas fa-cog"></i> Actions</h3>
         <div class="btn-group">
             {% if is_caretaker and booking.status == 'pending' %}
-                <form method="post" action="{% url 'requests:confirm_booking' booking_id=booking.id %}">
+                <form method="post" action="{% url 'requests:confirm_booking' booking_id=booking.id %}" id="confirmForm">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-success" style="width: 100%;">
+                    <div id="confirmMessageDiv" style="display: none; margin-bottom: 10px;">
+                        <textarea name="confirmation_message" class="form-control" rows="3" placeholder="Add a confirmation message (optional)..." style="width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px;"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-success" style="width: 100%;" id="confirmBtn" onclick="toggleConfirmMessage()">
                         <i class="fas fa-check-circle"></i> Confirm Booking
+                    </button>
+                    <button type="submit" class="btn btn-success" style="width: 100%; display: none;" id="submitConfirmBtn">
+                        <i class="fas fa-check"></i> Submit Confirmation
                     </button>
                 </form>
             {% endif %}
             
             {% if booking.status == 'confirmed' and is_caretaker %}
-                <form method="post" action="{% url 'requests:start_booking' booking_id=booking.id %}">
+                <form method="post" action="{% url 'requests:start_booking' booking_id=booking.id %}" id="startForm">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <div id="startNotesDiv" style="display: none; margin-bottom: 10px;">
+                        <textarea name="start_notes" class="form-control" rows="3" placeholder="Add session start notes (optional)..." style="width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px;"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-primary" style="width: 100%;" id="startBtn" onclick="toggleStartNotes()">
                         <i class="fas fa-play"></i> Start Session
+                    </button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; display: none;" id="submitStartBtn">
+                        <i class="fas fa-check"></i> Begin Session
                     </button>
                 </form>
             {% endif %}
             
             {% if booking.status == 'in_progress' and is_caretaker %}
-                <form method="post" action="{% url 'requests:complete_booking' booking_id=booking.id %}">
+                <form method="post" action="{% url 'requests:complete_booking' booking_id=booking.id %}" id="completeForm">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-success" style="width: 100%;">
+                    <div id="completeNotesDiv" style="display: none; margin-bottom: 10px;">
+                        <textarea name="completion_notes" class="form-control" rows="3" placeholder="Add completion notes / final report..." style="width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px;"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-success" style="width: 100%;" id="completeBtn" onclick="toggleCompleteNotes()">
                         <i class="fas fa-check-double"></i> Complete Session
+                    </button>
+                    <button type="submit" class="btn btn-success" style="width: 100%; display: none;" id="submitCompleteBtn">
+                        <i class="fas fa-check"></i> Submit & Finish
                     </button>
                 </form>
             {% endif %}
             
             {% if booking.status not in 'completed,cancelled' %}
-                <form method="post" action="{% url 'requests:cancel_booking' booking_id=booking.id %}">
+                <form method="post" action="{% url 'requests:cancel_booking' booking_id=booking.id %}" id="cancelForm">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger" style="width: 100%;" 
-                            onclick="return confirm('Are you sure you want to cancel this booking?')">
+                    <div id="cancelReasonDiv" style="display: none; margin-bottom: 10px;">
+                        <textarea name="cancellation_reason" class="form-control" rows="3" placeholder="Please provide a reason for cancellation..." style="width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px;" required></textarea>
+                    </div>
+                    <button type="button" class="btn btn-danger" style="width: 100%;" id="cancelBtn" onclick="toggleCancelReason()">
                         <i class="fas fa-times-circle"></i> Cancel Booking
+                    </button>
+                    <button type="submit" class="btn btn-danger" style="width: 100%; display: none;" id="confirmCancelBtn">
+                        <i class="fas fa-check"></i> Submit Cancellation
                     </button>
                 </form>
             {% endif %}
@@ -334,10 +408,28 @@
                 <i class="fas fa-arrow-left"></i> Back to Bookings
             </a>
             
-            {% if is_family and booking.status == 'completed' %}
-                <a href="#" class="btn btn-outline">
-                    <i class="fas fa-star"></i> Leave a Review
-                </a>
+            {% if is_family and not booking.review and booking.status in 'confirmed,in_progress,completed' %}
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;">
+                <div id="reviewSection">
+                    <h4 style="margin-bottom: 15px; color: #0f3460; font-size: 1rem;">
+                        <i class="fas fa-star"></i> Rate this Care Session
+                    </h4>
+                    <form method="post" action="{% url 'requests:submit_review' booking_id=booking.id %}">
+                        {% csrf_token %}
+                        <div class="rating-input" style="display: flex; justify-content: space-between; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 8px;">
+                            {% for i in "54321"|make_list %}
+                            <label style="cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                                <input type="radio" name="rating" value="{{ i }}" {% if i == "5" %}required{% endif %}>
+                                <span style="font-size: 0.8rem; font-weight: 600; color: #f59e0b;">{{ i }} ★</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <textarea name="comment" class="form-control" rows="3" placeholder="Share your feedback with the caretaker..." style="width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px; margin-bottom: 10px; font-size: 0.9rem;"></textarea>
+                        <button type="submit" class="btn btn-success" style="width: 100%;">
+                            <i class="fas fa-check-circle"></i> {% if booking.status != 'completed' %}Complete & {% endif %}Submit Review
+                        </button>
+                    </form>
+                </div>
             {% endif %}
         </div>
         
@@ -350,4 +442,30 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+    function toggleCancelReason() {
+        document.getElementById('cancelReasonDiv').style.display = 'block';
+        document.getElementById('cancelBtn').style.display = 'none';
+        document.getElementById('confirmCancelBtn').style.display = 'inline-block';
+    }
+    
+    function toggleConfirmMessage() {
+        document.getElementById('confirmMessageDiv').style.display = 'block';
+        document.getElementById('confirmBtn').style.display = 'none';
+        document.getElementById('submitConfirmBtn').style.display = 'inline-block';
+    }
+
+    function toggleStartNotes() {
+        document.getElementById('startNotesDiv').style.display = 'block';
+        document.getElementById('startBtn').style.display = 'none';
+        document.getElementById('submitStartBtn').style.display = 'inline-block';
+    }
+
+    function toggleCompleteNotes() {
+        document.getElementById('completeNotesDiv').style.display = 'block';
+        document.getElementById('completeBtn').style.display = 'none';
+        document.getElementById('submitCompleteBtn').style.display = 'inline-block';
+    }
+</script>
 {% endblock %}

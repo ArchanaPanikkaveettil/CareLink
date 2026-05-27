@@ -1,5 +1,5 @@
 <!-- templates/requests/my_bookings.html -->
-{% extends 'users/family_base.html' %}
+{% extends base_template|default:'users/family_base.html' %}
 
 {% load static %}
 
@@ -290,7 +290,7 @@
                     {{ booking.family.get_full_name }}
                 {% endif %}
             </h4>
-            <p>{{ booking.care_request.patient_name }} - {{ booking.care_request.get_care_type_display }}</p>
+            <p>{{ booking.care_request.display_patient_name }} - {{ booking.care_request.get_care_type_display }}</p>
             <div class="booking-time">
                 <span><i class="far fa-clock"></i> {{ booking.start_time|time:"h:i A" }} - {{ booking.end_time|time:"h:i A" }}</span>
                 <span><i class="fas fa-hourglass-half"></i> {{ booking.duration_hours }} hours</span>

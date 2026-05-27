@@ -427,6 +427,32 @@ class CareRequest(models.Model):
             request=self, status="shortlisted"
         ).exists()
 
+    @property
+    def display_patient_name(self):
+        """Return a single patient name if multiple are present (e.g. Ramesh & Savitri Sharma -> Ramesh Sharma)"""
+        name = self.elder_profile.name if (self.elder_profile and self.elder_profile.name) else self.patient_name
+        if not name:
+            return ""
+            
+        if " & " in name:
+            parts = name.split(" & ")
+            first_person = parts[0].strip()
+            last_person = parts[-1].strip()
+            # Handle case like "Ramesh & Savitri Sharma" -> "Ramesh Sharma"
+            if " " not in first_person and " " in last_person:
+                last_name = last_person.split(" ")[-1]
+                return f"{first_person} {last_name}"
+            return first_person
+        elif " and " in name:
+            parts = name.split(" and ")
+            first_person = parts[0].strip()
+            last_person = parts[-1].strip()
+            if " " not in first_person and " " in last_person:
+                last_name = last_person.split(" ")[-1]
+                return f"{first_person} {last_name}"
+            return first_person
+        return name
+
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Care Request"
@@ -574,6 +600,10 @@ class CareBooking(models.Model):
     # Notes
     family_notes = models.TextField(blank=True)
     caretaker_notes = models.TextField(blank=True)
+    cancellation_reason = models.TextField(blank=True)
+    confirmation_message = models.TextField(blank=True)
+    start_notes = models.TextField(blank=True)
+    completion_notes = models.TextField(blank=True)
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

@@ -258,6 +258,24 @@
                     <option value="contract" {% if profile.employment_type == 'contract' %}selected{% endif %}>Contract</option>
                 </select>
             </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Availability Status</label>
+                <select class="form-select" name="availability_status">
+                    <option value="available" {% if profile.availability_status == 'available' %}selected{% endif %}>Available</option>
+                    <option value="busy" {% if profile.availability_status == 'busy' %}selected{% endif %}>Busy</option>
+                    <option value="fully_booked" {% if profile.availability_status == 'fully_booked' %}selected{% endif %}>Fully Booked</option>
+                    <option value="offline" {% if profile.availability_status == 'offline' %}selected{% endif %}>Offline</option>
+                    <option value="on_leave" {% if profile.availability_status == 'on_leave' %}selected{% endif %}>On Leave</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Preferred Shift</label>
+                <select class="form-select" name="preferred_shift">
+                    <option value="day" {% if profile.preferred_shift == 'day' %}selected{% endif %}>Day Shift</option>
+                    <option value="night" {% if profile.preferred_shift == 'night' %}selected{% endif %}>Night Shift</option>
+                    <option value="flexible" {% if profile.preferred_shift == 'flexible' %}selected{% endif %}>Flexible</option>
+                </select>
+            </div>
         </div>
 
         <div class="row">
@@ -344,182 +362,6 @@
             </div>
         </div>
 
-        <!-- Availability -->
-        <h4 class="section-title">
-            <i class="fas fa-calendar-alt"></i> Availability
-        </h4>
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label class="form-label">Availability Status</label>
-                <select class="form-select" name="availability_status">
-                    <option value="available" {% if profile.availability_status == 'available' %}selected{% endif %}>Available</option>
-                    <option value="busy" {% if profile.availability_status == 'busy' %}selected{% endif %}>Busy</option>
-                    <option value="fully_booked" {% if profile.availability_status == 'fully_booked' %}selected{% endif %}>Fully Booked</option>
-                    <option value="offline" {% if profile.availability_status == 'offline' %}selected{% endif %}>Offline</option>
-                    <option value="on_leave" {% if profile.availability_status == 'on_leave' %}selected{% endif %}>On Leave</option>
-                </select>
-            </div>
-            <div class="col-md-4 mb-3">
-                <label class="form-label">Preferred Shift</label>
-                <select class="form-select" name="preferred_shift">
-                    <option value="day" {% if profile.preferred_shift == 'day' %}selected{% endif %}>Day Shift</option>
-                    <option value="night" {% if profile.preferred_shift == 'night' %}selected{% endif %}>Night Shift</option>
-                    <option value="flexible" {% if profile.preferred_shift == 'flexible' %}selected{% endif %}>Flexible</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Weekly Availability Schedule -->
-        <h4 class="section-title">
-            <i class="fas fa-clock"></i> Weekly Schedule
-        </h4>
-        
-        <!-- Monday -->
-        <div class="availability-row">
-            <div class="row align-items-center">
-                <div class="col-md-2">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="monday_available" id="monday_available" 
-                               {% if monday_available %}checked{% endif %}>
-                        <label class="form-check-label" for="monday_available">Monday</label>
-                    </div>
-                </div>
-                <div class="col-md-5">
-                    <label>Start Time</label>
-                    <input type="time" class="form-control time-input" name="monday_start" value="{{ monday_start }}">
-                </div>
-                <div class="col-md-5">
-                    <label>End Time</label>
-                    <input type="time" class="form-control time-input" name="monday_end" value="{{ monday_end }}">
-                </div>
-            </div>
-        </div>
-
-        <!-- Tuesday -->
-        <div class="availability-row">
-            <div class="row align-items-center">
-                <div class="col-md-2">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="tuesday_available" id="tuesday_available" 
-                               {% if tuesday_available %}checked{% endif %}>
-                        <label class="form-check-label" for="tuesday_available">Tuesday</label>
-                    </div>
-                </div>
-                <div class="col-md-5">
-                    <label>Start Time</label>
-                    <input type="time" class="form-control time-input" name="tuesday_start" value="{{ tuesday_start }}">
-                </div>
-                <div class="col-md-5">
-                    <label>End Time</label>
-                    <input type="time" class="form-control time-input" name="tuesday_end" value="{{ tuesday_end }}">
-                </div>
-            </div>
-        </div>
-
-        <!-- Wednesday -->
-        <div class="availability-row">
-            <div class="row align-items-center">
-                <div class="col-md-2">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="wednesday_available" id="wednesday_available" 
-                               {% if wednesday_available %}checked{% endif %}>
-                        <label class="form-check-label" for="wednesday_available">Wednesday</label>
-                    </div>
-                </div>
-                <div class="col-md-5">
-                    <label>Start Time</label>
-                    <input type="time" class="form-control time-input" name="wednesday_start" value="{{ wednesday_start }}">
-                </div>
-                <div class="col-md-5">
-                    <label>End Time</label>
-                    <input type="time" class="form-control time-input" name="wednesday_end" value="{{ wednesday_end }}">
-                </div>
-            </div>
-        </div>
-
-        <!-- Thursday -->
-        <div class="availability-row">
-            <div class="row align-items-center">
-                <div class="col-md-2">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="thursday_available" id="thursday_available" 
-                               {% if thursday_available %}checked{% endif %}>
-                        <label class="form-check-label" for="thursday_available">Thursday</label>
-                    </div>
-                </div>
-                <div class="col-md-5">
-                    <label>Start Time</label>
-                    <input type="time" class="form-control time-input" name="thursday_start" value="{{ thursday_start }}">
-                </div>
-                <div class="col-md-5">
-                    <label>End Time</label>
-                    <input type="time" class="form-control time-input" name="thursday_end" value="{{ thursday_end }}">
-                </div>
-            </div>
-        </div>
-
-        <!-- Friday -->
-        <div class="availability-row">
-            <div class="row align-items-center">
-                <div class="col-md-2">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="friday_available" id="friday_available" 
-                               {% if friday_available %}checked{% endif %}>
-                        <label class="form-check-label" for="friday_available">Friday</label>
-                    </div>
-                </div>
-                <div class="col-md-5">
-                    <label>Start Time</label>
-                    <input type="time" class="form-control time-input" name="friday_start" value="{{ friday_start }}">
-                </div>
-                <div class="col-md-5">
-                    <label>End Time</label>
-                    <input type="time" class="form-control time-input" name="friday_end" value="{{ friday_end }}">
-                </div>
-            </div>
-        </div>
-
-        <!-- Saturday -->
-        <div class="availability-row">
-            <div class="row align-items-center">
-                <div class="col-md-2">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="saturday_available" id="saturday_available" 
-                               {% if saturday_available %}checked{% endif %}>
-                        <label class="form-check-label" for="saturday_available">Saturday</label>
-                    </div>
-                </div>
-                <div class="col-md-5">
-                    <label>Start Time</label>
-                    <input type="time" class="form-control time-input" name="saturday_start" value="{{ saturday_start }}">
-                </div>
-                <div class="col-md-5">
-                    <label>End Time</label>
-                    <input type="time" class="form-control time-input" name="saturday_end" value="{{ saturday_end }}">
-                </div>
-            </div>
-        </div>
-
-        <!-- Sunday -->
-        <div class="availability-row">
-            <div class="row align-items-center">
-                <div class="col-md-2">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="sunday_available" id="sunday_available" 
-                               {% if sunday_available %}checked{% endif %}>
-                        <label class="form-check-label" for="sunday_available">Sunday</label>
-                    </div>
-                </div>
-                <div class="col-md-5">
-                    <label>Start Time</label>
-                    <input type="time" class="form-control time-input" name="sunday_start" value="{{ sunday_start }}">
-                </div>
-                <div class="col-md-5">
-                    <label>End Time</label>
-                    <input type="time" class="form-control time-input" name="sunday_end" value="{{ sunday_end }}">
-                </div>
-            </div>
-        </div>
 
         <!-- Documents -->
         <h4 class="section-title">
@@ -573,7 +415,7 @@
 
         <!-- Form Actions -->
         <div class="text-center mt-4" style="display: flex; gap: 15px; justify-content: center;">
-            <a href="{% url 'caretaker_profile' %}" class="btn-cancel">
+            <a href="{% url 'users:caretaker_profile' %}" class="btn-cancel">
                 <i class="fas fa-times"></i> Cancel
             </a>
             <button type="submit" class="btn-save">
@@ -583,26 +425,4 @@
     </form>
 </div>
 
-<script>
-    // Enable/disable time inputs based on checkbox
-    document.querySelectorAll('input[type="checkbox"][id$="_available"]').forEach(checkbox => {
-        const day = checkbox.id.replace('_available', '');
-        const startInput = document.querySelector(`input[name="${day}_start"]`);
-        const endInput = document.querySelector(`input[name="${day}_end"]`);
-        
-        if (startInput && endInput) {
-            function toggleTimeInputs() {
-                startInput.disabled = !checkbox.checked;
-                endInput.disabled = !checkbox.checked;
-                if (!checkbox.checked) {
-                    startInput.value = '';
-                    endInput.value = '';
-                }
-            }
-            
-            checkbox.addEventListener('change', toggleTimeInputs);
-            toggleTimeInputs(); // Initial state
-        }
-    });
-</script>
 {% endblock %}

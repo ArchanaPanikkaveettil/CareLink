@@ -791,5 +791,66 @@
             setTimeout(() => alert.style.display = 'none', 500);
         });
     }, 5000);
+
+    // Auto-calculate hours per day based on shift timing
+    document.querySelector('input[name="shift_timing"]').addEventListener('input', function(e) {
+        const text = e.target.value.toLowerCase().trim();
+        const hoursInput = document.querySelector('input[name="hours_per_day"]');
+        
+        // Handle common keywords
+        if (text.includes('live-in') || text.includes('live in') || text.includes('24') || text.includes('full day')) {
+            hoursInput.value = 24;
+            return;
+        }
+        
+        // Parse time ranges like "9 am - 5 pm", "09:00 to 17:00", "9am to 5pm", "9-5"
+        const timeRegex = /(\d{1,2})(?::(\d{2}))?\s*(am|pm|a|p)?\s*(?:-|to|until)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm|a|p)?/i;
+        const match = text.match(timeRegex);
+        
+        if (match) {
+            let startHour = parseInt(match[1]);
+            let startMin = parseInt(match[2]) || 0;
+            let startAmPm = match[3];
+            
+            let endHour = parseInt(match[4]);
+            let endMin = parseInt(match[5]) || 0;
+            let endAmPm = match[6];
+            
+            // Adjust for AM/PM
+            if (endAmPm && endAmPm.startsWith('p') && endHour < 12) endHour += 12;
+            if (endAmPm && endAmPm.startsWith('a') && endHour === 12) endHour = 0;
+            
+            if (startAmPm && startAmPm.startsWith('p') && startHour < 12) startHour += 12;
+            if (startAmPm && startAmPm.startsWith('a') && startHour === 12) startHour = 0;
+            
+            // Infer missing AM/PM logic
+            if (!startAmPm && endAmPm) {
+                if (startHour < endHour && startHour >= 6) {
+                    // likely AM, do nothing
+                } else if (startHour < 12 && endHour > 12) {
+                    // e.g. "2 to 10 pm"
+                    startHour += 12;
+                }
+            } else if (!startAmPm && !endAmPm) {
+                // E.g. "9-5". 9 is AM, 5 is PM.
+                if (startHour > endHour) {
+                    if (startHour >= 6 && startHour <= 11 && endHour < 12) {
+                        endHour += 12;
+                    }
+                }
+            }
+            
+            let startTime = startHour + (startMin / 60);
+            let endTime = endHour + (endMin / 60);
+            
+            let diff = endTime - startTime;
+            if (diff < 0) diff += 24; // e.g., 10pm to 6am
+            
+            if (diff > 0 && diff <= 24) {
+                // Round to 1 decimal place max (e.g., 8, 8.5)
+                hoursInput.value = Math.round(diff * 10) / 10;
+            }
+        }
+    });
 </script>
 {% endblock %}
